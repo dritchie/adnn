@@ -138,10 +138,10 @@ fns.tensorSelect = func.newFunction(Scalar, {
 
 // Split a tensor into multiple scalars
 fns.tensorSplit = function(t) {
-	var s = [];
-	var n = t.length;
-	for (var i = 0; i < n; i++) {
-		s.push(fns.tensorSelect(t, i));
+	var n = graph.isNode(t) ? t.x.length : t.length;
+	var s = new Array(n);
+	while (n--) {
+		s[n] = fns.tensorSelect(t, n);
 	}
 	return s;
 }
