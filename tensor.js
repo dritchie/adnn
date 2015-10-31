@@ -31,6 +31,7 @@ Tensor.prototype.clone = function() {
 	return copy;
 };
 
+
 // These are slow; don't use them inside any hot loops (i.e. they're good for
 //    debgugging/translating data to/from other formats, and not much else)
 Tensor.prototype.get = function(coords) {
@@ -81,7 +82,7 @@ Tensor.prototype.fromArray = function(arr) {
 
 Tensor.prototype.toString = function() {
 	return this.toArray();
-}
+};
 
 
 

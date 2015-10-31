@@ -15,5 +15,5 @@ function memoize(fn) {
 
 
 module.exports = {
-	memoize = memoize;
+	memoize: memoize
 };

@@ -17,7 +17,7 @@ function makeUnaryDerivatives(code) {
 			tensor: new Function('_x', [
 				'var n = _x.length;',
 				'while (n--) {',
-				'	var x = _x.x[n]',
+				'	var x = _x.x[n];',
 				'	var out = this.x[n];',
 				'   _x.dx[n] += (' + code + ') * this.dx[n];',
 				'}'
@@ -27,7 +27,7 @@ function makeUnaryDerivatives(code) {
 }
 
 function makeBinaryDerivatives(code1, code2) {
-	if (code === undefined) {
+	if (code1 === undefined && code2 === undefined) {
 		return { scalar: [nop, nop], tensor: [nop, nop] };
 	} else  {
 		return {
@@ -49,21 +49,21 @@ function makeBinaryDerivatives(code1, code2) {
 				new Function('_x', '_y', [
 					'var n = _x.length;',
 					'while (n--) {',
-					'	var x = _x.x[n]',
+					'	var x = _x.x[n];',
 					'	var y = _y.x[n];',
 					'	var out = this.x[n];',
 					'   _x.dx[n] += (' + code1 + ') * this.dx[n];',
 					'}'
-				]).join('\n'),
+				].join('\n')),
 				new Function('_x', '_y', [
 					'var n = _x.length;',
 					'while (n--) {',
-					'	var x = _x.x[n]',
+					'	var x = _x.x[n];',
 					'	var y = _y.x[n];',
 					'	var out = this.x[n];',
 					'   _y.dx[n] += (' + code2 + ') * this.dx[n];',
 					'}'
-				]).join('\n')
+				].join('\n'))
 			]
 		};
 	}
