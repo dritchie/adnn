@@ -42,7 +42,6 @@ function makeFunctions(OutputType) {
 	}
 
 	// Lifted Math functions
-	fns.math = {};
 	var unaryFns = [
 		'floor', 'ceil', 'round', 'sqrt', 'exp', 'log', 'abs', 'sin', 'cos',
 		'tan', 'asin', 'acos', 'atan', 'sinh', 'cosh', 'tanh', 'asinh',
@@ -56,7 +55,7 @@ function makeFunctions(OutputType) {
 		var forward = OutputType === Tensor ?
 			new Function('x', 'return x.' + fnname + '();') :
 			new Function('x', 'return Math.' + fnname + '(x);');
-		fns.math[fnname] = func.newUnaryFunction(OutputType, {
+		fns[fnname] = func.newUnaryFunction(OutputType, {
 			forward: forward,
 			backward: backward(derivs[fnname]),
 		});
@@ -66,7 +65,7 @@ function makeFunctions(OutputType) {
 		var forward = OutputType === Tensor ?
 			new Function('x', 'y', 'return x.' + fnname + '(y);') :
 			new Function('x', 'y', 'return Math.' + fnname + '(x, y);');
-		fns.math[fnname] = func.newBinaryFunction(OutputType, {
+		fns[fnname] = func.newBinaryFunction(OutputType, {
 			forward: forward,
 			backward1: backward(derivs[fnname])[0],
 			backward2: backward(derivs[fnname])[1]

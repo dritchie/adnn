@@ -44,7 +44,7 @@ macro *= {
 }
 
 macro Math {
-  rule { .$x } => { ad.scalar.math.$x }
+  rule { .$x } => { ad.scalar.$x }
 }
 
 export +
