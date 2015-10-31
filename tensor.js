@@ -6,6 +6,7 @@ function Tensor(dims) {
 	var n = dims.length;
 	while (n--) size *= dims[n];
 	this.data = new ArrayType(size);
+	this.length = size;
 	return this;
 }
 
@@ -21,6 +22,7 @@ Tensor.prototype.zero = function() {
 	// TODO: Use TypedArray.fill, when it is more broadly supported
 	var n = this.size;
 	while (n--) this.data[n] = 0;
+	return this;
 };
 
 Tensor.prototype.clone = function() {
@@ -118,7 +120,7 @@ function addBinaryMethod(name, fncode) {
 	].join('\n'));
 
 	var fneq = function(x) {
-		if (x instanceof Tensor)
+		if (x.constructor === Tensor)
 			fneqT.call(this, x);
 		else
 			fneqS.call(this, x);
