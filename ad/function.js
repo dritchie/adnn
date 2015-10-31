@@ -165,10 +165,27 @@ function newFunction(OutputType, opts) {
 }
 
 
+// Lifting functions which take numbers but don't return numbers to also work
+//    on Nodes.
+function liftUnaryFunction(f) {
+	return function(x) { return f(graph.isNode(x) ? x.x : x); };
+}
+function liftBinaryFunction(f) {
+	return function(x, y) {
+		var xprim = graph.isNode(x) ? x.x : x;
+		var yprim = graph.isNode(y) ? y.x : y;
+		return f(xprim, yprim);
+	};
+}
+
+
+
 module.exports = {
 	newUnaryFunction: newUnaryFunction,
 	newBinaryFunction: newBinaryFunction,
-	newFunction: newFunction
+	newFunction: newFunction,
+	liftUnaryFunction: liftUnaryFunction,
+	liftBinaryFunction: liftBinaryFunction
 };
 
 

@@ -136,13 +136,9 @@ function addBinaryMethod(name, fncode) {
 
 addUnaryMethod('neg', '-x');
 addUnaryMethod('round', 'Math.round(x)');
-addUnaryMethod('trunc', 'Math.trunc(x)');
 addUnaryMethod('log', 'Math.log(x)');
-addUnaryMethod('log2', 'Math.log2(x)');
-addUnaryMethod('log10', 'Math.log10(x)');
 addUnaryMethod('exp', 'Math.exp(x)');
 addUnaryMethod('sqrt', 'Math.sqrt(x)');
-addUnaryMethod('sign', 'Math.sign(x)');
 addUnaryMethod('abs', 'Math.abs(x)');
 addUnaryMethod('ceil', 'Math.ceil(x)');
 addUnaryMethod('floor', 'Math.floor(x)');
