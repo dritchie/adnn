@@ -136,8 +136,8 @@ fns.tensorSelect = func.newFunction(Scalar, {
 	}
 });
 
-// Split a tensor into multiple scalars
-fns.tensorSplit = function(t) {
+// Split a tensor into an array of its scalar entries
+fns.tensorEntries = function(t) {
 	var n = graph.isNode(t) ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
