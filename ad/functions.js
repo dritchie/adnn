@@ -118,11 +118,11 @@ fns.scalar.le = func.liftBinaryFunction(
 
 
 
-// Hybrid scalar/tensor operations --------------------------------------------
+// Scalar/tensor split/merge operations ---------------------------------------
 
 
-// Select one element out of a tensor (by linear indexing)
-fns.tensorSelect = func.newFunction(Scalar, {
+// Select one entry out of a tensor (by linear indexing)
+fns.tensorEntry = func.newFunction(Scalar, {
 	forward: function(t, i) {
 		return graph.isNode(t) ? t.x.data[i] : t.data[i];
 	},
@@ -141,10 +141,45 @@ fns.tensorEntries = function(t) {
 	var n = graph.isNode(t) ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
-		s[n] = fns.tensorSelect(t, n);
+		s[n] = fns.tensorEntry(t, n);
 	}
 	return s;
-}
+};
+
+// Select a subtensor from a larger tensor
+fns.tensorRange = func.newFunction(Tensor, {
+	forward: function(t, start, end) {
+		t = graph.isNode(t) ? t.x : t;
+		var subt = new Tensor([end - start]);
+		subt.data.set(t.data, start, end);
+		return subt;
+	},
+	backward: function(t, start, end) {
+		if (graph.isNode(t)) {
+			var n = end - start;
+			while (n--) {
+				var i = start + n;
+				this.dx[i] += t.dx[n];
+			}
+		}
+	},
+	getParents: function(t, start, end) {
+		return graph.isNode(t) ? [t] : [];
+	}
+});
+
+
+// Split a tensor into multiple smaller tensors
+fns.tensorSplit = function(t, lengths) {
+	var ts = new Array(lengths.length);
+	var start = 0;
+	for (var i = 0; i < lengths.length; i++) {
+		var l = lengths[i];
+		ts[i] = fns.tensorRange(t, start, start + l);
+		start += l;
+	}
+	return ts;
+};
 
 // Concatentate multiple scalars into a tensor
 // Can either take an array of scalars or a variable number of arguments
@@ -237,7 +272,6 @@ fns.tensorConcat = func.newFunction(Tensor, {
 		return p;
 	}
 });
-
 
 
 module.exports = fns;
