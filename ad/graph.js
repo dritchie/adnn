@@ -3,9 +3,9 @@ var utils = require('../utils.js');
 
 // Base class for all compute graph nodes
 function Node() {
-	this.inDegree = 0;
+	this.outDegree = 0;
 }
-Node.prototype.computeInDegree = function() {};
+Node.prototype.computeOutDegree = function() {};
 Node.prototype.backpropImpl = function() {};
 
 
@@ -18,7 +18,7 @@ function ScalarNode(x) {
 ScalarNode.prototype = Object.create(Node.prototype);
 ScalarNode.prototype.backprop = function(dx) {
 	if (dx !== undefined) this.dx = dx;
-	this.computeInDegree();
+	this.computeOutDegree();
 	this.backpropImpl();
 };
 
@@ -32,7 +32,7 @@ function TensorNode(x) {
 TensorNode.prototype = Object.create(Node.prototype);
 Tensor.prototype.backprop = function(dx) {
 	if (dx !== undefined) this.dx = dx;
-	this.computeInDegree();
+	this.computeOutDegree();
 	this.backpropImpl();
 };
 
@@ -45,13 +45,13 @@ var UnaryNode = utils.memoize(function(BaseNode) {
 	}
 	UnaryNode.prototype = Object.create(BaseNode.prototype);
 
-	UnaryNode.prototype.computeInDegree = function() {
-		this.inDegree++;
-		this.parent.computeInDegree();
+	UnaryNode.prototype.computeOutDegree = function() {
+		this.outDegree++;
+		this.parent.computeOutDegree();
 	};
 
 	UnaryNode.prototype.backpropImpl = function() {
-		if (--this.inDegree === 0) {
+		if (--this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
 			this.parent.backpropImpl();
 		}
@@ -70,14 +70,14 @@ var BinaryNode = utils.memoize(function(BaseNode) {
 	}
 	BinaryNode.prototype = Object.create(BaseNode.prototype);
 
-	BinaryNode.prototype.computeInDegree = function() {
-		this.inDegree++;
-		this.parent1.computeInDegree();
-		this.parent2.computeInDegree();
+	BinaryNode.prototype.computeOutDegree = function() {
+		this.outDegree++;
+		this.parent1.computeOutDegree();
+		this.parent2.computeOutDegree();
 	};
 
 	BinaryNode.prototype.backpropImpl = function() {
-		if (--this.inDegree === 0) {
+		if (--this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
 			this.parent1.backpropImpl();
 			this.parent2.backpropImpl();
@@ -96,14 +96,14 @@ var NaryNode = utils.memoize(function(BaseNode) {
 	}
 	NaryNode.prototype = Object.create(BaseNode.prototype);
 
-	NaryNode.prototype.computeInDegree = function() {
-		this.inDegree++;
+	NaryNode.prototype.computeOutDegree = function() {
+		this.outDegree++;
 		var n = this.parents.length;
-		while (n--) this.parents[n].computeInDegree();
+		while (n--) this.parents[n].computeOutDegree();
 	};
 
 	NaryNode.prototype.backpropImpl = function() {
-		if (--this.inDegree === 0) {
+		if (--this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
 			var n = this.parents.length;
 			while (n--) this.parents[n].backpropImpl();
