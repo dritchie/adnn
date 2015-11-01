@@ -1,12 +1,16 @@
 var graph = require('./graph.js');
 var func = require('./func.js');
 var functions = require('./functions.js');
+var Tensor = require('../tensor.js');
 
 var ad = {
-	liftScalar: function(x) { return new graph.ScalarNode(x); },
-	liftTensor: function(x) { return new graph.TensorNode(x); },
+	lift: function(x) {
+		return x instanceof Tensor ?
+			new graph.TensorNode(x) :
+			new graph.ScalarNode(x);
+	},
 	isLifted: graph.isNode,
-	project: function(x) { return graph.isNode(x) ? x.x : x; }
+	project: function(x) { return x.x; }
 };
 for (var prop in graph) {
 	ad[prop] = func[prop];
