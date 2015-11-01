@@ -206,19 +206,7 @@ fns.scalarConcat = func.newFunction(Tensor, {
 			}
 		}
 	},
-	getParents: function() {
-		var args = arguments.length === 1 && arguments[0] instanceof Array ?
-			arguments[0] : arguments;
-		var p = [];
-		var n = args.length;
-		while (n--) {
-			var arg = args[n];
-			if (graph.isNode(arg)) {
-				p.push(arg);
-			}
-		}
-		return p;
-	}
+	getParents: func.naryGetParents
 });
 
 // Concatentate multiple tensors into one big tensor
@@ -258,19 +246,41 @@ fns.tensorConcat = func.newFunction(Tensor, {
 			} else i += arg.length;
 		}
 	},
-	getParents: function() {
+	getParents: func.naryGetParents
+});
+
+
+
+// Misc. ----------------------------------------------------------------------
+
+
+// Sum an arbitrary number of scalars
+// Can either take an array of scalars or a variable number of arguments
+fns.scalar.sum = func.newFunction(Scalar, {
+	forward: function() {
 		var args = arguments.length === 1 && arguments[0] instanceof Array ?
 			arguments[0] : arguments;
-		var p = [];
+		var thesum = 0;
+		var n = args.length;
+		while (n--) {
+			var arg = args[n];
+			var x = graph.isNode(x) ? x.x : x;
+			thesum += x;
+		}
+		return thesum;
+	},
+	backward: function() {
+		var args = arguments.length === 1 && arguments[0] instanceof Array ?
+			arguments[0] : arguments;
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
 			if (graph.isNode(arg)) {
-				p.push(arg);
+				arg.dx += this.dx;
 			}
 		}
-		return p;
-	}
+	},
+	getParents: func.naryGetParents
 });
 
 

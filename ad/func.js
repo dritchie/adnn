@@ -175,6 +175,23 @@ function newFunction(OutputType, opts) {
 }
 
 
+// 'getParents' implementation suitable for functions which take an array or
+//    a variable number of args, all of which might be Nodes.
+function naryGetParents() {
+	var args = arguments.length === 1 && arguments[0] instanceof Array ?
+		arguments[0] : arguments;
+	var p = [];
+	var n = args.length;
+	while (n--) {
+		var arg = args[n];
+		if (graph.isNode(arg)) {
+			p.push(arg);
+		}
+	}
+	return p;
+}
+
+
 // Lifting functions which take numbers but don't return numbers to also work
 //    on Nodes.
 function liftUnaryFunction(f) {
@@ -194,6 +211,7 @@ module.exports = {
 	newUnaryFunction: newUnaryFunction,
 	newBinaryFunction: newBinaryFunction,
 	newFunction: newFunction,
+	naryGetParents: naryGetParents,
 	liftUnaryFunction: liftUnaryFunction,
 	liftBinaryFunction: liftBinaryFunction
 };
