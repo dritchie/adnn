@@ -119,7 +119,7 @@ function addBinaryMethod(name, fncode) {
 		'var n = this.data.length;',
 		'while (n--) {',
 		'	var a = this.data[n];',
-		'   var b = t.data[n];',
+		'	var b = t.data[n];',
 		'	this.data[n] = ' + fncode + ';',
 		'}'
 	].join('\n'));
