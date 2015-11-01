@@ -18,11 +18,15 @@ Object.defineProperties(Tensor.prototype, {
 	depth: { get: function() { return this.dims[2]; } }
 });
 
-Tensor.prototype.zero = function() {
+Tensor.prototype.fill = function(val) {
 	// TODO: Use TypedArray.fill, when it is more broadly supported
 	var n = this.size;
-	while (n--) this.data[n] = 0;
+	while (n--) this.data[n] = val;
 	return this;
+};
+
+Tensor.prototype.zero = function() {
+	return this.fill(0);
 };
 
 Tensor.prototype.clone = function() {

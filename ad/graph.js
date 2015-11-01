@@ -16,8 +16,8 @@ function ScalarNode(x) {
 	this.dx = 0;
 }
 ScalarNode.prototype = Object.create(Node.prototype);
-ScalarNode.prototype.backprop = function(dx) {
-	if (dx !== undefined) this.dx = dx;
+ScalarNode.prototype.backprop = function() {
+	this.dx = 1;
 	this.computeOutDegree();
 	this.backpropImpl();
 };
@@ -30,8 +30,8 @@ function TensorNode(x) {
 	this.dx = new Tensor(x.dims).zero();
 }
 TensorNode.prototype = Object.create(Node.prototype);
-Tensor.prototype.backprop = function(dx) {
-	if (dx !== undefined) this.dx = dx;
+Tensor.prototype.backprop = function() {
+	this.dx.fill(1);
 	this.computeOutDegree();
 	this.backpropImpl();
 };
