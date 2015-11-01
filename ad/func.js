@@ -1,6 +1,13 @@
+var assert = require('assert');
 var graph = require('./graph.js');
 var Tensor = require('../tensor.js');
 
+
+function checkOutputType(OutputType) {
+	assert(OutputType === Tensor || OutputType === Number,
+		"Attempting to create AD function with invalid output type '"
+		+ OutputType + "'; valid options are 'Number' and 'Tensor'");
+}
 
 // Create a new unary AD primitive function
 // opts must contain:
@@ -8,6 +15,7 @@ var Tensor = require('../tensor.js');
 //    - 'backward': Function taking Node input, computes derivative.
 //      Output node available as 'this'.
 function newUnaryFunction(OutputType, opts) {
+	checkOutputType(OutputType);
 	var forward = opts.forward;
 	var backward = opts.backward;
 
@@ -39,6 +47,7 @@ function newUnaryFunction(OutputType, opts) {
 //    - 'backward2': Function taking (number, Node) inputs, computes derivative
 //      of second input. Output node available as 'this'.
 function newBinaryFunction(OutputType, opts) {
+	checkOutputType(OutputType);
 	var forward = opts.forward;
 	var backward1 = opts.backward1;
 	var backward2 = opts.backward2;
@@ -103,6 +112,7 @@ function newBinaryFunction(OutputType, opts) {
 //    - 'getParents': Function taking Node and number inputs, returns a list
 //      of all Node inputs.
 function newFunction(OutputType, opts) {
+	checkOutputType(OutputType);
 	var forward = opts.forward;
 	var backward = opts.backward;
 	var getParents = opts.getParents;
