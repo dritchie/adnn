@@ -122,7 +122,7 @@ fns.scalar.le = func.liftBinaryFunction(
 
 
 // Select one entry out of a tensor (by linear indexing)
-fns.tensorEntry = func.newFunction(Scalar, {
+var tensorEntry = func.newFunction(Scalar, {
 	forward: function(t, i) {
 		return graph.isNode(t) ? t.x.data[i] : t.data[i];
 	},
@@ -137,7 +137,7 @@ fns.tensorEntry = func.newFunction(Scalar, {
 });
 
 // Split a tensor into an array of its scalar entries
-fns.tensorEntries = function(t) {
+fns.tensorToScalars = function(t) {
 	var n = graph.isNode(t) ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
@@ -147,7 +147,7 @@ fns.tensorEntries = function(t) {
 };
 
 // Select a subtensor from a larger tensor
-fns.tensorRange = func.newFunction(Tensor, {
+fns.tensor.range = func.newFunction(Tensor, {
 	forward: function(t, start, end) {
 		t = graph.isNode(t) ? t.x : t;
 		var subt = new Tensor([end - start]);
@@ -170,7 +170,7 @@ fns.tensorRange = func.newFunction(Tensor, {
 
 
 // Split a tensor into multiple smaller tensors
-fns.tensorSplit = function(t, lengths) {
+fns.tensor.split = function(t, lengths) {
 	var ts = new Array(lengths.length);
 	var start = 0;
 	for (var i = 0; i < lengths.length; i++) {
@@ -183,7 +183,7 @@ fns.tensorSplit = function(t, lengths) {
 
 // Concatentate multiple scalars into a tensor
 // Can either take an array of scalars or a variable number of arguments
-fns.scalarConcat = func.newFunction(Tensor, {
+fns.scalarsToTensor = func.newFunction(Tensor, {
 	forward: function() {
 		var args = arguments.length === 1 && arguments[0] instanceof Array ?
 			arguments[0] : arguments;
@@ -211,7 +211,7 @@ fns.scalarConcat = func.newFunction(Tensor, {
 
 // Concatentate multiple tensors into one big tensor
 // Can either take an array of tensors or a variable number of arguments
-fns.tensorConcat = func.newFunction(Tensor, {
+fns.tensor.concat = func.newFunction(Tensor, {
 	forward: function() {
 		var args = arguments.length === 1 && arguments[0] instanceof Array ?
 			arguments[0] : arguments;

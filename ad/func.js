@@ -99,7 +99,7 @@ function newBinaryFunction(OutputType, opts) {
 		} else {
 			return forward(x, y);
 		}
-	}
+	};
 }
 
 
