@@ -1,17 +1,23 @@
 var Network = require('./network.js');
 var lift = require('./lift.js');
 var composition = require('./composition.js');
-var liftedfns = require('./liftedfns');
+var adfunctions = require('../ad/functions.js');
 
 module.exports = {
 	Network: Network,
 	lift: lift
 };
 
-var modules = [
-	composition, liftedfns
-];
+// We go ahead and lift all of the Tensor-valued AD functions in
+//    ad/functions.js
+for (var fnname in adfunctions.tensor) {
+	module.exports[fnname] = lift(adfunctions.tensor[fnname]);
+}
 
+// Include everything from certain other modules
+var modules = [
+	composition
+];
 for (var i = 0; i < modules.length; i++) {
 	var m = modules[i];
 	for (var prop in m) {
