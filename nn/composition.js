@@ -5,6 +5,26 @@ var lift = require('./lift.js');
 
 // A computation involving neural nets can be encapsulated inside a larger
 //    neural net. This is essentially function abstraction.
+
+function compound(fn, subnets, optname) {
+	var cnet = new Network();
+	cnet.networks = subnets;
+	for (var i = 0; i < subnets.length; i++) {
+		cnet.parameters = cnet.parameters.concat(subnets[i].parameters);
+	}
+	cnet.eval = fn;
+	cnet.setTraining = function(flag) {
+		for (var i = 0; i < this.ops.length; i++) {
+			this.networks[i].setTraining(boolflag);
+		}
+	};
+	cnet.name = optname || 'compoundNetwork';
+	return cnet;
+}
+
+
+// ----------------------------------------------------------------------------
+
 // What follows in this module is basically a little DSL for defining
 //    compound functions involving neural nets, by manually constructing the
 //    AST for the function. Since our neural nets are (for the time being, at
@@ -47,8 +67,8 @@ function input() {
 
 
 function ComposeASTNode(network, parents) {
-	ASTNode.call(this, parents);
 	this.network = network;
+	ASTNode.call(this, parents);
 }
 ComposeASTNode.prototype = Object.create(ASTNode.prototype);
 
@@ -57,12 +77,7 @@ Network.prototype.compose = function() {
 };
 
 
-// ----------------------------------------------------------------------------
-
-
-function SSANetwork(inputs, outputs) {
-	Network.call(this);
-
+function compile(inputs, outputs, optname) {
 	for (var i = 0; i < inputs.length; i++) {
 		assert(inputs[i] instanceof InputASTNode,
 			'Inputs to composite neural network must be nn.ast.input()');
@@ -77,92 +92,59 @@ function SSANetwork(inputs, outputs) {
 			if (!(node instanceof InputASTNode) &&
 				visited.indexOf(node) === -1) {
 				visited.push(node);
+				for (var i = 0; i < node.parents.length; i++) {
+					fringe.push(node.parents[i]);
+				}
 			}
 		}
 	}
 	visited.reverse();
 
-	// Create SSA operations
-	this.ops = [];
-	this.ins = [];
-	this.outs = [];
-	for (var i = 0; i < inputs.length; i++) {
-		this.ins.push({ output: undefined });
-	}
-	for (var i = 0; i < visited; i++) {
+	// Generate SSA code
+	var body = 'var args = arguments;\n';
+	var outs = [];
+	for (var i = 0; i < visited.length; i++) {
 		var node = visited[i];
-		var inputs = node.parents.map(function(p) {
-			var i = this.ins.indexOf(p);
+		var ins = node.parents.map(function(p) {
+			var i = inputs.indexOf(p);
 			if (i !== -1)
-				return this.ins[i];
+				return 'args['+i+']';
 			i = visited.indexOf(p);
 			if (i !== -1)
-				return this.ops[i];
-			assert(false, 'This should be impossible');
-		}.bind(this));
-		var op = {
-			network: node.network,
-			ins: inputs,
-			output: undefined
-		};
-		this.ops.push(op);
+				return 'r'+i;
+			assert(false, 'impossible');
+		});
+		body += 'var r'+i+' = this.networks['+i+'].eval('+ins+');\n';
 		if (outputs.indexOf(node) !== -1) {
-			this.outs.push(op);
+			outs.push('r'+i);
 		}
 	}
+	body += 'return ' + (outs.length > 1 ? '['+outs+']' : outs[0]) + ';';
 
-	// Parameters
-	for (var i = 0; i < this.ops.length; i++) {
-		this.parameters = this.parameters.concat(this.ops.parameters);
-	}
-}
-SSANetwork.prototype = Object.create(Network.prototype);
-
-SSANetwork.prototype.eval = function() {
-	assert(arguments.length === this.ins.length,
-		'Incorrect number of arguments to composite neural network');
-	for (var i = 0; i < arguments.length; i++) {
-		this.ins.output = arguments[i];
-	}
-	for (var i = 0; i < this.ops.length; i++) {
-		var op = this.ops[i];
-		var inputs = op.ins.map(function(inop) {
-			return inop.output;
-		});
-		op.output = op.network.eval.apply(null, inputs);
-	}
-	var outputs = this.outs.map(function(outop) {
-		return outop.output;
-	});
-	return outputs.length === 1 ? outputs[0] : outputs;
-};
-
-SSANetwork.prototype.setTraining = function(boolflag) {
-	for (var i = 0; i < this.ops.length; i++) {
-		this.ops[i].network.setTraining(boolflag);
-	}
-};
-
-
-function compile(inputs, ouputs) {
-	return new SSANetwork(inputs, ouputs);
+	// Create compound network
+	var fn = new Function(body);
+	var networks = visited.map(function(n) { return n.network; });
+	optname = optname || 'compiledNetwork';
+	return compound(fn, networks, optname);
 }
 
 
 // ----------------------------------------------------------------------------
 
 // A common composition pattern is a sequence of 1-to-1 networks
-function sequence(networks) {
+function sequence(networks, optname) {
 	var inputNode = input();
 	var currNode = inputNode;
 	for (var i = 0; i < networks.length; i++) {
 		currNode = networks[i].compose(currNode);
 	}
-	return compile([inputNode], [currNode]);
+	optname = optname || 'sequenceNetwork';
+	return compile([inputNode], [currNode], optname);
 }
 
 
 module.exports = {
+	compound: compound,
 	ast: {
 		input: input,
 		compile: compile
