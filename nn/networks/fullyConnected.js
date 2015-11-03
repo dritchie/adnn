@@ -1,6 +1,6 @@
-var Tensor = require('../tensor.js');
-var ad = require('../ad');
-var Network = require('./network.js');
+var Tensor = require('../../tensor.js');
+var ad = require('../../ad');
+var Network = require('../network.js');
 
 
 function FullyConnectedNetwork(nIn, nOut) {
@@ -77,4 +77,7 @@ function fullyConnected(nIn, nOut) {
 	return new FullyConnectedNetwork(nIn, nOut);
 }
 
-module.exports = fullyConnected;
+module.exports = {
+	fullyConnected: fullyConnected
+};
+

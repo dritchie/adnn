@@ -19,6 +19,15 @@ for (var prop in composition) {
 	module.exports[prop] = composition[prop];
 }
 
-// Other types of networks
-var fullyConnected = require('./fullyConnected.js');
-module.exports.fullyConnected = fullyConnected;
+// Networks
+var lifted = require('./networks/lifted.js');
+var fullyConnected = require('./networks/fullyConnected.js');
+var modules = [
+	lifted, fullyConnected
+];
+for (var i = 0; i < modules.length; i++) {
+	var m = modules[i];
+	for (var prop in m) {
+		module.exports[prop] = m[prop];
+	}
+}
