@@ -13,7 +13,20 @@ function memoize(fn) {
 	};
 }
 
+function gaussianSample(mu, sigma) {
+	var u, v, x, y, q;
+	do {
+		u = 1 - Math.random();
+		v = 1.7156 * (Math.random() - 0.5);
+		x = u - 0.449871;
+		y = Math.abs(v) + 0.386595;
+		q = x * x + y * (0.196 * y - 0.25472 * x);
+	} while (q >= 0.27597 && (q > 0.27846 || v * v > -4 * u * u * Math.log(u)));
+	return mu + sigma * v / u;
+}
+
 
 module.exports = {
-	memoize: memoize
+	memoize: memoize,
+	gaussianSample: gaussianSample
 };

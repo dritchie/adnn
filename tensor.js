@@ -1,3 +1,5 @@
+var utils = require('./utils.js');
+
 var ArrayType = Float64Array;
 
 function Tensor(dims) {
@@ -12,10 +14,6 @@ function Tensor(dims) {
 
 Object.defineProperties(Tensor.prototype, {
 	rank: { get: function() { return this.dims.length; } },
-	// For interacting with 1, 2, and 3-d Tensors
-	width: { get: function() { return this.dims[0]; } },
-	height: { get: function() { return this.dims[1]; } },
-	depth: { get: function() { return this.dims[2]; } }
 });
 
 Tensor.prototype.fill = function(val) {
@@ -29,6 +27,15 @@ Tensor.prototype.zero = function() {
 	return this.fill(0);
 };
 
+// Adapted from:
+//    https://github.com/karpathy/convnetjs/blob/master/src/convnet_vol.js
+Tensor.prototype.fillRandom = function() {
+	var scale = 1/this.length;
+	var n = this.length;
+	while (n--) this.data[n] = utils.gaussianSample(0, scale);
+	return this;
+}
+
 Tensor.prototype.clone = function() {
 	var copy = new Tensor(this.dims);
 	copy.data.set(this.data);
@@ -41,16 +48,16 @@ Tensor.prototype.clone = function() {
 Tensor.prototype.get = function(coords) {
 	var idx = 0;
 	var n = this.dims.length;
-	while (n--) {
-		idx = idx * this.dims[n] + coords[n];
+	for (var i = 0; i < n; i++) {
+		idx = idx * this.dims[i] + coords[i];
 	}
 	return this.data[idx];
 };
 Tensor.prototype.set = function(coords, val) {
 	var idx = 0;
 	var n = this.dims.length;
-	while (n--) {
-		idx = idx * this.dims[n] + coords[n];
+	for (var i = 0; i < n; i++) {
+		idx = idx * this.dims[i] + coords[i];
 	}
 	this.data[idx] = val;
 };
@@ -58,10 +65,10 @@ function toArrayRec(tensor, coords) {
 	if (coords.length === tensor.rank) {
 		return tensor.get(coords);
 	} else {
-		var dim = tensor.rank - coords.length - 1;
+		var dim = coords.length;
 		var arr = [];
 		for (var i = 0; i < tensor.dims[dim]; i++) {
-			arr.push(toArrayRec(tensor, [i].concat(coords)));
+			arr.push(toArrayRec(tensor, coords.concat([i])));
 		}
 		return arr;
 	}
@@ -73,9 +80,9 @@ function fromArrayRec(tensor, coords, x) {
 	if (!(x instanceof Array)) {
 		tensor.set(coords, x);
 	} else {
-		var dim = tensor.rank - coords.length - 1;
+		var dim = coords.length;
 		for (var i = 0; i < tensor.dims[dim]; i++) {
-			fromArrayRec(tensor, [i].concat(coords), x[i]);
+			fromArrayRec(tensor, coords.concat([i]), x[i]);
 		}
 	}
 }
