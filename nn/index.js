@@ -1,7 +1,5 @@
 var Network = require('./network.js');
 var lift = require('./lift.js');
-var composition = require('./composition.js');
-var adfunctions = require('../ad/functions.js');
 
 module.exports = {
 	Network: Network,
@@ -10,17 +8,17 @@ module.exports = {
 
 // We go ahead and lift all of the Tensor-valued AD functions in
 //    ad/functions.js
+var adfunctions = require('../ad/functions.js');
 for (var fnname in adfunctions.tensor) {
 	module.exports[fnname] = lift(adfunctions.tensor[fnname], fnname);
 }
 
-// Include everything from certain other modules
-var modules = [
-	composition
-];
-for (var i = 0; i < modules.length; i++) {
-	var m = modules[i];
-	for (var prop in m) {
-		module.exports[prop] = m[prop];
-	}
+// Include everything from composition
+var composition = require('./composition.js');
+for (var prop in composition) {
+	module.exports[prop] = composition[prop];
 }
+
+// Other types of networks
+var fullyConnected = require('./fullyConnected.js');
+module.exports.fullyConnected = fullyConnected;
