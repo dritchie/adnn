@@ -14,9 +14,15 @@ var ad = {
 	isLifted: graph.isNode,
 	project: function(x) { return graph.isNode(x) ? x.x : x; }
 };
-for (var prop in graph) {
-	ad[prop] = func[prop];
-	ad[prop] = functions[prop];
+
+var modules = [
+	func, functions
+];
+for (var i = 0; i < modules.length; i++) {
+	var m = modules[i];
+	for (var prop in m) {
+		ad[prop] = m[prop];
+	}
 }
 
 module.exports = ad;
