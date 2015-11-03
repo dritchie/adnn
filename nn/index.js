@@ -6,13 +6,6 @@ module.exports = {
 	lift: lift
 };
 
-// We go ahead and lift all of the Tensor-valued AD functions in
-//    ad/functions.js
-var adfunctions = require('../ad/functions.js');
-for (var fnname in adfunctions.tensor) {
-	module.exports[fnname] = lift(adfunctions.tensor[fnname], fnname);
-}
-
 // Include everything from composition
 var composition = require('./composition.js');
 for (var prop in composition) {
