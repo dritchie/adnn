@@ -2,6 +2,7 @@ var assert = require('assert');
 
 // Base class for all neural networks
 function Network() {
+	this.name = '';
 	// 'parameters' contains the complete set of parameters for a neural
 	//    network, stored as ad.TensorNodes.
 	this.parameters = [];
