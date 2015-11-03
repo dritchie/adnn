@@ -5,8 +5,8 @@ function Tensor(dims) {
 	var size = 1;
 	var n = dims.length;
 	while (n--) size *= dims[n];
-	this.data = new ArrayType(size);
 	this.length = size;
+	this.data = new ArrayType(size);
 	return this;
 }
 
@@ -20,7 +20,7 @@ Object.defineProperties(Tensor.prototype, {
 
 Tensor.prototype.fill = function(val) {
 	// TODO: Use TypedArray.fill, when it is more broadly supported
-	var n = this.size;
+	var n = this.length;
 	while (n--) this.data[n] = val;
 	return this;
 };
