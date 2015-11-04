@@ -1,0 +1,24 @@
+{
+  "name": "adnn",
+  "version": "0.0.1",
+  "description": "Javascript neural networks on top of general scalar/tensor reverse-mode automatic differentiation.",
+  "author": "dritchie",
+  "license": "MIT",
+  "dependencies": {
+    "sweet.js": "^0.7.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dritchie/adnn"
+  },
+  "bugs": {
+    "url": "https://github.com/dritchie/adnn/issues"
+  },
+  "engines": {
+    "node": ">=0.12.4"
+  },
+  "keywords": [
+    "automatic differentiation",
+    "neural networks"
+  ]
+}

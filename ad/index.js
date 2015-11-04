@@ -1,6 +1,4 @@
 var graph = require('./graph.js');
-var func = require('./func.js');
-var functions = require('./functions.js');
 var Tensor = require('../tensor.js');
 
 function liftScalar(x) { return new graph.ScalarNode(x); };
@@ -15,8 +13,11 @@ var ad = {
 	project: function(x) { return graph.isNode(x) ? x.x : x; }
 };
 
+var func = require('./func.js');
+var functions = require('./functions.js');
+var transform = require('./transform.js');
 var modules = [
-	func, functions
+	func, functions, transform
 ];
 for (var i = 0; i < modules.length; i++) {
 	var m = modules[i];
