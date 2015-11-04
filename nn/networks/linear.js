@@ -1,11 +1,14 @@
 var Tensor = require('../../tensor.js');
 var ad = require('../../ad');
 var Network = require('../network.js');
+var assert = require('assert');
 
 
 function LinearNetwork(nIn, nOut) {
 	Network.call(this);
 	this.name = 'linear';
+	this.inSize = nIn;
+	this.outSize = nOut;
 	this.weights = ad.lift(new Tensor([nOut, nIn]).fillRandom());
 	this.biases = ad.lift(new Tensor([nOut]).fillRandom());
 	this.parameters = [this.weights, this.biases];
@@ -25,6 +28,10 @@ var mmultadd = ad.newFunction(Tensor, {
 		b = ad.project(b);
 		var w = x.length;
 		var h = b.length;
+		if (w !== A.dims[1]) {
+			assert(false, 'Linear network: input size is ' + w +
+				' but should be ' + A.dims[1]);
+		}
 		var y = b.clone();
 		for (var r = 0; r < h; r++) {
 			var off = r*w;

@@ -1,6 +1,7 @@
 var Tensor = require('../../tensor.js');
 var ad = require('../../ad');
 var Network = require('../network.js');
+var assert = require('assert');
 
 
 // Adapted from:
@@ -54,6 +55,10 @@ var convolve = ad.newFunction(Tensor, {
 		var oD = filters.dims[0];
 		var oH = Math.floor((iH + 2*padY - fH) / strideY + 1);
 		var oW = Math.floor((iW + 2*padX - fW) / strideX + 1);
+		if (iD !== filters.dims[1]) {
+			assert(false, 'Convolutional network: input depth is ' + iD +
+				' but should be ' + filters.dims[1]); 
+		}
 
 		var outImg = new Tensor([oD, oH, oW]).fill(0);
 
