@@ -14,9 +14,10 @@ for (var prop in composition) {
 
 // Networks
 var lifted = require('./networks/lifted.js');
-var fullyConnected = require('./networks/fullyConnected.js');
+var linear = require('./networks/linear.js');
+var convolution = require('./networks/convolution.js');
 var modules = [
-	lifted, fullyConnected
+	lifted, linear, convolution
 ];
 for (var i = 0; i < modules.length; i++) {
 	var m = modules[i];

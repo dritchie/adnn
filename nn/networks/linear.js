@@ -3,17 +3,17 @@ var ad = require('../../ad');
 var Network = require('../network.js');
 
 
-function FullyConnectedNetwork(nIn, nOut) {
+function LinearNetwork(nIn, nOut) {
 	Network.call(this);
-	this.name = 'fullyConnected';
+	this.name = 'linear';
 	this.weights = ad.lift(new Tensor([nOut, nIn]).fillRandom());
 	this.biases = ad.lift(new Tensor([nOut]).fillRandom());
 	this.parameters = [this.weights, this.biases];
 	this.isTraining = false;
 }
-FullyConnectedNetwork.prototype = Object.create(Network.prototype);
+LinearNetwork.prototype = Object.create(Network.prototype);
 
-FullyConnectedNetwork.prototype.setTraining = function(flag) {
+LinearNetwork.prototype.setTraining = function(flag) {
 	this.isTraining = flag;
 };
 
@@ -34,9 +34,6 @@ var mmultadd = ad.newFunction(Tensor, {
 		}
 		return y;
 	},
-	// Code adapted from:
-	// https://github.com/karpathy/convnetjs/blob/master/src/
-	//   convnet_layers_dotproducts.js
 	backward: function(A, x, b) {
 		var Ap = ad.project(A);
 		var xp = ad.project(x);
@@ -66,18 +63,18 @@ var mmultadd = ad.newFunction(Tensor, {
 });
 
 
-FullyConnectedNetwork.prototype.eval = function(x) {
+LinearNetwork.prototype.eval = function(x) {
 	var A = this.isTraining ? this.weights : ad.project(this.weights);
 	var b = this.isTraining ? this.biases : ad.project(this.biases);
 	return mmultadd(A, x, b);
 };
 
 
-function fullyConnected(nIn, nOut) {
-	return new FullyConnectedNetwork(nIn, nOut);
+function linear(nIn, nOut) {
+	return new LinearNetwork(nIn, nOut);
 }
 
 module.exports = {
-	fullyConnected: fullyConnected
+	linear: linear
 };
 
