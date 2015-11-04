@@ -60,7 +60,7 @@ var convolve = ad.newFunction(Tensor, {
 				' but should be ' + filters.dims[1]); 
 		}
 
-		var outImg = new Tensor([oD, oH, oW]).fill(0);
+		var outImg = new Tensor([oD, oH, oW]);
 
 		for (var d = 0; d < oD; d++) {
 			var x = -padX;
@@ -105,8 +105,8 @@ var convolve = ad.newFunction(Tensor, {
 		var iH = inImgP.dims[1];
 		var iW = inImgP.dims[2];
 		var oD = filtersP.dims[0];
-		var oH = Math.floor((iH + 2*padY - fH) / strideY + 1);
-		var oW = Math.floor((iW + 2*padX - fW) / strideX + 1);
+		var oH = this.x.dims[1];
+		var oW = this.x.dims[2];
 
 		for (var d = 0; d < oD; d++) {
 			var x = -padX;
