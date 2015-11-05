@@ -42,21 +42,6 @@ Tensor.prototype.clone = function() {
 	return copy;
 };
 
-// Return true if all components nonzero
-Tensor.prototype.all = function() {
-	var r = true;
-	var n = this.length;
-	while (n--) r = r && (this.data[n] !== 0);
-	return r;
-};
-// Return true if any component nonzero
-Tensor.prototype.any = function() {
-	var r = false;
-	var n = this.length;
-	while (n--) r = r || (this.data[n] !== 0);
-	return r;
-};
-
 
 // These are slow; don't use them inside any hot loops (i.e. they're good for
 //    debgugging/translating data to/from other formats, and not much else)
@@ -169,6 +154,18 @@ function addBinaryMethod(name, fncode) {
 	};
 }
 
+function addReduction(name, initcode, fncode) {
+	Tensor.prototype[name+'reduce'] = new Function([
+		'var accum = ' + initcode + ';',
+		'var n = this.data.length;',
+		'while (n--) {',
+		'	var x = this.data[n];',
+		'	accum = ' + fncode + ';',
+		'}',
+		'return accum;'
+	].join('\n'));
+}
+
 
 addUnaryMethod('neg', '-x');
 addUnaryMethod('round', 'Math.round(x)');
@@ -209,6 +206,11 @@ addBinaryMethod('ge', 'a >= b');
 addBinaryMethod('lt', 'a < b');
 addBinaryMethod('le', 'a <= b');
 
+addReduction('sum', '0', 'accum + x');
+addReduction('min', 'Infinity', 'Math.min(accum, x)');
+addReduction('max', '-Infinity', 'Math.max(accum, x)');
+addReduction('all', 'true', 'accum && (x !== 0)');
+addReduction('any', 'false', 'accum || (x !== 0)');
 
 
 module.exports = Tensor;
