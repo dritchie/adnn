@@ -36,10 +36,14 @@ Tensor.prototype.fillRandom = function() {
 	return this;
 }
 
+Tensor.prototype.copy = function(other) {
+	this.data.set(other.data);
+	return this;
+};
+
 Tensor.prototype.clone = function() {
 	var copy = new Tensor(this.dims);
-	copy.data.set(this.data);
-	return copy;
+	return copy.copy(this);
 };
 
 
