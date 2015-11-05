@@ -119,7 +119,8 @@ fns.scalar.le = func.liftBinaryFunction(
 
 
 // Scalar/tensor split/merge operations ---------------------------------------
-
+// (TODO: Variants that can output higher-rank tensors?)
+// (TODO: A lot of this might get moved to nn at some point...)
 
 // Select one entry out of a tensor (by linear indexing)
 var tensorEntry = func.newFunction(Scalar, {
