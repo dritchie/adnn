@@ -2,11 +2,10 @@ var Tensor = require('../tensor.js');
 var utils = require('../utils.js');
 
 // Base class for all compute graph nodes
-function Node() {
-	this.outDegree = 0;
-}
+function Node() {}
 Node.prototype.computeOutDegree = function() {};
-Node.prototype.backpropImpl = function() {};
+Node.prototype.backpropRec = function() {};
+Node.prototype.zeroDerivativesRec = function() {};
 
 
 // Base class for all nodes with scalar output
@@ -19,7 +18,11 @@ ScalarNode.prototype = Object.create(Node.prototype);
 ScalarNode.prototype.backprop = function() {
 	this.dx = 1;
 	this.computeOutDegree();
-	this.backpropImpl();
+	this.backpropRec();
+};
+ScalarNode.prototype.zeroDerivatives = function() {
+	this.dx = 0;
+	this.zeroDerivativesRec();
 };
 
 
@@ -30,10 +33,14 @@ function TensorNode(x) {
 	this.dx = new Tensor(x.dims).zero();
 }
 TensorNode.prototype = Object.create(Node.prototype);
-Tensor.prototype.backprop = function() {
+TensorNode.prototype.backprop = function() {
 	this.dx.fill(1);
 	this.computeOutDegree();
-	this.backpropImpl();
+	this.backpropRec();
+};
+TensorNode.prototype.zeroDerivatives = function() {
+	this.dx.zero();
+	this.zeroDerivativesRec();
 };
 
 
@@ -41,6 +48,7 @@ var UnaryNode = utils.memoize(function(BaseNode) {
 	// Base class for all nodes representing unary functions
 	function UnaryNode(x, parent) {
 		BaseNode.call(this, x);
+		this.outDegree = 0;
 		this.parent = parent;
 	}
 	UnaryNode.prototype = Object.create(BaseNode.prototype);
@@ -50,12 +58,16 @@ var UnaryNode = utils.memoize(function(BaseNode) {
 		this.parent.computeOutDegree();
 	};
 
-	UnaryNode.prototype.backpropImpl = function() {
+	UnaryNode.prototype.backpropRec = function() {
 		if (--this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
-			this.parent.backpropImpl();
+			this.parent.backpropRec();
 		}
-	}
+	};
+
+	UnaryNode.prototype.zeroDerivativesRec = function() {
+		this.parent.zeroDerivatives();
+	};
 
 	return UnaryNode;
 });
@@ -65,6 +77,7 @@ var BinaryNode = utils.memoize(function(BaseNode) {
 	// Base class for all nodes representing binary functions
 	function BinaryNode(x, parent1, parent2) {
 		BaseNode.call(this, x);
+		this.outDegree = 0;
 		this.parent1 = parent1;
 		this.parent2 = parent2;
 	}
@@ -76,13 +89,18 @@ var BinaryNode = utils.memoize(function(BaseNode) {
 		this.parent2.computeOutDegree();
 	};
 
-	BinaryNode.prototype.backpropImpl = function() {
+	BinaryNode.prototype.backpropRec = function() {
 		if (--this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
-			this.parent1.backpropImpl();
-			this.parent2.backpropImpl();
+			this.parent1.backpropRec();
+			this.parent2.backpropRec();
 		}
-	}
+	};
+
+	BinaryNode.prototype.zeroDerivativesRec = function() {
+		this.parent1.zeroDerivatives();
+		this.parent2.zeroDerivatives();
+	};
 
 	return BinaryNode;
 });
@@ -92,6 +110,7 @@ var NaryNode = utils.memoize(function(BaseNode) {
 	// Base class for all nodes representing n-ary functions
 	function NaryNode(x, parents) {
 		BaseNode.call(this, x);
+		this.outDegree = 0;
 		this.parents = parents;
 	}
 	NaryNode.prototype = Object.create(BaseNode.prototype);
@@ -102,13 +121,18 @@ var NaryNode = utils.memoize(function(BaseNode) {
 		while (n--) this.parents[n].computeOutDegree();
 	};
 
-	NaryNode.prototype.backpropImpl = function() {
+	NaryNode.prototype.backpropRec = function() {
 		if (--this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
 			var n = this.parents.length;
-			while (n--) this.parents[n].backpropImpl();
+			while (n--) this.parents[n].backpropRec();
 		}
-	}
+	};
+
+	NaryNode.prototype.zeroDerivativesRec = function() {
+		var n = this.parents.length;
+		while (n--) this.parents[n].zeroDerivatives();
+	};
 
 	return NaryNode;
 });
