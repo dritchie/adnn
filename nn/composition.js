@@ -7,19 +7,31 @@ var lift = require('./lift.js');
 //    neural net. This is essentially function abstraction.
 
 function compound(fn, subnets, optname) {
-	var cnet = new Network();
-	cnet.networks = subnets;
+	var net = new Network();
+	net.eval = fn;
+	net.name = optname || 'compoundNetwork';
+	net.networks = subnets;
 	for (var i = 0; i < subnets.length; i++) {
-		cnet.parameters = cnet.parameters.concat(subnets[i].parameters);
+		net.parameters = net.parameters.concat(subnets[i].parameters);
 	}
-	cnet.eval = fn;
-	cnet.setTraining = function(flag) {
-		for (var i = 0; i < this.ops.length; i++) {
-			this.networks[i].setTraining(boolflag);
+	net.setTraining = function(flag) {
+		for (var i = 0; i < this.networks.length; i++) {
+			this.networks[i].setTraining(flag);
 		}
 	};
-	cnet.name = optname || 'compoundNetwork';
-	return cnet;
+	if (optname) {
+		net.serializeJSON = function() {
+			return { type: optname };
+		};
+		Network.deserializers[optname] = function(json) {
+			return net;
+		};
+	} else {
+		net.serializeJSON = function() {
+			assert(false, 'Cannot serialize unnamed compound network.');
+		}
+	}
+	return net;
 }
 
 
@@ -36,13 +48,14 @@ function compound(fn, subnets, optname) {
 //    executes the computation in static single assignment (SSA) form.
 
 
-function ASTNode(parents) {
+function ASTNode(type, parents) {
+	this.type = type;
 	this.parents = parents || [];
 }
 
 
 // When we have a multi-output network (i.e. Array-of-tensors of output)
-//    and we want a separate AST node for each output
+//    and we want a separate AST node for each outputs
 ASTNode.prototype.split = function(n) {
 	var nodes = new Array(n);
 	for (var i = 0; i < n; i++) {
@@ -55,31 +68,22 @@ ASTNode.prototype.split = function(n) {
 }
 
 
-// Adds no new functionality, but convenient to have this be a separate type.
-function InputASTNode() {
-	ASTNode.call(this);
-}
-InputASTNode.prototype = Object.create(ASTNode.prototype);
-
 function input() {
-	return new InputASTNode();
+	return new ASTNode('input');
 }
 
-
-function ComposeASTNode(network, parents) {
-	this.network = network;
-	ASTNode.call(this, parents);
-}
-ComposeASTNode.prototype = Object.create(ASTNode.prototype);
 
 Network.prototype.compose = function() {
-	return new ComposeASTNode(this, Array.prototype.slice.call(arguments));
+	var node = new ASTNode('compose', Array.prototype.slice.call(arguments));
+	node.network = this;
+	return node;
 };
 
 
+// Actually compiling the AST
 function compile(inputs, outputs, optname) {
 	for (var i = 0; i < inputs.length; i++) {
-		assert(inputs[i] instanceof InputASTNode,
+		assert(inputs[i].type === 'input',
 			'Inputs to composite neural network must be nn.ast.input()');
 	}
 
@@ -89,8 +93,7 @@ function compile(inputs, outputs, optname) {
 		var fringe = [outputs[i]];
 		while (fringe.length > 0) {
 			var node = fringe.pop();
-			if (!(node instanceof InputASTNode) &&
-				visited.indexOf(node) === -1) {
+			if (!(node.type === 'input') && visited.indexOf(node) === -1) {
 				visited.push(node);
 				for (var i = 0; i < node.parents.length; i++) {
 					fringe.push(node.parents[i]);
@@ -121,12 +124,55 @@ function compile(inputs, outputs, optname) {
 	}
 	body += 'return ' + (outs.length > 1 ? '['+outs+']' : outs[0]) + ';';
 
-	// Create compound network
+	// Create compound network from compiled function
 	var fn = new Function(body);
 	var networks = visited.map(function(n) { return n.network; });
-	optname = optname || 'compiledNetwork';
-	return compound(fn, networks, optname);
+	var net = compound(fn, networks);
+	net.name = optname || 'compiledNetwork';
+	net.nodes = inputs.concat(visited);
+	net.inputs = inputs.map(function(n) { return net.nodes.indexOf(n); });
+	net.outputs = outputs.map(function(n) { return net.nodes.indexOf(n); });
+
+	net.serializeJSON = function() {
+		var jnodes = this.nodes.map(function(n) {
+			var jn = {
+				type: n.type,
+				parents: n.parents.map(function(p) {
+					return this.nodes.indexOf(p);
+				}.bind(this))
+			};
+			if (jn.type === 'compose') {
+				jn.network = n.network.serializeJSON();
+			}
+			return jn;
+		}.bind(this));
+		return {
+			type: 'compiled',
+			name: this.name,
+			nodes: jnodes,
+			inputs: this.inputs,
+			outputs: this.outputs
+		};
+	};
+
+	return net;
 }
+Network.deserializers.compiled = function(json) {
+	var nodes = [];
+	for (var i = 0; i < json.nodes.length; i++) {
+		var jn = json.nodes[i];
+		var n = new ASTNode(jn.type, jn.parents.map(function(p) {
+			return nodes[json.nodes.indexOf(p)];
+		}));
+		if (jn.type === 'compose') {
+			n.network = Network.deserializeJSON(jn.network);
+		}
+		nodes.push(n);
+	}
+	var inputs = json.inputs.map(function(i) { return nodes[i]; });
+	var outputs = json.outputs.map(function(i) { return nodes[i]; });
+	return compile(inputs, outputs, json.name);
+};
 
 
 // ----------------------------------------------------------------------------
@@ -138,9 +184,26 @@ function sequence(networks, optname) {
 	for (var i = 0; i < networks.length; i++) {
 		currNode = networks[i].compose(currNode);
 	}
-	optname = optname || 'sequenceNetwork';
-	return compile([inputNode], [currNode], optname);
+	var net = compile([inputNode], [currNode]);
+	net.name = optname || 'sequenceNetwork';
+	// Could use compile's serialization, but there's a more concise option
+	net.serializeJSON = function() {
+		return {
+			type: 'sequence',
+			name: this.name,
+			networks: this.networks.map(function(n) {
+				return n.serializeJSON();
+			})
+		};
+	}
+	return net;
 }
+Network.deserializers.sequence = function(json) {
+	var networks = json.networks.map(function(jn) {
+		return Network.deserializeJSON(jn);
+	});
+	return sequence(networks, json.name);
+};
 
 
 module.exports = {

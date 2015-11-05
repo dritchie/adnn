@@ -96,6 +96,15 @@ Tensor.prototype.toString = function() {
 };
 
 
+Tensor.prototype.toFlatArray = function() {
+	return Array.prototype.slice.call(this.data);
+}
+Tensor.prototype.fromFlatArray = function(arr) {
+	this.data.set(arr);
+	return this;
+}
+
+
 
 function addUnaryMethod(name, fncode) {
 	var fneq = new Function([

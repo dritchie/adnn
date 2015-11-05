@@ -18,4 +18,16 @@ Network.prototype.eval = function() {
 Network.prototype.setTraining = function(boolflag) {};
 
 
+// Networks can be serialized and deserialized via JSON
+Network.prototype.serializeJSON = function() {
+	assert(false, "Neural networks must implement the 'serializeJSON' method.");
+}
+Network.deserializers = {};
+Network.deserializeJSON = function(json) {
+	assert(json.type !== undefined, "Network JSON blob has no 'type' field.");
+	assert(Network.deserializers.hasOwnProperty(json.type),
+		"Network JSON blob has unrecognized type '" + json.type + "'");
+	return Network.deserializers[json.type](json);
+}
+
 module.exports = Network;

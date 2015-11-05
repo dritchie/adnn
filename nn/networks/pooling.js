@@ -19,6 +19,22 @@ function MaxPoolNetwork(fW, fH, sX, sY, pX, pY) {
 }
 MaxPoolNetwork.prototype = Object.create(Network.prototype);
 
+MaxPoolNetwork.prototype.serializeJSON = function() {
+	return {
+		type: 'maxpool',
+		filterWidth: this.filterWidth,
+		filterHeight: this.filterHeight,
+		strideX: this.strideX,
+		strideY: this.strideY,
+		padX: this.padX,
+		padY: this.padY
+	};
+}
+Network.deserializers.maxpool = function(json) {
+	return new MaxPoolNetwork(json.filterWidth, json.filterHeight,
+		json.strideX, json.strideY, json.padX, json.padY);
+};
+
 
 // Store the indices of where the maxes came from, for more efficient backprop
 var maxIndices;

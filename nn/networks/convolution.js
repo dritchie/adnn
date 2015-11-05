@@ -40,6 +40,30 @@ ConvolutionNetwork.prototype.setTraining = function(flag) {
 	this.isTraining = flag;
 };
 
+ConvolutionNetwork.prototype.serializeJSON = function() {
+	return {
+		type: 'convolution',
+		inDepth: this.inDepth,
+		outDepth: this.outDepth,
+		filterWidth: this.filterWidth,
+		filterHeight: this.filterHeight,
+		strideX: this.strideX,
+		strideY: this.strideY,
+		padX: this.padX,
+		padY: this.padY,
+		filters: ad.project(this.filters).toFlatArray(),
+		biases: ad.project(this.biases).toFlatArray()
+	};
+}
+Network.deserializers.convolution = function(json) {
+	var net = new ConvolutionNetwork(json.inDepth, json.outDepth,
+		json.filterWidth, json.filterHeight, json.strideX, json.strideY,
+		json.padX, json.padY);
+	ad.project(net.filters).fromFlatArray(json.filters);
+	ad.project(net.biases).fromFlatArray(json.biases);
+	return net;
+};
+
 
 var convolve = ad.newFunction(Tensor, {
 	forward: function(inImg, filters, biases, strideX, strideY, padX, padY) {

@@ -20,6 +20,22 @@ LinearNetwork.prototype.setTraining = function(flag) {
 	this.isTraining = flag;
 };
 
+LinearNetwork.prototype.serializeJSON = function() {
+	return {
+		type: 'linear',
+		inSize: this.inSize,
+		outSize: this.outSize,
+		weights: ad.project(this.weights).toFlatArray(),
+		biases: ad.project(this.biases).toFlatArray()
+	};
+}
+Network.deserializers.linear = function(json) {
+	var net = new LinearNetwork(json.inSize, json.outSize);
+	ad.project(net.weights).fromFlatArray(json.weights);
+	ad.project(net.biases).fromFlatArray(json.biases);
+	return net;
+};
+
 
 var mmultadd = ad.newFunction(Tensor, {
 	forward: function(A, x, b) {
