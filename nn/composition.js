@@ -7,31 +7,41 @@ var lift = require('./lift.js');
 //    neural net. This is essentially function abstraction.
 
 function compound(fn, subnets, optname) {
-	var net = new Network();
-	net.eval = fn;
-	net.name = optname || 'compoundNetwork';
-	net.networks = subnets;
-	for (var i = 0; i < subnets.length; i++) {
-		net.parameters = net.parameters.concat(subnets[i].parameters);
+	function CompoundNetwork(subnets) {
+		Network.call(this);
+		this.name = optname || 'compoundNetwork';
+		this.networks = subnets;
+		for (var i = 0; i < subnets.length; i++) {
+			this.parameters = this.parameters.concat(subnets[i].parameters);
+		}
 	}
-	net.setTraining = function(flag) {
+	CompoundNetwork.prototype = Object.create(Network.prototype);
+	CompoundNetwork.prototype.eval = fn;
+	CompoundNetwork.prototype.setTraining = function(flag) {
 		for (var i = 0; i < this.networks.length; i++) {
 			this.networks[i].setTraining(flag);
 		}
 	};
 	if (optname) {
-		net.serializeJSON = function() {
-			return { type: optname };
+		CompoundNetwork.prototype.serializeJSON = function() {
+			return {
+				type: optname,
+				networks: this.networks.map(function(n) {
+					return n.serializeJSON();
+				})
+			};
 		};
 		Network.deserializers[optname] = function(json) {
-			return net;
-		};
-	} else {
-		net.serializeJSON = function() {
-			assert(false, 'Cannot serialize unnamed compound network.');
+			return new CompoundNetwork(json.networks.map(function(jn) {
+				return Network.deserializeJSON(jn);
+			}));
 		}
+	} else {
+		CompoundNetwork.prototype.serializeJSON = function() {
+			assert(false, 'Cannot serialize unnamed compound network.');
+		};
 	}
-	return net;
+	return new CompoundNetwork(subnets);
 }
 
 
