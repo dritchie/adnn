@@ -42,6 +42,21 @@ Tensor.prototype.clone = function() {
 	return copy;
 };
 
+// Return true if all components nonzero
+Tensor.prototype.all = function() {
+	var r = true;
+	var n = this.length;
+	while (n--) r = r && (this.data[n] !== 0);
+	return r;
+};
+// Return true if any component nonzero
+Tensor.prototype.any = function() {
+	var r = false;
+	var n = this.length;
+	while (n--) r = r || (this.data[n] !== 0);
+	return r;
+};
+
 
 // These are slow; don't use them inside any hot loops (i.e. they're good for
 //    debgugging/translating data to/from other formats, and not much else)
@@ -175,6 +190,8 @@ addUnaryMethod('tanh', 'Math.tanh(x)');
 addUnaryMethod('acosh', 'Math.acosh(x)');
 addUnaryMethod('asinh', 'Math.asinh(x)');
 addUnaryMethod('atanh', 'Math.atanh(x)');
+addUnaryMethod('isFinite', 'isFinite(x)');
+addUnaryMethod('isNaN', 'isNaN(x)');
 
 addBinaryMethod('add', 'a + b');
 addBinaryMethod('sub', 'a - b');
@@ -185,6 +202,12 @@ addBinaryMethod('min', 'Math.min(a, b)');
 addBinaryMethod('max', 'Math.max(a, b)');
 addBinaryMethod('pow', 'Math.pow(a, b)');
 addBinaryMethod('atan2', 'Math.atan2(a, b)');
+addBinaryMethod('eq', 'a === b');
+addBinaryMethod('neq', 'a !== b');
+addBinaryMethod('gt', 'a > b');
+addBinaryMethod('ge', 'a >= b');
+addBinaryMethod('lt', 'a < b');
+addBinaryMethod('le', 'a <= b');
 
 
 
