@@ -21,14 +21,14 @@ function macroTransform(code) {
 }
 
 // Macro transform a module before requiring it.
+// Must provide the full, resolved filename of the module.
 // Optionally cache the transformed module code on disk.
 // NOTE: Once cached, it won't be recompiled (unless you macroRequire the same
 //    module again with 'cacheOnDisk' set to false). So this isn't like 'make',
 //    which will detect changes and recompile for you. Thus, 'cacheOnDisk' is
 //    best used for modules which aren't going to change (or which change very
 //    infrequently).
-function macroRequire(modulename, cacheOnDisk) {
-	var filename = require.resolve(modulename);
+function macroRequire(filename, cacheOnDisk) {
 	var adfilename = filename + '.ad';
 	var m = require.cache[adfilename];
 	if (m !== undefined) {
