@@ -1,4 +1,5 @@
 var assert = require('assert');
+var utils = require('../utils.js');
 var Network = require('./network.js');
 var lift = require('./lift.js');
 
@@ -10,10 +11,12 @@ function compound(fn, subnets, optname) {
 	function CompoundNetwork(subnets) {
 		Network.call(this);
 		this.name = optname || 'compoundNetwork';
-		this.networks = subnets;
+		this.networks = subnets.slice();
 		for (var i = 0; i < subnets.length; i++) {
 			this.parameters = this.parameters.concat(subnets[i].parameters);
 		}
+		// In case this network uses any subnetworks more than once
+		this.parameters = utils.deduplicate(this.parameters);
 	}
 	CompoundNetwork.prototype = Object.create(Network.prototype);
 	CompoundNetwork.prototype.eval = fn;

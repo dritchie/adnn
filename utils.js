@@ -25,8 +25,20 @@ function gaussianSample(mu, sigma) {
 	return mu + sigma * v / u;
 }
 
+function deduplicate(list) {
+	var retlist = [];
+	for (var i = 0; i < list.length; i++) {
+		var item = list[i];
+		if (retlist.indexOf(item) === -1) {
+			retlist.push(item);
+		}
+	}
+	return retlist;
+}
+
 
 module.exports = {
 	memoize: memoize,
-	gaussianSample: gaussianSample
+	gaussianSample: gaussianSample,
+	deduplicate: deduplicate
 };
