@@ -116,13 +116,13 @@ function addUnaryMethod(name, fncode) {
 		'while (n--) {',
 		'	var x = this.data[n];',
 		'	this.data[n] = ' + fncode + ';',
-		'}'
+		'}',
+		'return this;'
 	].join('\n'));
 	Tensor.prototype[name + 'eq'] = fneq;
 	Tensor.prototype[name] = function() {
 		var nt = this.clone();
-		fneq.call(nt);
-		return nt;
+		return fneq.call(nt);
 	};
 }
 
@@ -133,7 +133,8 @@ function addBinaryMethod(name, fncode) {
 		'while (n--) {',
 		'	var a = this.data[n];',
 		'	this.data[n] = ' + fncode + ';',
-		'}'
+		'}',
+		'return this;'
 	].join('\n'));
 	var fneqT = new Function('t', [
 		'var n = this.data.length;',
@@ -141,20 +142,20 @@ function addBinaryMethod(name, fncode) {
 		'	var a = this.data[n];',
 		'	var b = t.data[n];',
 		'	this.data[n] = ' + fncode + ';',
-		'}'
+		'}',
+		'return this;'
 	].join('\n'));
 
 	var fneq = function(x) {
 		if (x.constructor === Tensor)
-			fneqT.call(this, x);
+			return fneqT.call(this, x);
 		else
-			fneqS.call(this, x);
+			return fneqS.call(this, x);
 	}
 	Tensor.prototype[name + 'eq'] = fneq;
 	Tensor.prototype[name] = function(x) {
 		var nt = this.clone();
-		fneq.call(nt, x);
-		return nt;
+		return fneq.call(nt, x);
 	};
 }
 
