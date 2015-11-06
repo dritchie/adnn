@@ -11,7 +11,7 @@ var ad = {
 	lift: function(x) { return graph.isNode(x) ? x : doLift(x); },
 	isLifted: graph.isNode,
 	project: function(x) { return graph.isNode(x) ? x.x : x; },
-	derivative: function(x) { x.x; }
+	derivative: function(x) { x.dx; }
 };
 
 var func = require('./func.js');

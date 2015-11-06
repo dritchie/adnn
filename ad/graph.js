@@ -30,7 +30,7 @@ ScalarNode.prototype.zeroDerivatives = function() {
 function TensorNode(x) {
 	Node.call(this);
 	this.x = x;
-	this.dx = new Tensor(x.dims).zero();
+	this.dx = new Tensor(x.dims);
 }
 TensorNode.prototype = Object.create(Node.prototype);
 TensorNode.prototype.backprop = function() {
