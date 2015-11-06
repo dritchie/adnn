@@ -25,7 +25,7 @@ function newUnaryFunction(OutputType, opts) {
 		UnaryNode.call(this, x, parent);
 	}
 	FnNode.prototype = Object.create(UnaryNode.prototype);
-	FnNode.backward = function() {
+	FnNode.prototype.backward = function() {
 		backward.call(this, this.parent);
 	};
 
