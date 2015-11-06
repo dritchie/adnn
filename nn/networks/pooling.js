@@ -85,24 +85,24 @@ var maxpoolingImpl = ad.newFunction(Tensor, {
 		return outImg;
 	},
 	backward: function(inImg, fW, fH, sX, sY, pX, pY) {
-		if (ad.isLifted(inImg)) {
-			var D = inImg.x.dims[0];
-			var iH = inImg.x.dims[1];
-			var iW = inImg.x.dims[2];
-			var oH = this.x.dims[1];
-			var oW = this.x.dims[2];
+		// No need for an 'isLifted' check: there's only one possible lifted
+		//    argument (inImg), so if we are backprop'ing, it must be lifted.
+		var D = inImg.x.dims[0];
+		var iH = inImg.x.dims[1];
+		var iW = inImg.x.dims[2];
+		var oH = this.x.dims[1];
+		var oW = this.x.dims[2];
 
-			for (var d = 0; d < D; d++) {
-				var x = -padX;
-				var y = -padY;
-				for (var ay = 0; ay < oH; y += sY, ay++) {
-					x = -padX;
-					for (var ax = 0; ax < oW; x += sX, ax++) {
-						// Accumulate into correct derivative using maxIndices
-						var outidx = ax+oW*(ay+oH*d);
-						var inidx = this.maxIndices[outidx];
-						inImg.dx.data[inidx] += this.dx.data[outidx];
-					}
+		for (var d = 0; d < D; d++) {
+			var x = -padX;
+			var y = -padY;
+			for (var ay = 0; ay < oH; y += sY, ay++) {
+				x = -padX;
+				for (var ax = 0; ax < oW; x += sX, ax++) {
+					// Accumulate into correct derivative using maxIndices
+					var outidx = ax+oW*(ay+oH*d);
+					var inidx = this.maxIndices[outidx];
+					inImg.dx.data[inidx] += this.dx.data[outidx];
 				}
 			}
 		}
