@@ -191,6 +191,7 @@ addUnaryMethod('tanh', 'Math.tanh(x)');
 addUnaryMethod('acosh', 'Math.acosh(x)');
 addUnaryMethod('asinh', 'Math.asinh(x)');
 addUnaryMethod('atanh', 'Math.atanh(x)');
+addUnaryMethod('sigmoid', '1 / (1 + Math.exp(-x))');
 addUnaryMethod('isFinite', 'isFinite(x)');
 addUnaryMethod('isNaN', 'isNaN(x)');
 

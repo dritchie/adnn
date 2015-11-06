@@ -6,6 +6,9 @@ var derivs = require('./derivatives.js');
 
 var Scalar = Number;
 
+// Additional scalar functions 'missing' from Math
+Math.sigmoid = function(x) { return 1 / (1 + Math.exp(-x)); };
+
 
 // Scalar & tensor operators and math functions -------------------------------
 
@@ -45,7 +48,7 @@ function makeFunctions(OutputType) {
 	var unaryFns = [
 		'floor', 'ceil', 'round', 'sqrt', 'exp', 'log', 'abs', 'sin', 'cos',
 		'tan', 'asin', 'acos', 'atan', 'sinh', 'cosh', 'tanh', 'asinh',
-		'acosh', 'atanh'
+		'acosh', 'atanh', 'sigmoid'
 	];
 	var binaryFns = [
 		'pow', 'min', 'max', 'atan2'

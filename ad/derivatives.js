@@ -93,6 +93,7 @@ d.tanh = makeUnaryDerivatives('1 - out*out');
 d.asinh = makeUnaryDerivatives('1 / Math.sqrt(x*x + 1)');
 d.acosh = makeUnaryDerivatives('1 / Math.sqrt(x*x - 1)');
 d.atanh = makeUnaryDerivatives('1 / (1 - x*x)');
+d.sigmoid = makeUnaryDerivatives('out * (1 - out)');
 
 // Functions with no derivative
 d.floor = makeUnaryDerivatives();
