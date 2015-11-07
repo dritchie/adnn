@@ -18,8 +18,9 @@ var linear = require('./networks/linear.js');
 var convolution = require('./networks/convolution.js');
 var pooling = require('./networks/pooling.js');
 var transfer = require('./networks/transfer.js');
+var misc = require('./networks/misc.js');
 var modules = [
-	lifted, linear, convolution, pooling, transfer
+	lifted, linear, convolution, pooling, transfer, misc
 ];
 for (var i = 0; i < modules.length; i++) {
 	var m = modules[i];
