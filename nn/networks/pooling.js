@@ -52,10 +52,10 @@ var maxpoolingImpl = ad.newFunction(Tensor, {
 		maxIndices = new Int32Array(D*oH*oW);
 
 		for (var d = 0; d < D; d++) {
-			var x = -padX;
-			var y = -padY;
+			var x = -pX;
+			var y = -pY;
 			for (var ay = 0; ay < oH; y += sY, ay++) {
-				x = -padX;
+				x = -pX;
 				for (var ax = 0; ax < oW; x += sX, ax++) {
 					// Find max within filter window
 					var maxval = -Infinity;
@@ -65,7 +65,7 @@ var maxpoolingImpl = ad.newFunction(Tensor, {
 						for (var fx = 0; fx < fW; fx++) {
 							var ix = x + fx;
 							if (iy>=0 && iy<iH && ix>=0 && ix<iW) {
-								var idx = ix+iW*(iy+iH*fd);
+								var idx = ix+iW*(iy+iH*d);
 								var v = inImg.data[idx];
 								if (v > maxval) {
 									maxval = v;
@@ -129,8 +129,8 @@ MaxPoolNetwork.prototype.eval = function(img) {
 function maxpool(opts) {
 	var fW = opts.filterWidth || opts.filterSize;
 	var fH = opts.filterHeight || opts.filterSize;
-	var sX = opts.strideX || opts.stride || 1;
-	var sY = opts.strideY || opts.stride || 1;
+	var sX = opts.strideX || opts.stride || fW;
+	var sY = opts.strideY || opts.stride || fH;
 	var pX = opts.padX || opts.pad || 0;
 	var pY = opts.padY || opts.pad || 0;
 	return new MaxPoolNetwork(fW, fH, sX, sY, pX, pY);
