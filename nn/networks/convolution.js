@@ -190,8 +190,16 @@ function convolution(opts) {
 	var fH = opts.filterHeight || opts.filterSize;
 	var sX = opts.strideX || opts.stride || 1;
 	var sY = opts.strideY || opts.stride || 1;
-	var pX = opts.padX || opts.pad || 0;
-	var pY = opts.padY || opts.pad || 0;
+	var pX = opts.padX || opts.pad || 'same';
+	var pY = opts.padY || opts.pad || 'same';
+	// Can specify that output should be padded to be the same size as the input
+	//    (assuming a stride of 1)
+	if (pX === 'same') {
+		pX = Math.floor((fW - 1)/2);
+	}
+	if (pY === 'same') {
+		pY = Math.floor((fH - 1)/2);
+	}
 	return new ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY);
 };
 
