@@ -111,11 +111,11 @@ fns.scalar.lt = func.liftBinaryFunction(
 	function(x, y) { return x < y; }
 );
 
-fns.scalar.ge = func.liftBinaryFunction(
+fns.scalar.geq = func.liftBinaryFunction(
 	function(x, y) { return x >= y; }
 );
 
-fns.scalar.le = func.liftBinaryFunction(
+fns.scalar.leq = func.liftBinaryFunction(
 	function(x, y) { return x <= y; }
 );
 
