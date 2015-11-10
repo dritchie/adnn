@@ -94,10 +94,10 @@ var maxpoolingImpl = ad.newFunction(Tensor, {
 		var oW = this.x.dims[2];
 
 		for (var d = 0; d < D; d++) {
-			var x = -padX;
-			var y = -padY;
+			var x = -pX;
+			var y = -pY;
 			for (var ay = 0; ay < oH; y += sY, ay++) {
-				x = -padX;
+				x = -pX;
 				for (var ax = 0; ax < oW; x += sX, ax++) {
 					// Accumulate into correct derivative using maxIndices
 					var outidx = ax+oW*(ay+oH*d);

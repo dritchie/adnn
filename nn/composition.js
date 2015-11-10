@@ -69,6 +69,7 @@ function ASTNode(type, parents) {
 
 // When we have a multi-output network (i.e. Array-of-tensors of output)
 //    and we want a separate AST node for each outputs
+// NOTE: Currently, we can't serialize these.
 ASTNode.prototype.split = function(n) {
 	var nodes = new Array(n);
 	for (var i = 0; i < n; i++) {

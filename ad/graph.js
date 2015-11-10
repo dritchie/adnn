@@ -55,11 +55,14 @@ var UnaryNode = utils.memoize(function(BaseNode) {
 
 	UnaryNode.prototype.computeOutDegree = function() {
 		this.outDegree++;
-		this.parent.computeOutDegree();
+		if (this.outDegree === 1) {
+			this.parent.computeOutDegree();
+		}
 	};
 
 	UnaryNode.prototype.backpropRec = function() {
-		if (--this.outDegree === 0) {
+		this.outDegree--;
+		if (this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
 			this.parent.backpropRec();
 		}
@@ -85,12 +88,15 @@ var BinaryNode = utils.memoize(function(BaseNode) {
 
 	BinaryNode.prototype.computeOutDegree = function() {
 		this.outDegree++;
-		this.parent1.computeOutDegree();
-		this.parent2.computeOutDegree();
+		if (this.outDegree === 1) {
+			this.parent1.computeOutDegree();
+			this.parent2.computeOutDegree();
+		}
 	};
 
 	BinaryNode.prototype.backpropRec = function() {
-		if (--this.outDegree === 0) {
+		this.outDegree--;
+		if (this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
 			this.parent1.backpropRec();
 			this.parent2.backpropRec();
@@ -117,12 +123,15 @@ var NaryNode = utils.memoize(function(BaseNode) {
 
 	NaryNode.prototype.computeOutDegree = function() {
 		this.outDegree++;
-		var n = this.parents.length;
-		while (n--) this.parents[n].computeOutDegree();
+		if (this.outDegree === 1) {
+			var n = this.parents.length;
+			while (n--) this.parents[n].computeOutDegree();
+		}
 	};
 
 	NaryNode.prototype.backpropRec = function() {
-		if (--this.outDegree === 0) {
+		this.outDegree--;
+		if (this.outDegree === 0) {
 			this.backward();	// Must be implemented by subclasses
 			var n = this.parents.length;
 			while (n--) this.parents[n].backpropRec();

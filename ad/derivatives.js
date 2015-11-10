@@ -15,11 +15,11 @@ function makeUnaryDerivatives(code) {
 				'_x.dx += (' + code + ') * this.dx;'
 			].join('\n')),
 			tensor: new Function('_x', [
-				'var n = _x.length;',
+				'var n = _x.x.length;',
 				'while (n--) {',
-				'	var x = _x.x[n];',
-				'	var out = this.x[n];',
-				'   _x.dx[n] += (' + code + ') * this.dx[n];',
+				'	var x = _x.x.data[n];',
+				'	var out = this.x.data[n];',
+				'   _x.dx.data[n] += (' + code + ') * this.dx.data[n];',
 				'}'
 			].join('\n'))
 		};
@@ -34,12 +34,12 @@ function makeBinaryDerivatives(code1, code2) {
 			scalar: [
 				new Function('_x', '_y', [
 					'var x = _x.x;',
-					'var y = _y.x;',
+					'var y = _y.x === undefined ? _y : _y.x;',
 					'var out = this.x;',
 					'_x.dx += (' + code1 + ') * this.dx;'
 				].join('\n')),
 				new Function('_x', '_y', [
-					'var x = _x.x;',
+					'var x = _x.x === undefined ? _x : _x.x;',
 					'var y = _y.x;',
 					'var out = this.x;',
 					'_y.dx += (' + code2 + ') * this.dx;'
@@ -47,21 +47,25 @@ function makeBinaryDerivatives(code1, code2) {
 			],
 			tensor: [
 				new Function('_x', '_y', [
-					'var n = _x.length;',
+					'var _xx = _x.x;',
+					'var _yx = _y.x === undefined ? _y : _y.x;',
+					'var n = _xx.length;',
 					'while (n--) {',
-					'	var x = _x.x[n];',
-					'	var y = _y.x[n];',
-					'	var out = this.x[n];',
-					'   _x.dx[n] += (' + code1 + ') * this.dx[n];',
+					'	var x = _xx.data[n];',
+					'	var y = _yx.data[n];',
+					'	var out = this.x.data[n];',
+					'   _x.dx.data[n] += (' + code1 + ') * this.dx.data[n];',
 					'}'
 				].join('\n')),
 				new Function('_x', '_y', [
-					'var n = _x.length;',
+					'var _xx = _x.x === undefined ? _x : _x.x;',
+					'var _yx = _y.x;',
+					'var n = _yx.length;',
 					'while (n--) {',
-					'	var x = _x.x[n];',
-					'	var y = _y.x[n];',
-					'	var out = this.x[n];',
-					'   _y.dx[n] += (' + code2 + ') * this.dx[n];',
+					'	var x = _xx.data[n];',
+					'	var y = _yx.data[n];',
+					'	var out = this.x.data[n];',
+					'   _y.dx.data[n] += (' + code2 + ') * this.dx.data[n];',
 					'}'
 				].join('\n'))
 			]

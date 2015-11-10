@@ -145,7 +145,7 @@ fns.tensorToScalars = function(t) {
 	var n = graph.isNode(t) ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
-		s[n] = fns.tensorEntry(t, n);
+		s[n] = tensorEntry(t, n);
 	}
 	return s;
 };
@@ -221,12 +221,16 @@ fns.tensor.concat = func.newFunction(Tensor, {
 			arguments[0] : arguments;
 		var n = args.length;
 		var size = 0;
-		while (n--) size += args[n].length;
+		while (n--) {
+			var arg = args[n];
+			var tn = graph.isNode(arg) ? arg.x : arg;
+			size += tn.length;
+		}
 		var t = new Tensor([size]);
 		n = args.length;
 		var i = 0;
-		while (n--) {
-			var arg = args[n];
+		for (var j = 0; j < n; j++) {
+			var arg = args[j];
 			var tn = graph.isNode(arg) ? arg.x : arg;
 			t.data.set(tn.data, i);
 			i += tn.length;

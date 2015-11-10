@@ -64,8 +64,8 @@ var mmultadd = ad.newFunction(Tensor, {
 		var aIs = A !== Ap;
 		var xIs = x !== xp;
 		var bIs = b !== bp;
-		var w = x.length;
-		var h = b.length;
+		var w = xp.length;
+		var h = bp.length;
 		for (var r = 0; r < h; r++) {
 			var off = r*w;
 			var thisdx = this.dx.data[r];

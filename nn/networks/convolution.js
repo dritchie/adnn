@@ -116,10 +116,10 @@ var convolve = ad.newFunction(Tensor, {
 		return outImg;
 	},
 	backward: function(inImg, filters, biases, strideX, strideY, padX, padY) {
-		var imImgP = ad.project(imImg);
+		var inImgP = ad.project(inImg);
 		var filtersP = ad.project(filters);
 		var biasesP = ad.project(biases);
-		var iIs = imImg !== imImgP;
+		var iIs = inImg !== inImgP;
 		var fIs = filters !== filtersP;
 		var bIs = biases !== biasesP;
 
