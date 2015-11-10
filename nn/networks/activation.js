@@ -22,7 +22,7 @@ var relu = lift(ad.newUnaryFunction(Tensor, {
 			x.dx.data[n] += x.x.data[n] <= 0 ? 0 : this.dx.data[n];
 		}
 	}
-}));
+}), 'relu');
 
 
 module.exports = {
