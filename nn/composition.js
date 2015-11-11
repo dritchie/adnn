@@ -175,8 +175,8 @@ Network.deserializers.compiled = function(json) {
 	var nodes = [];
 	for (var i = 0; i < json.nodes.length; i++) {
 		var jn = json.nodes[i];
-		var n = new ASTNode(jn.type, jn.parents.map(function(p) {
-			return nodes[json.nodes.indexOf(p)];
+		var n = new ASTNode(jn.type, jn.parents.map(function(pi) {
+			return nodes[pi];
 		}));
 		if (jn.type === 'compose') {
 			n.network = Network.deserializeJSON(jn.network);
