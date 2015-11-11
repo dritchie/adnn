@@ -3,7 +3,8 @@ var lift = require('./lift.js');
 
 module.exports = {
 	Network: Network,
-	lift: lift
+	lift: lift,
+	deserializeJSON: Network.deserializeJSON
 };
 
 // Include everything from composition
