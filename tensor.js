@@ -201,7 +201,6 @@ addBinaryMethod('add', 'a + b');
 addBinaryMethod('sub', 'a - b');
 addBinaryMethod('mul', 'a * b');
 addBinaryMethod('div', 'a / b');
-addBinaryMethod('invertAndMul', 'b / a');
 addBinaryMethod('mod', 'a % b');
 addBinaryMethod('min', 'Math.min(a, b)');
 addBinaryMethod('max', 'Math.max(a, b)');
