@@ -195,11 +195,13 @@ addUnaryMethod('atanh', 'Math.atanh(x)');
 addUnaryMethod('sigmoid', '1 / (1 + Math.exp(-x))');
 addUnaryMethod('isFinite', 'isFinite(x)');
 addUnaryMethod('isNaN', 'isNaN(x)');
+addUnaryMethod('invert', '1/x');
 
 addBinaryMethod('add', 'a + b');
 addBinaryMethod('sub', 'a - b');
 addBinaryMethod('mul', 'a * b');
 addBinaryMethod('div', 'a / b');
+addBinaryMethod('invertAndMul', 'b / a');
 addBinaryMethod('mod', 'a % b');
 addBinaryMethod('min', 'Math.min(a, b)');
 addBinaryMethod('max', 'Math.max(a, b)');
