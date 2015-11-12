@@ -38,7 +38,9 @@ Network.deserializers.maxpool = function(json) {
 
 // Store the indices of where the maxes came from, for more efficient backprop
 var maxIndices;
-var maxpoolingImpl = ad.newFunction(Tensor, {
+var maxpoolingImpl = ad.newFunction({
+	OutputType: Tensor,
+	name: 'maxpooling',
 	forward: function(inImg, fW, fH, sX, sY, pX, pY) {
 		inImg = ad.project(inImg);
 

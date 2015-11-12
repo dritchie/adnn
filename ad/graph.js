@@ -2,15 +2,15 @@ var Tensor = require('../tensor.js');
 var utils = require('../utils.js');
 
 // Base class for all compute graph nodes
-function Node() {}
+function Node(name) { this.name = name || 'node'; }
 Node.prototype.computeOutDegree = function() {};
 Node.prototype.backpropRec = function() {};
 Node.prototype.zeroDerivativesRec = function() {};
 
 
 // Base class for all nodes with scalar output
-function ScalarNode(x) {
-	Node.call(this);
+function ScalarNode(x, name) {
+	Node.call(this, name || 'scalarNode');
 	this.x = x;
 	this.dx = 0;
 }
@@ -27,8 +27,8 @@ ScalarNode.prototype.zeroDerivatives = function() {
 
 
 // Base class for all nodes with tensor output
-function TensorNode(x) {
-	Node.call(this);
+function TensorNode(x, name) {
+	Node.call(this, name || 'tensorNode');
 	this.x = x;
 	this.dx = new Tensor(x.dims);
 }
@@ -46,8 +46,8 @@ TensorNode.prototype.zeroDerivatives = function() {
 
 var UnaryNode = utils.memoize(function(BaseNode) {
 	// Base class for all nodes representing unary functions
-	function UnaryNode(x, parent) {
-		BaseNode.call(this, x);
+	function UnaryNode(x, parent, name) {
+		BaseNode.call(this, x, name || 'unaryNode');
 		this.outDegree = 0;
 		this.parent = parent;
 	}
@@ -78,8 +78,8 @@ var UnaryNode = utils.memoize(function(BaseNode) {
 
 var BinaryNode = utils.memoize(function(BaseNode) {
 	// Base class for all nodes representing binary functions
-	function BinaryNode(x, parent1, parent2) {
-		BaseNode.call(this, x);
+	function BinaryNode(x, parent1, parent2, name) {
+		BaseNode.call(this, x, name || 'binaryNode');
 		this.outDegree = 0;
 		this.parent1 = parent1;
 		this.parent2 = parent2;
@@ -114,8 +114,8 @@ var BinaryNode = utils.memoize(function(BaseNode) {
 
 var NaryNode = utils.memoize(function(BaseNode) {
 	// Base class for all nodes representing n-ary functions
-	function NaryNode(x, parents) {
-		BaseNode.call(this, x);
+	function NaryNode(x, parents, name) {
+		BaseNode.call(this, x, name || 'naryNode');
 		this.outDegree = 0;
 		this.parents = parents;
 	}

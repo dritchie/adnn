@@ -1,14 +1,14 @@
 var graph = require('./graph.js');
 var Tensor = require('../tensor.js');
 
-function liftScalar(x) { return new graph.ScalarNode(x); };
-function liftTensor(x) { return new graph.TensorNode(x); };
-function doLift(x) {
-	return x instanceof Tensor ? liftTensor(x) : liftScalar(x);
+function liftScalar(x, name) { return new graph.ScalarNode(x, name); };
+function liftTensor(x, name) { return new graph.TensorNode(x, name); };
+function doLift(x, name) {
+	return x instanceof Tensor ? liftTensor(x, name) : liftScalar(x, name);
 }
 
 var ad = {
-	lift: function(x) { return graph.isNode(x) ? x : doLift(x); },
+	lift: function(x, name) { return graph.isNode(x) ? x : doLift(x, name); },
 	isLifted: graph.isNode,
 	project: function(x) { return graph.isNode(x) ? x.x : x; },
 	derivative: function(x) { return x.dx; }

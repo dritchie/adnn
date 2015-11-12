@@ -4,13 +4,13 @@ var Network = require('../network.js');
 var assert = require('assert');
 
 
-function LinearNetwork(nIn, nOut) {
+function LinearNetwork(nIn, nOut, optname) {
 	Network.call(this);
-	this.name = 'linear';
+	this.name = optname || 'linear';
 	this.inSize = nIn;
 	this.outSize = nOut;
-	this.weights = ad.lift(new Tensor([nOut, nIn]).fillRandom());
-	this.biases = ad.lift(new Tensor([nOut]).fillRandom());
+	this.weights = ad.lift(new Tensor([nOut, nIn]).fillRandom(), this.name+'_weights');
+	this.biases = ad.lift(new Tensor([nOut]).fillRandom(), this.name+'_biases');
 	this.parameters = [this.weights, this.biases];
 	this.isTraining = false;
 }
@@ -23,6 +23,7 @@ LinearNetwork.prototype.setTraining = function(flag) {
 LinearNetwork.prototype.serializeJSON = function() {
 	return {
 		type: 'linear',
+		name: this.name,
 		inSize: this.inSize,
 		outSize: this.outSize,
 		weights: ad.project(this.weights).toFlatArray(),
@@ -30,14 +31,16 @@ LinearNetwork.prototype.serializeJSON = function() {
 	};
 }
 Network.deserializers.linear = function(json) {
-	var net = new LinearNetwork(json.inSize, json.outSize);
+	var net = new LinearNetwork(json.inSize, json.outSize, json.name);
 	ad.project(net.weights).fromFlatArray(json.weights);
 	ad.project(net.biases).fromFlatArray(json.biases);
 	return net;
 };
 
 
-var mmultadd = ad.newFunction(Tensor, {
+var mmultadd = ad.newFunction({
+	OutputType: Tensor,
+	name: 'mmultadd',
 	forward: function(A, x, b) {
 		A = ad.project(A);
 		x = ad.project(x);
@@ -93,8 +96,8 @@ LinearNetwork.prototype.eval = function(x) {
 };
 
 
-function linear(nIn, nOut) {
-	return new LinearNetwork(nIn, nOut);
+function linear(nIn, nOut, optname) {
+	return new LinearNetwork(nIn, nOut, optname);
 }
 
 module.exports = {

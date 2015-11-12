@@ -6,7 +6,9 @@ var lift = require('../lift.js');
 // The 'lifted' module already defines sigmoid and tanh.
 
 
-var relu = lift(ad.newUnaryFunction(Tensor, {
+var relu = lift(ad.newUnaryFunction({
+	OutputType: Tensor,
+	name: 'relu',
 	forward: function(x) {
 		x = ad.project(x);
 		var y = x.clone();

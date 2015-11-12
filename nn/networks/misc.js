@@ -4,10 +4,10 @@ var Network = require('../network.js');
 
 
 // Network that takes no inputs and returns a constant set of parameters
-function ConstantParamNetwork(dims) {
+function ConstantParamNetwork(dims, optname) {
 	Network.call(this);
-	this.name = 'constantparams';
-	this.parameters = [ad.lift(new Tensor(dims).fillRandom())];
+	this.name = optname || 'constantparams';
+	this.parameters = [ad.lift(new Tensor(dims).fillRandom(), this.name)];
 	this.isTraining = false;
 };
 ConstantParamNetwork.prototype = Object.create(Network.prototype);
@@ -20,17 +20,18 @@ ConstantParamNetwork.prototype.setTraining = function(flag) {
 ConstantParamNetwork.prototype.serializeJSON = function() {
 	return {
 		type: 'constantparams',
+		name: this.name,
 		dims: this.dims,
 		params: ad.project(this.parameters[0]).toFlatArray()
 	};
 };
 Network.deserializers.constantparams = function(json) {
-	var net = new ConstantParamNetwork(json.dims);
+	var net = new ConstantParamNetwork(json.dims, json.name);
 	ad.project(net.parameters[0]).fromFlatArray(json.params);
 	return net;
 };
-function constantparams(dims) {
-	return new ConstantParamNetwork(dims);
+function constantparams(dims, optname) {
+	return new ConstantParamNetwork(dims, optname);
 }
 
 

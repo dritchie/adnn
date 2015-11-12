@@ -21,6 +21,8 @@ function makeFunctions(OutputType) {
 		return OutputType === Tensor ? derivFns.tensor : derivFns.scalar;
 	}
 
+	var namePrefix = OutputType === Scalar ? 'scalar.' : 'tensor.';
+
 	// Lifted operators
 	var ops = {
 		add: OutputType === Tensor ?
@@ -37,7 +39,9 @@ function makeFunctions(OutputType) {
 			function(x, y) { return x / y; }
 	};
 	for (var op in ops) {
-		fns[op] = func.newBinaryFunction(OutputType, {
+		fns[op] = func.newBinaryFunction({
+			OutputType: OutputType,
+			name: namePrefix+op,
 			forward: ops[op],
 			backward1: backward(derivs[op])[0],
 			backward2: backward(derivs[op])[1]
@@ -58,7 +62,9 @@ function makeFunctions(OutputType) {
 		var forward = OutputType === Tensor ?
 			new Function('x', 'return x.' + fnname + '();') :
 			new Function('x', 'return Math.' + fnname + '(x);');
-		fns[fnname] = func.newUnaryFunction(OutputType, {
+		fns[fnname] = func.newUnaryFunction({
+			OutputType: OutputType,
+			name: namePrefix+fnname,
 			forward: forward,
 			backward: backward(derivs[fnname]),
 		});
@@ -68,8 +74,10 @@ function makeFunctions(OutputType) {
 		var forward = OutputType === Tensor ?
 			new Function('x', 'y', 'return x.' + fnname + '(y);') :
 			new Function('x', 'y', 'return Math.' + fnname + '(x, y);');
-		fns[fnname] = func.newBinaryFunction(OutputType, {
-			forward: forward,
+		fns[fnname] = func.newBinaryFunction({
+			OutputType: OutputType,
+			name: fnname,
+			forward: namePrefix+forward,
 			backward1: backward(derivs[fnname])[0],
 			backward2: backward(derivs[fnname])[1]
 		});
@@ -126,7 +134,9 @@ fns.scalar.leq = func.liftBinaryFunction(
 // (TODO: A lot of this might get moved to nn at some point...)
 
 // Select one entry out of a tensor (by linear indexing)
-var tensorEntry = func.newFunction(Scalar, {
+var tensorEntry = func.newFunction({
+	OutputType: Scalar,
+	name: 'tensorEntry',
 	forward: function(t, i) {
 		return graph.isNode(t) ? t.x.data[i] : t.data[i];
 	},
@@ -151,7 +161,9 @@ fns.tensorToScalars = function(t) {
 };
 
 // Select a subtensor from a larger tensor
-fns.tensor.range = func.newFunction(Tensor, {
+fns.tensor.range = func.newFunction({
+	OutputType: Tensor,
+	name: 'tensor.range',
 	forward: function(t, start, end) {
 		t = graph.isNode(t) ? t.x : t;
 		var subt = new Tensor([end - start]);
@@ -187,7 +199,9 @@ fns.tensor.split = function(t, lengths) {
 
 // Concatentate multiple scalars into a tensor
 // Can either take an array of scalars or a variable number of arguments
-fns.scalarsToTensor = func.newFunction(Tensor, {
+fns.scalarsToTensor = func.newFunction({
+	OutputType: Tensor,
+	name: 'scalarsToTensor',
 	forward: function() {
 		var args = arguments.length === 1 && arguments[0] instanceof Array ?
 			arguments[0] : arguments;
@@ -215,7 +229,9 @@ fns.scalarsToTensor = func.newFunction(Tensor, {
 
 // Concatentate multiple tensors into one big tensor
 // Can either take an array of tensors or a variable number of arguments
-fns.tensor.concat = func.newFunction(Tensor, {
+fns.tensor.concat = func.newFunction({
+	OutputType: Tensor,
+	name: 'tensor.concat',
 	forward: function() {
 		var args = arguments.length === 1 && arguments[0] instanceof Array ?
 			arguments[0] : arguments;
@@ -264,7 +280,9 @@ fns.tensor.concat = func.newFunction(Tensor, {
 
 // Sum an arbitrary number of scalars
 // Can either take an array of scalars or a variable number of arguments
-fns.scalar.sum = func.newFunction(Scalar, {
+fns.scalar.sum = func.newFunction({
+	OutputType: Scalar,
+	name: 'scalar.sum',
 	forward: function() {
 		var args = arguments.length === 1 && arguments[0] instanceof Array ?
 			arguments[0] : arguments;

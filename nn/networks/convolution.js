@@ -18,8 +18,9 @@ var assert = require('assert');
 //    channel. This is not how convnetjs does it, but it appears to be
 //    consistent with torch.
 
-function ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY) {
+function ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY, optname) {
 	Network.call(this);
+	this.name = optname || 'convolution';
 	this.inDepth = nIn;
 	this.outDepth = nOut;
 	this.filterWidth = fW;
@@ -28,10 +29,9 @@ function ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY) {
 	this.strideY = sY;
 	this.padX = pX;
 	this.padY = pY;
-	this.filters = ad.lift(new Tensor([nOut, nIn, fH, fW]).fillRandom());
-	this.biases = ad.lift(new Tensor([nOut]).fillRandom());
+	this.filters = ad.lift(new Tensor([nOut, nIn, fH, fW]).fillRandom(), this.name+'_filters');
+	this.biases = ad.lift(new Tensor([nOut]).fillRandom(), this.name+'_biases');
 	this.parameters = [this.filters, this.biases];
-	this.name = 'convolution';
 	this.isTraining = false;
 }
 ConvolutionNetwork.prototype = Object.create(Network.prototype);
@@ -43,6 +43,7 @@ ConvolutionNetwork.prototype.setTraining = function(flag) {
 ConvolutionNetwork.prototype.serializeJSON = function() {
 	return {
 		type: 'convolution',
+		name: this.name,
 		inDepth: this.inDepth,
 		outDepth: this.outDepth,
 		filterWidth: this.filterWidth,
@@ -58,14 +59,16 @@ ConvolutionNetwork.prototype.serializeJSON = function() {
 Network.deserializers.convolution = function(json) {
 	var net = new ConvolutionNetwork(json.inDepth, json.outDepth,
 		json.filterWidth, json.filterHeight, json.strideX, json.strideY,
-		json.padX, json.padY);
+		json.padX, json.padY, json.name);
 	ad.project(net.filters).fromFlatArray(json.filters);
 	ad.project(net.biases).fromFlatArray(json.biases);
 	return net;
 };
 
 
-var convolve = ad.newFunction(Tensor, {
+var convolve = ad.newFunction({
+	OutputType: Tensor,
+	name: 'convolution',
 	forward: function(inImg, filters, biases, strideX, strideY, padX, padY) {
 		inImg = ad.project(inImg);
 		filters = ad.project(filters);
@@ -183,7 +186,7 @@ ConvolutionNetwork.prototype.eval = function(img) {
 };
 
 
-function convolution(opts) {
+function convolution(opts, optname) {
 	var nIn = opts.inDepth || 1;
 	var nOut = opts.outDepth || 1;
 	var fW = opts.filterWidth || opts.filterSize;
@@ -200,7 +203,7 @@ function convolution(opts) {
 	if (pY === 'same') {
 		pY = Math.floor((fH - 1)/2);
 	}
-	return new ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY);
+	return new ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY, optname);
 };
 
 
