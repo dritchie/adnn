@@ -290,7 +290,7 @@ fns.scalar.sum = func.newFunction({
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
-			var x = graph.isNode(x) ? x.x : x;
+			var x = graph.isNode(arg) ? arg.x : arg;
 			thesum += x;
 		}
 		return thesum;
