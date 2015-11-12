@@ -196,6 +196,7 @@ addUnaryMethod('sigmoid', '1 / (1 + Math.exp(-x))');
 addUnaryMethod('isFinite', 'isFinite(x)');
 addUnaryMethod('isNaN', 'isNaN(x)');
 addUnaryMethod('invert', '1/x');
+addUnaryMethod('pseudoinvert', 'x === 0 ? 0 : 1/x');
 
 addBinaryMethod('add', 'a + b');
 addBinaryMethod('sub', 'a - b');
