@@ -67,15 +67,29 @@ function ASTNode(type, parents) {
 }
 
 
+
 // When we have a multi-output network (i.e. Array-of-tensors of output)
 //    and we want a separate AST node for each outputs
-// NOTE: Currently, we can't serialize these.
+function SelectNetwork(i) {
+	Network.call(this);
+	this.name = 'select';
+	this.i = i;
+}
+SelectNetwork.prototype = Object.create(Network.prototype);
+SelectNetwork.prototype.eval = function(tensors) { return tensors[this.i]; };
+SelectNetwork.prototype.serializeJSON = function() {
+	return {
+		type: 'select',
+		i: this.i
+	};
+};
+Network.deserializers.select = function(json) {
+	return new SelectNetwork(json.i);
+};
 ASTNode.prototype.split = function(n) {
 	var nodes = new Array(n);
 	for (var i = 0; i < n; i++) {
-		var net = lift(function(tensors) {
-			return tensors[i];
-		});
+		var net = new SelectNetwork(i);
 		nodes[i] = net.compose(this);
 	}
 	return nodes;

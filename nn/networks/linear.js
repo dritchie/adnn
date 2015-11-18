@@ -38,9 +38,9 @@ Network.deserializers.linear = function(json) {
 };
 
 
-var mmultadd = ad.newFunction({
+var mvmuladd = ad.newFunction({
 	OutputType: Tensor,
-	name: 'mmultadd',
+	name: 'mvmuladd',
 	forward: function(A, x, b) {
 		A = ad.project(A);
 		x = ad.project(x);
@@ -92,7 +92,7 @@ var mmultadd = ad.newFunction({
 LinearNetwork.prototype.eval = function(x) {
 	var A = this.isTraining ? this.weights : ad.project(this.weights);
 	var b = this.isTraining ? this.biases : ad.project(this.biases);
-	return mmultadd(A, x, b);
+	return mvmuladd(A, x, b);
 };
 
 

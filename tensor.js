@@ -1,6 +1,29 @@
+var assert = require('assert');
 var utils = require('./utils.js');
 
-var ArrayType = Float64Array;
+
+// Can swap out different backing stores
+function TypedArrayBackingStore(ArrayType) {
+	return {
+		ArrayType: ArrayType,
+		set: function(tgt, src, offset) {
+			tgt.set(src, offset);
+		}
+	}
+}
+var ArrayBackingStore = {
+	ArrayType: Array,
+	set: function(tgt, src, offset) {;
+		for (var i = 0; i < src.length; i++) {
+			tgt[i+offset] = src[i];
+		}
+	}
+};
+
+
+// The actual backing store we're using
+var BackingStore = TypedArrayBackingStore(Float64Array);
+
 
 function Tensor(dims) {
 	this.dims = dims;
@@ -8,13 +31,21 @@ function Tensor(dims) {
 	var n = dims.length;
 	while (n--) size *= dims[n];
 	this.length = size;
-	this.data = new ArrayType(size);
+	this.data = new BackingStore.ArrayType(size);
 	return this;
 }
 
 Object.defineProperties(Tensor.prototype, {
 	rank: { get: function() { return this.dims.length; } },
 });
+
+Tensor.prototype.reshape = function(dims) {
+	var size = 1;
+	var n = dims.length;
+	while (n--) size *= dims[n];
+	assert(size === this.length, 'Tensor reshape invalid size');
+	this.dims = dims;
+}
 
 Tensor.prototype.fill = function(val) {
 	// TODO: Use TypedArray.fill, when it is more broadly supported
@@ -36,8 +67,9 @@ Tensor.prototype.fillRandom = function() {
 	return this;
 }
 
-Tensor.prototype.copy = function(other) {
-	this.data.set(other.data);
+Tensor.prototype.copy = function(other, offset) {
+	offset = offset || 0;
+	BackingStore.set(this.data, other.data, offset);
 	return this;
 };
 
@@ -104,7 +136,7 @@ Tensor.prototype.toFlatArray = function() {
 	return Array.prototype.slice.call(this.data);
 }
 Tensor.prototype.fromFlatArray = function(arr) {
-	this.data.set(arr);
+	BackingStore.set(this.data, arr, 0);
 	return this;
 }
 

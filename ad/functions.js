@@ -76,8 +76,8 @@ function makeFunctions(OutputType) {
 			new Function('x', 'y', 'return Math.' + fnname + '(x, y);');
 		fns[fnname] = func.newBinaryFunction({
 			OutputType: OutputType,
-			name: fnname,
-			forward: namePrefix+forward,
+			name: namePrefix+fnname,
+			forward: forward,
 			backward1: backward(derivs[fnname])[0],
 			backward2: backward(derivs[fnname])[1]
 		});
@@ -166,16 +166,20 @@ fns.tensor.range = func.newFunction({
 	name: 'tensor.range',
 	forward: function(t, start, end) {
 		t = graph.isNode(t) ? t.x : t;
-		var subt = new Tensor([end - start]);
-		subt.data.set(t.data, start, end);
-		return subt;
+		var n = end - start;
+		var tn = new Tensor([n]);
+		while (n--) {
+			var i = start + n;
+			tn.data[n] = t.data[i];
+		}
+		return tn;
 	},
 	backward: function(t, start, end) {
 		if (graph.isNode(t)) {
 			var n = end - start;
 			while (n--) {
 				var i = start + n;
-				this.dx[i] += t.dx[n];
+				this.dx.data[i] += t.dx.data[n];
 			}
 		}
 	},
@@ -191,7 +195,7 @@ fns.tensor.split = function(t, lengths) {
 	var start = 0;
 	for (var i = 0; i < lengths.length; i++) {
 		var l = lengths[i];
-		ts[i] = fns.tensorRange(t, start, start + l);
+		ts[i] = fns.tensor.range(t, start, start + l);
 		start += l;
 	}
 	return ts;
@@ -248,7 +252,7 @@ fns.tensor.concat = func.newFunction({
 		for (var j = 0; j < n; j++) {
 			var arg = args[j];
 			var tn = graph.isNode(arg) ? arg.x : arg;
-			t.data.set(tn.data, i);
+			t.copy(tn, i);
 			i += tn.length;
 		}
 		return t;
