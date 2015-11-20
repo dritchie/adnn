@@ -5,7 +5,7 @@ var utils = require('./utils.js');
 // Can swap out different backing stores
 function TypedArrayBackingStore(ArrayType) {
 	return {
-		ArrayType: ArrayType,
+		new: function(n) { return new ArrayType(n); },
 		set: function(tgt, src, offset) {
 			tgt.set(src, offset);
 		}
@@ -13,6 +13,11 @@ function TypedArrayBackingStore(ArrayType) {
 }
 var ArrayBackingStore = {
 	ArrayType: Array,
+	new: function(n) {
+		var a = new Array(n);
+		while (n--) { a[n] = 0; }
+		return a;
+	},
 	set: function(tgt, src, offset) {;
 		for (var i = 0; i < src.length; i++) {
 			tgt[i+offset] = src[i];
@@ -31,7 +36,7 @@ function Tensor(dims) {
 	var n = dims.length;
 	while (n--) size *= dims[n];
 	this.length = size;
-	this.data = new BackingStore.ArrayType(size);
+	this.data = BackingStore.new(size);
 	return this;
 }
 
