@@ -42,7 +42,7 @@ var maxpoolingImpl = ad.newFunction({
 	OutputType: Tensor,
 	name: 'maxpooling',
 	forward: function(inImg, fW, fH, sX, sY, pX, pY) {
-		inImg = ad.project(inImg);
+		inImg = ad.value(inImg);
 
 		var D = inImg.dims[0];
 		var iH = inImg.dims[1];

@@ -52,16 +52,16 @@ ConvolutionNetwork.prototype.serializeJSON = function() {
 		strideY: this.strideY,
 		padX: this.padX,
 		padY: this.padY,
-		filters: ad.project(this.filters).toFlatArray(),
-		biases: ad.project(this.biases).toFlatArray()
+		filters: ad.value(this.filters).toFlatArray(),
+		biases: ad.value(this.biases).toFlatArray()
 	};
 }
 Network.deserializers.convolution = function(json) {
 	var net = new ConvolutionNetwork(json.inDepth, json.outDepth,
 		json.filterWidth, json.filterHeight, json.strideX, json.strideY,
 		json.padX, json.padY, json.name);
-	ad.project(net.filters).fromFlatArray(json.filters);
-	ad.project(net.biases).fromFlatArray(json.biases);
+	ad.value(net.filters).fromFlatArray(json.filters);
+	ad.value(net.biases).fromFlatArray(json.biases);
 	return net;
 };
 
@@ -70,9 +70,9 @@ var convolve = ad.newFunction({
 	OutputType: Tensor,
 	name: 'convolution',
 	forward: function(inImg, filters, biases, strideX, strideY, padX, padY) {
-		inImg = ad.project(inImg);
-		filters = ad.project(filters);
-		biases = ad.project(biases);
+		inImg = ad.value(inImg);
+		filters = ad.value(filters);
+		biases = ad.value(biases);
 
 		var fH = filters.dims[2];
 		var fW = filters.dims[3];
@@ -119,9 +119,9 @@ var convolve = ad.newFunction({
 		return outImg;
 	},
 	backward: function(inImg, filters, biases, strideX, strideY, padX, padY) {
-		var inImgP = ad.project(inImg);
-		var filtersP = ad.project(filters);
-		var biasesP = ad.project(biases);
+		var inImgP = ad.value(inImg);
+		var filtersP = ad.value(filters);
+		var biasesP = ad.value(biases);
 		var iIs = inImg !== inImgP;
 		var fIs = filters !== filtersP;
 		var bIs = biases !== biasesP;
@@ -179,8 +179,8 @@ var convolve = ad.newFunction({
 
 
 ConvolutionNetwork.prototype.eval = function(img) {
-	var filters = this.isTraining ? this.filters : ad.project(this.filters);
-	var biases = this.isTraining ? this.biases : ad.project(this.biases);
+	var filters = this.isTraining ? this.filters : ad.value(this.filters);
+	var biases = this.isTraining ? this.biases : ad.value(this.biases);
 	return convolve(img, filters, biases,
 		this.strideX, this.strideY, this.padX, this.padY);
 };

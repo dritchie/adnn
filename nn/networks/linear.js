@@ -26,14 +26,14 @@ LinearNetwork.prototype.serializeJSON = function() {
 		name: this.name,
 		inSize: this.inSize,
 		outSize: this.outSize,
-		weights: ad.project(this.weights).toFlatArray(),
-		biases: ad.project(this.biases).toFlatArray()
+		weights: ad.value(this.weights).toFlatArray(),
+		biases: ad.value(this.biases).toFlatArray()
 	};
 }
 Network.deserializers.linear = function(json) {
 	var net = new LinearNetwork(json.inSize, json.outSize, json.name);
-	ad.project(net.weights).fromFlatArray(json.weights);
-	ad.project(net.biases).fromFlatArray(json.biases);
+	ad.value(net.weights).fromFlatArray(json.weights);
+	ad.value(net.biases).fromFlatArray(json.biases);
 	return net;
 };
 
@@ -42,9 +42,9 @@ var mvmuladd = ad.newFunction({
 	OutputType: Tensor,
 	name: 'mvmuladd',
 	forward: function(A, x, b) {
-		A = ad.project(A);
-		x = ad.project(x);
-		b = ad.project(b);
+		A = ad.value(A);
+		x = ad.value(x);
+		b = ad.value(b);
 		var w = x.length;
 		var h = b.length;
 		if (w !== A.dims[1]) {
@@ -61,9 +61,9 @@ var mvmuladd = ad.newFunction({
 		return y;
 	},
 	backward: function(A, x, b) {
-		var Ap = ad.project(A);
-		var xp = ad.project(x);
-		var bp = ad.project(b);
+		var Ap = ad.value(A);
+		var xp = ad.value(x);
+		var bp = ad.value(b);
 		var aIs = A !== Ap;
 		var xIs = x !== xp;
 		var bIs = b !== bp;
@@ -90,8 +90,8 @@ var mvmuladd = ad.newFunction({
 
 
 LinearNetwork.prototype.eval = function(x) {
-	var A = this.isTraining ? this.weights : ad.project(this.weights);
-	var b = this.isTraining ? this.biases : ad.project(this.biases);
+	var A = this.isTraining ? this.weights : ad.value(this.weights);
+	var b = this.isTraining ? this.biases : ad.value(this.biases);
 	return mvmuladd(A, x, b);
 };
 

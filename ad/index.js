@@ -10,7 +10,7 @@ function doLift(x, name) {
 var ad = {
 	lift: function(x, name) { return graph.isNode(x) ? x : doLift(x, name); },
 	isLifted: graph.isNode,
-	project: function(x) { return graph.isNode(x) ? x.x : x; },
+	value: function(x) { return graph.isNode(x) ? x.x : x; },
 	derivative: function(x) { return x.dx; }
 };
 

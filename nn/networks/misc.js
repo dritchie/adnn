@@ -12,7 +12,7 @@ function ConstantParamNetwork(dims, optname) {
 };
 ConstantParamNetwork.prototype = Object.create(Network.prototype);
 ConstantParamNetwork.prototype.eval = function() {
-	return this.isTraining ? this.parameters[0] : ad.project(this.parameters[0]);
+	return this.isTraining ? this.parameters[0] : ad.value(this.parameters[0]);
 };
 ConstantParamNetwork.prototype.setTraining = function(flag) {
 	this.isTraining = flag;
@@ -22,12 +22,12 @@ ConstantParamNetwork.prototype.serializeJSON = function() {
 		type: 'constantparams',
 		name: this.name,
 		dims: this.dims,
-		params: ad.project(this.parameters[0]).toFlatArray()
+		params: ad.value(this.parameters[0]).toFlatArray()
 	};
 };
 Network.deserializers.constantparams = function(json) {
 	var net = new ConstantParamNetwork(json.dims, json.name);
-	ad.project(net.parameters[0]).fromFlatArray(json.params);
+	ad.value(net.parameters[0]).fromFlatArray(json.params);
 	return net;
 };
 function constantparams(dims, optname) {

@@ -10,7 +10,7 @@ var relu = lift(ad.newUnaryFunction({
 	OutputType: Tensor,
 	name: 'relu',
 	forward: function(x) {
-		x = ad.project(x);
+		x = ad.value(x);
 		var y = x.clone();
 		var n = x.length;
 		while (n--) {
