@@ -9,8 +9,8 @@ function LinearNetwork(nIn, nOut, optname) {
 	this.name = optname || 'linear';
 	this.inSize = nIn;
 	this.outSize = nOut;
-	this.weights = ad.lift(new Tensor([nOut, nIn]).fillRandom(), this.name+'_weights');
-	this.biases = ad.lift(new Tensor([nOut]).fillRandom(), this.name+'_biases');
+	this.weights = ad.params([nOut, nIn], this.name+'_weights');
+	this.biases = ad.params([nOut], this.name+'_biases');
 	this.parameters = [this.weights, this.biases];
 	this.isTraining = false;
 }

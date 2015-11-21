@@ -29,8 +29,8 @@ function ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY, optname) {
 	this.strideY = sY;
 	this.padX = pX;
 	this.padY = pY;
-	this.filters = ad.lift(new Tensor([nOut, nIn, fH, fW]).fillRandom(), this.name+'_filters');
-	this.biases = ad.lift(new Tensor([nOut]).fillRandom(), this.name+'_biases');
+	this.filters = ad.params([nOut, nIn, fH, fW], this.name+'_filters');
+	this.biases = ad.params([nOut], this.name+'_biases');
 	this.parameters = [this.filters, this.biases];
 	this.isTraining = false;
 }

@@ -1,4 +1,3 @@
-var Tensor = require('../../tensor.js');
 var ad = require('../../ad');
 var Network = require('../network.js');
 
@@ -7,7 +6,7 @@ var Network = require('../network.js');
 function ConstantParamNetwork(dims, optname) {
 	Network.call(this);
 	this.name = optname || 'constantparams';
-	this.parameters = [ad.lift(new Tensor(dims).fillRandom(), this.name)];
+	this.parameters = [ad.params(dims, this.name)];
 	this.isTraining = false;
 };
 ConstantParamNetwork.prototype = Object.create(Network.prototype);

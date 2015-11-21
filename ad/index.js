@@ -11,7 +11,12 @@ var ad = {
 	lift: function(x, name) { return graph.isNode(x) ? x : doLift(x, name); },
 	isLifted: graph.isNode,
 	value: function(x) { return graph.isNode(x) ? x.x : x; },
-	derivative: function(x) { return x.dx; }
+	derivative: function(x) { return x.dx; },
+};
+
+// Create randomly-initialized params
+ad.params = function(dims, name) {
+	return ad.lift(new Tensor(dims).fillRandom(), name); 
 };
 
 var func = require('./func.js');
