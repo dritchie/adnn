@@ -134,9 +134,9 @@ fns.scalar.leq = func.liftBinaryFunction(
 // (TODO: A lot of this might get moved to nn at some point...)
 
 // Select one entry out of a tensor (by linear indexing)
-var tensorEntry = func.newFunction({
+fns.tensor.entry = func.newFunction({
 	OutputType: Scalar,
-	name: 'tensorEntry',
+	name: 'tensor.entry',
 	forward: function(t, i) {
 		return graph.isNode(t) ? t.x.data[i] : t.data[i];
 	},
@@ -155,7 +155,7 @@ fns.tensorToScalars = function(t) {
 	var n = graph.isNode(t) ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
-		s[n] = tensorEntry(t, n);
+		s[n] = fns.tensor.entry(t, n);
 	}
 	return s;
 };
