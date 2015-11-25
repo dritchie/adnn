@@ -6,6 +6,7 @@ var Network = require('../network.js');
 function ConstantParamNetwork(dims, optname) {
 	Network.call(this);
 	this.name = optname || 'constantparams';
+	this.dims = dims;
 	this.parameters = [ad.params(dims, this.name)];
 	this.isTraining = false;
 };
