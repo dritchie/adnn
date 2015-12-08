@@ -262,8 +262,8 @@ fns.tensor.concat = func.newFunction({
 			arguments[0] : arguments;
 		var n = args.length;
 		var i = 0;
-		while (n--) {
-			var arg = args[n];
+		for (var j = 0; j < n; j++) {
+			var arg = args[j];
 			if (graph.isNode(arg)) {
 				var tn = arg;
 				var len = tn.dx.length;
