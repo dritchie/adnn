@@ -33,6 +33,9 @@ function ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY, optname) {
 	this.biases = ad.params([nOut], this.name+'_biases');
 	this.parameters = [this.filters, this.biases];
 	this.isTraining = false;
+
+	this.bounds = null;
+	this.output = null;
 }
 ConvolutionNetwork.prototype = Object.create(Network.prototype);
 
@@ -65,11 +68,21 @@ Network.deserializers.convolution = function(json) {
 	return net;
 };
 
+// (For incremental updates)
+// Only apply the network over a subwindow of the input image
+ConvolutionNetwork.prototype.setBounds = function(bbox) {
+	this.bounds = bbox;
+}
+// Write into a given output tensor, rather than creating a new one
+ConvolutionNetwork.prototype.setOutput = function(output) {
+	this.output = output;
+}
+
 
 var convolve = ad.newFunction({
 	OutputType: Tensor,
 	name: 'convolution',
-	forward: function(inImg, filters, biases, strideX, strideY, padX, padY) {
+	forward: function(inImg, filters, biases, strideX, strideY, padX, padY, bounds, output) {
 		inImg = ad.value(inImg);
 		filters = ad.value(filters);
 		biases = ad.value(biases);
@@ -87,14 +100,27 @@ var convolve = ad.newFunction({
 				' but should be ' + filters.dims[1]); 
 		}
 
-		var outImg = new Tensor([oD, oH, oW]);
+		var outImg = output ? output : new Tensor([oD, oH, oW]);
+
+		var xlo, xhi, ylo, yhi;
+		if (!bounds) {
+			xlo = 0;
+			xhi = oW;
+			ylo = 0;
+			yhi = oH;
+		} else {
+			xlo = bounds.min.x;
+			xhi = bounds.max.x;
+			ylo = bounds.min.y;
+			yhi = bounds.max.y;
+		}
 
 		for (var d = 0; d < oD; d++) {
-			var x = -padX;
-			var y = -padY;
-			for (var ay = 0; ay < oH; y += strideY, ay++) {
-				x = -padX;
-				for (var ax = 0; ax < oW; x += strideX, ax++) {
+			var x = -padX + xlo*strideX;
+			var y = -padY + ylo*strideY;
+			for (var ay = ylo; ay < yhi; y += strideY, ay++) {
+				x = -padX + xlo*strideX;
+				for (var ax = xlo; ax < xhi; x += strideX, ax++) {
 					// Convolution
 					var a = biases.data[d];
 					for (var fd = 0; fd < iD; fd++) {
@@ -182,7 +208,7 @@ ConvolutionNetwork.prototype.eval = function(img) {
 	var filters = this.isTraining ? this.filters : ad.value(this.filters);
 	var biases = this.isTraining ? this.biases : ad.value(this.biases);
 	return convolve(img, filters, biases,
-		this.strideX, this.strideY, this.padX, this.padY);
+		this.strideX, this.strideY, this.padX, this.padY, this.bounds, this.output);
 };
 
 

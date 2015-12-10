@@ -154,6 +154,9 @@ function MeanPoolNetwork(fW, fH, sX, sY, pX, pY) {
 	this.padX = pX;
 	this.padY = pY;
 	this.name = 'meanpool';
+
+	this.bounds = null;
+	this.output = null;
 }
 MeanPoolNetwork.prototype = Object.create(Network.prototype);
 
@@ -173,10 +176,21 @@ Network.deserializers.meanpool = function(json) {
 		json.strideX, json.strideY, json.padX, json.padY);
 };
 
+// (For incremental updates)
+// Only apply the network over a subwindow of the input image
+MeanPoolNetwork.prototype.setBounds = function(bbox) {
+	this.bounds = bbox;
+}
+// Write into a given output tensor, rather than creating a new one
+MeanPoolNetwork.prototype.setOutput = function(output) {
+	this.output = output;
+}
+
+
 var meanpooling = ad.newFunction({
 	OutputType: Tensor,
 	name: 'meanpooling',
-	forward: function(inImg, fW, fH, sX, sY, pX, pY) {
+	forward: function(inImg, fW, fH, sX, sY, pX, pY, bounds, output) {
 		inImg = ad.value(inImg);
 
 		var D = inImg.dims[0];
@@ -186,14 +200,27 @@ var meanpooling = ad.newFunction({
 		var oW = Math.floor((iW + 2*pX - fW) / sX + 1);
 		var fN = fW*fH;
 
-		var outImg = new Tensor([D, oH, oW]);
+		var outImg = output ? output : new Tensor([D, oH, oW]);
+
+		var xlo, xhi, ylo, yhi;
+		if (!bounds) {
+			xlo = 0;
+			xhi = oW;
+			ylo = 0;
+			yhi = oH;
+		} else {
+			xlo = bounds.min.x;
+			xhi = bounds.max.x;
+			ylo = bounds.min.y;
+			yhi = bounds.max.y;
+		}
 
 		for (var d = 0; d < D; d++) {
-			var x = -pX;
-			var y = -pY;
-			for (var ay = 0; ay < oH; y += sY, ay++) {
-				x = -pX;
-				for (var ax = 0; ax < oW; x += sX, ax++) {
+			var x = -pX + xlo*sX;
+			var y = -pY + ylo*sY;
+			for (var ay = ylo; ay < yhi; y += sY, ay++) {
+				x = -pX + xlo*sX;
+				for (var ax = xlo; ax < xhi; x += sX, ax++) {
 					// Compute average within filter window
 					var avgval = 0;
 					for (var fy = 0; fy < fH; fy++) {
@@ -256,7 +283,7 @@ var meanpooling = ad.newFunction({
 
 MeanPoolNetwork.prototype.eval = function(img) {
 	return meanpooling(img, this.filterWidth, this.filterHeight, this.strideX,
-		this.strideY, this.padX, this.padY);
+		this.strideY, this.padX, this.padY, this.bounds, this.output);
 };
 
 
