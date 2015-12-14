@@ -70,9 +70,11 @@ var convolve = ad.newFunction({
 	OutputType: Tensor,
 	name: 'convolution',
 	forward: function(inImg, filters, biases, strideX, strideY, padX, padY) {
+
 		inImg = ad.value(inImg);
 		filters = ad.value(filters);
 		biases = ad.value(biases);
+
 
 		var fH = filters.dims[2];
 		var fW = filters.dims[3];
@@ -80,8 +82,14 @@ var convolve = ad.newFunction({
 		var iH = inImg.dims[1];
 		var iW = inImg.dims[2];
 		var oD = filters.dims[0];
+
+
 		var oH = Math.floor((iH + 2*padY - fH) / strideY + 1);
 		var oW = Math.floor((iW + 2*padX - fW) / strideX + 1);
+
+		//console.log(oD, " ", oH, " ", oW);
+
+
 		if (iD !== filters.dims[1]) {
 			assert(false, 'Convolutional network: input depth is ' + iD +
 				' but should be ' + filters.dims[1]); 
@@ -208,7 +216,8 @@ function convolution(opts, optname) {
 
 
 module.exports = {
-	convolution: convolution
+	convolution: convolution, 
+	convolve: convolve
 };
 
 
