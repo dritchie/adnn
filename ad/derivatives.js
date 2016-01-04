@@ -104,8 +104,8 @@ d.floor = makeUnaryDerivatives();
 d.ceil = makeUnaryDerivatives();
 d.round = makeUnaryDerivatives();
 d.abs = makeUnaryDerivatives();
-d.min = makeUnaryDerivatives();
-d.max = makeUnaryDerivatives();
+d.min = makeBinaryDerivatives();
+d.max = makeBinaryDerivatives();
 
 
 module.exports = d;
