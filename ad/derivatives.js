@@ -35,12 +35,12 @@ function makeBinaryDerivatives(code1, code2) {
 			scalar: [
 				new Function('_x', '_y', [
 					'var x = _x.x;',
-					'var y = _y.x || _y;',
+					'var y = (typeof _y === "number") ? _y : _y.x;',
 					'var out = this.x;',
 					'_x.dx += (' + code1 + ') * this.dx;'
 				].join('\n')),
 				new Function('_x', '_y', [
-					'var x = _x.x || _x;',
+					'var x = (typeof _x === "number") ? _x : _x.x;',
 					'var y = _y.x;',
 					'var out = this.x;',
 					'_y.dx += (' + code2 + ') * this.dx;'
