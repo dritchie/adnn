@@ -35,12 +35,12 @@ function makeBinaryDerivatives(code1, code2) {
 			scalar: [
 				new Function('_x', '_y', [
 					'var x = _x.x;',
-					'var y = _y.x === undefined ? _y : _y.x;',
+					'var y = _y.x || _y;',
 					'var out = this.x;',
 					'_x.dx += (' + code1 + ') * this.dx;'
 				].join('\n')),
 				new Function('_x', '_y', [
-					'var x = _x.x === undefined ? _x : _x.x;',
+					'var x = _x.x || _x;',
 					'var y = _y.x;',
 					'var out = this.x;',
 					'_y.dx += (' + code2 + ') * this.dx;'
@@ -49,7 +49,7 @@ function makeBinaryDerivatives(code1, code2) {
 			tensor: [
 				new Function('_x', '_y', [
 					'var _xx = _x.x;',
-					'var _yx = _y.x === undefined ? _y : _y.x;',
+					'var _yx = _y.x || _y;',
 					'var n = _xx.length;',
 					'while (n--) {',
 					'	var x = _xx.data[n];',
@@ -59,7 +59,7 @@ function makeBinaryDerivatives(code1, code2) {
 					'}'
 				].join('\n')),
 				new Function('_x', '_y', [
-					'var _xx = _x.x === undefined ? _x : _x.x;',
+					'var _xx = _x.x || _x;',
 					'var _yx = _y.x;',
 					'var n = _yx.length;',
 					'while (n--) {',
