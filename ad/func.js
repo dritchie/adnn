@@ -26,19 +26,15 @@ function newUnaryFunction(opts) {
 	var backward = opts.backward;
 	checkOutputType(OutputType);
 
-	var BaseNode = OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
-	var UnaryNode = graph.UnaryNode(BaseNode);
-	function FnNode(x, parent) {
-		UnaryNode.call(this, x, parent, name);
+	var NodeType = OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
+
+	function bw() {
+		backward.call(this, this.inputs[0]);
 	}
-	FnNode.prototype = Object.create(UnaryNode.prototype);
-	FnNode.prototype.backward = function() {
-		backward.call(this, this.parent);
-	};
 
 	return function(x) {
 		if (x instanceof Node) {
-			return new FnNode(forward(x.x), x);
+			return new NodeType(forward(x.x), [x], [x], bw, name);
 		} else {
 			return forward(x);
 		}
@@ -63,50 +59,29 @@ function newBinaryFunction(opts) {
 	var backward2 = opts.backward2;
 	checkOutputType(OutputType);
 
-	// We create node types for all cases: the first input is a Node, the
-	//    second input is a node, both inputs are Nodes.
 
-	var BaseNode = OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
-	var UnaryNode = graph.UnaryNode(BaseNode);
-	var BinaryNode = graph.BinaryNode(BaseNode);
+	var NodeType = OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
 
-	function Node11(x, parent1, parent2) {
-		BinaryNode.call(this, x, parent1, parent2, name);
+	function backward11() {
+		backward1.call(this, this.inputs[0], this.inputs[1].x);
+		backward2.call(this, this.inputs[0].x, this.inputs[1]);
 	}
-	Node11.prototype = Object.create(BinaryNode.prototype);
-	Node11.prototype.backward = function() {
-		backward1.call(this, this.parent1, this.parent2.x);
-		backward2.call(this, this.parent1.x, this.parent2);
-	};
-
-	function Node10(x, parent, arg) {
-		UnaryNode.call(this, x, parent, name);
-		this.arg = arg;
+	function backward10() {
+		backward1.call(this, this.inputs[0], this.inputs[1]);
 	}
-	Node10.prototype = Object.create(UnaryNode.prototype);
-	Node10.prototype.backward = function() {
-		backward1.call(this, this.parent, this.arg);
-	};
-
-	function Node01(x, arg, parent) {
-		UnaryNode.call(this, x, parent, name);
-		this.arg = arg;
+	function backward01() {
+		backward2.call(this, this.inputs[0], this.inputs[1]);
 	}
-	Node01.prototype = Object.create(UnaryNode.prototype);
-	Node01.prototype.backward = function() {
-		backward2.call(this, this.arg, this.parent);
-	};
-
 
 	return function(x, y) {
 		var xIsNode = x instanceof Node;
 		var yIsNode = y instanceof Node;
 		if (xIsNode && yIsNode) {
-			return new Node11(forward(x.x, y.x), x, y);
+			return new NodeType(forward(x.x, y.x), [x, y], [x, y], backward11, name);
 		} else if (xIsNode) {
-			return new Node10(forward(x.x, y), x, y);
+			return new NodeType(forward(x.x, y), [x], [x, y], backward10, name);
 		} else if (yIsNode) {
-			return new Node01(forward(x, y.x), x, y);
+			return new NodeType(forward(x, y.x), [y], [x, y], backward01, name);
 		} else {
 			return forward(x, y);
 		}
@@ -133,58 +108,21 @@ function newFunction(opts) {
 	checkOutputType(OutputType);
 
 
-	// We create unary, binary, and n-ary graph nodes for this function.
-	// The node type is selected at runtime based on how many parents
-	//    the node actually has (i.e. in case we call a vararg function
-	//    with just 1 or 2 args).
+	var NodeType = OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
 
-	var BaseNode = OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
-	var UnaryNode = graph.UnaryNode(BaseNode);
-	var BinaryNode = graph.BinaryNode(BaseNode);
-	var NaryNode = graph.NaryNode(BaseNode);
-
-	function UnaryFnNode(x, parent, args) {
-		UnaryNode.call(this, x, parent, name);
-		this.args = args;
+	function bw() {
+		backward.apply(this, this.inputs);
 	}
-	UnaryFnNode.prototype = Object.create(UnaryNode.prototype);
-	UnaryFnNode.prototype.backward = function() {
-		backward.apply(this, this.args);
-	};
-
-	function BinaryFnNode(x, parent1, parent2, args) {
-		BinaryNode.call(this, x, parent1, parent2, name);
-		this.args = args;
-	}
-	BinaryFnNode.prototype = Object.create(BinaryNode.prototype);
-	BinaryFnNode.prototype.backward = function() {
-		backward.apply(this, this.args);
-	};
-
-	function NaryFnNode(x, parents, args) {
-		NaryNode.call(this, x, parents, name);
-		this.args = args;
-	}
-	NaryFnNode.prototype = Object.create(NaryNode.prototype);
-	NaryFnNode.prototype.backward = function() {
-		backward.apply(this, this.args);
-	};
-
 
 	return function() {
 		var output = forward.apply(null, arguments);
 		var parents = getParents.apply(null, arguments);
+		var inputs = Array.prototype.slice.call(arguments);
 		var n = parents.length;
 		if (n === 0) {
 			return output;
-		// Expect that n > 2 will be the common case (else we would have used
-		//    newUnaryFunction or newBinaryFunction).
-		} else if (n > 2) {
-			return new NaryFnNode(output, parents, arguments);
-		} else if (n === 2) {
-			return new BinaryFnNode(output, parents[0], parents[1], arguments);
 		} else {
-			return new UnaryFnNode(output, parents[0], arguments);
+			return new NodeType(output, parents, inputs, bw, name);
 		}
 	};
 }

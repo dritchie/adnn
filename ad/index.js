@@ -7,8 +7,8 @@ var Node = graph.Node;
 var ScalarNode = graph.ScalarNode;
 var TensorNode = graph.TensorNode;
 
-function liftScalar(x, name) { return new ScalarNode(x, name); };
-function liftTensor(x, name) { return new TensorNode(x, name); };
+function liftScalar(x, name) { return new ScalarNode(x, [], [], undefined, name); };
+function liftTensor(x, name) { return new TensorNode(x, [], [], undefined, name); };
 function doLift(x, name) {
 	return x instanceof Tensor ? liftTensor(x, name) : liftScalar(x, name);
 }
