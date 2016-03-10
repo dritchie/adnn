@@ -95,6 +95,13 @@ var fns = {
 	tensor: makeFunctions(Tensor)
 };
 
+// Re-export Math constants etc.
+Object.getOwnPropertyNames(Math).forEach(function(p) {
+  if (!fns.scalar.hasOwnProperty(p)) {
+    fns.scalar[p] = Math[p];
+  }
+});
+
 
 // Also lift scalar comparators -----------------------------------------------
 
