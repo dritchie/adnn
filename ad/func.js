@@ -1,3 +1,5 @@
+'use strict';
+
 var assert = require('assert');
 var graph = require('./graph.js');
 var Tensor = require('../tensor.js');

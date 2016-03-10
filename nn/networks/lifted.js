@@ -1,3 +1,5 @@
+'use strict';
+
 var adfunctions = require('../../ad/functions.js');
 var lift = require('../lift.js');
 

@@ -1,3 +1,4 @@
+'use strict';
 
 // Simple single-arg function memoization using stringified keys
 function memoize(fn) {

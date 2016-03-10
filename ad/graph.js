@@ -1,3 +1,5 @@
+'use strict';
+
 var Tensor = require('../tensor.js');
 var utils = require('../utils.js');
 

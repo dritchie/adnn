@@ -1,3 +1,5 @@
+'use strict';
+
 var sweet = require('sweet.js');
 var fs = require('fs');
 var cp = require('child_process');

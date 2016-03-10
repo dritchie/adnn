@@ -1,3 +1,5 @@
+'use strict';
+
 var Tensor = require('../../tensor.js');
 var ad = require('../../ad');
 var lift = require('../lift.js');

@@ -1,3 +1,5 @@
+'use strict';
+
 var sequence = require('../composition.js').sequence;
 var linear = require('./linear.js').linear;
 

@@ -1,3 +1,5 @@
+'use strict';
+
 var ad = require('../../ad');
 var Network = require('../network.js');
 

@@ -1,3 +1,5 @@
+'use strict';
+
 var Network = require('./network.js');
 
 // Any Tensor-valued AD function can be turned into a neural network with no
