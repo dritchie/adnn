@@ -2,6 +2,7 @@
 
 var Tensor = require('../tensor.js');
 var graph = require('./graph.js');
+var isNode = graph.isNode;
 var func = require('./func.js');
 var derivs = require('./derivatives.js');
 
@@ -140,7 +141,7 @@ fns.tensorEntry = func.newFunction({
 	OutputType: Scalar,
 	name: 'tensorEtry',
 	forward: function(t, i) {
-		return graph.isNode(t) ? t.x.data[i] : t.data[i];
+		return isNode(t) ? t.x.data[i] : t.data[i];
 	},
 	backward: function(t, i) {
 		if (graph.isNode(t)) {
@@ -148,13 +149,13 @@ fns.tensorEntry = func.newFunction({
 		}
 	},
 	getParents: function(t, i) {
-		return graph.isNode(t) ? [t] : [];
+		return isNode(t) ? [t] : [];
 	}
 });
 
 // Split a tensor into an array of its scalar entries
 fns.tensorToScalars = function(t) {
-	var n = graph.isNode(t) ? t.x.length : t.length;
+	var n = isNode(t) ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
 		s[n] = fns.tensorEntry(t, n);
@@ -167,7 +168,7 @@ fns.tensor.range = func.newFunction({
 	OutputType: Tensor,
 	name: 'tensor.range',
 	forward: function(t, start, end) {
-		t = graph.isNode(t) ? t.x : t;
+		t = isNode(t) ? t.x : t;
 		var n = end - start;
 		var tn = new Tensor([n]);
 		while (n--) {
@@ -177,7 +178,7 @@ fns.tensor.range = func.newFunction({
 		return tn;
 	},
 	backward: function(t, start, end) {
-		if (graph.isNode(t)) {
+		if (isNode(t)) {
 			var n = end - start;
 			while (n--) {
 				var i = start + n;
@@ -186,7 +187,7 @@ fns.tensor.range = func.newFunction({
 		}
 	},
 	getParents: function(t, start, end) {
-		return graph.isNode(t) ? [t] : [];
+		return isNode(t) ? [t] : [];
 	}
 });
 
@@ -215,7 +216,7 @@ fns.scalarsToTensor = func.newFunction({
 		var t = new Tensor([n]);
 		while (n--) {
 			var arg = args[n];
-			t.data[n] = graph.isNode(arg) ? arg.x : arg;
+			t.data[n] = isNode(arg) ? arg.x : arg;
 		}
 		return t;
 	},
@@ -225,7 +226,7 @@ fns.scalarsToTensor = func.newFunction({
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
-			if (graph.isNode(arg)) {
+			if (isNode(arg)) {
 				arg.dx += this.dx.data[n];
 			}
 		}
@@ -245,7 +246,7 @@ fns.tensor.concat = func.newFunction({
 		var size = 0;
 		while (n--) {
 			var arg = args[n];
-			var tn = graph.isNode(arg) ? arg.x : arg;
+			var tn = isNode(arg) ? arg.x : arg;
 			size += tn.length;
 		}
 		var t = new Tensor([size]);
@@ -253,7 +254,7 @@ fns.tensor.concat = func.newFunction({
 		var i = 0;
 		for (var j = 0; j < n; j++) {
 			var arg = args[j];
-			var tn = graph.isNode(arg) ? arg.x : arg;
+			var tn = isNode(arg) ? arg.x : arg;
 			t.copy(tn, i);
 			i += tn.length;
 		}
@@ -266,7 +267,7 @@ fns.tensor.concat = func.newFunction({
 		var i = 0;
 		for (var j = 0; j < n; j++) {
 			var arg = args[j];
-			if (graph.isNode(arg)) {
+			if (isNode(arg)) {
 				var tn = arg;
 				var len = tn.dx.length;
 				while (len--) {
@@ -296,7 +297,7 @@ fns.scalar.sum = func.newFunction({
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
-			var x = graph.isNode(arg) ? arg.x : arg;
+			var x = isNode(arg) ? arg.x : arg;
 			thesum += x;
 		}
 		return thesum;
@@ -307,7 +308,7 @@ fns.scalar.sum = func.newFunction({
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
-			if (graph.isNode(arg)) {
+			if (isNode(arg)) {
 				arg.dx += this.dx;
 			}
 		}

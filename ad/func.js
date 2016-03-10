@@ -2,6 +2,7 @@
 
 var assert = require('assert');
 var graph = require('./graph.js');
+var isNode = graph.isNode;
 var Tensor = require('../tensor.js');
 
 
@@ -36,7 +37,7 @@ function newUnaryFunction(opts) {
 	};
 
 	return function(x) {
-		if (graph.isNode(x)) {
+		if (isNode(x)) {
 			return new FnNode(forward(x.x), x);
 		} else {
 			return forward(x);
@@ -98,8 +99,8 @@ function newBinaryFunction(opts) {
 
 
 	return function(x, y) {
-		var xIsNode = graph.isNode(x);
-		var yIsNode = graph.isNode(y);
+		var xIsNode = isNode(x);
+		var yIsNode = isNode(y);
 		if (xIsNode && yIsNode) {
 			return new Node11(forward(x.x, y.x), x, y);
 		} else if (xIsNode) {
@@ -198,7 +199,7 @@ function naryGetParents() {
 	var n = args.length;
 	while (n--) {
 		var arg = args[n];
-		if (graph.isNode(arg)) {
+		if (isNode(arg)) {
 			p.push(arg);
 		}
 	}
@@ -209,12 +210,12 @@ function naryGetParents() {
 // Lifting functions which take numbers but don't return numbers to also work
 //    on Nodes.
 function liftUnaryFunction(f) {
-	return function(x) { return f(graph.isNode(x) ? x.x : x); };
+	return function(x) { return f(isNode(x) ? x.x : x); };
 }
 function liftBinaryFunction(f) {
 	return function(x, y) {
-		var xprim = graph.isNode(x) ? x.x : x;
-		var yprim = graph.isNode(y) ? y.x : y;
+		var xprim = isNode(x) ? x.x : x;
+		var yprim = isNode(y) ? y.x : y;
 		return f(xprim, yprim);
 	};
 }
