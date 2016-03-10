@@ -27,10 +27,13 @@ ad.params = function(dims, name) {
 
 var func = require('./func.js');
 var functions = require('./functions.js');
-var transform = require('./transform.js');
 var modules = [
-	func, functions, transform
+	func, functions
 ];
+// The macro-transform code only works via node
+if (typeof window === "undefined") {
+	modules.push(require('./transform.js'));
+}
 for (var i = 0; i < modules.length; i++) {
 	var m = modules[i];
 	for (var prop in m) {
