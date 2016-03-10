@@ -150,7 +150,6 @@ var NaryNode = utils.memoize(function(BaseNode) {
 
 
 module.exports = {
-	isNode: function(x) { return x instanceof Node; },
 	Node: Node,
 	ScalarNode: ScalarNode,
 	TensorNode: TensorNode,

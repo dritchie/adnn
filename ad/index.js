@@ -3,7 +3,7 @@
 var graph = require('./graph.js');
 var Tensor = require('../tensor.js');
 
-var isNode = graph.isNode;
+var Node = graph.Node;
 var ScalarNode = graph.ScalarNode;
 var TensorNode = graph.TensorNode;
 
@@ -14,9 +14,9 @@ function doLift(x, name) {
 }
 
 var ad = {
-	lift: function(x, name) { return isNode(x) ? x : doLift(x, name); },
-	isLifted: graph.isNode,
-	value: function(x) { return isNode(x) ? x.x : x; },
+	lift: function(x, name) { return x instanceof Node ? x : doLift(x, name); },
+	isLifted: function(x) { return x instanceof Node; },
+	value: function(x) { return x instanceof Node ? x.x : x; },
 	derivative: function(x) { return x.dx; },
 };
 

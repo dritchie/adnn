@@ -2,7 +2,7 @@
 
 var Tensor = require('../tensor.js');
 var graph = require('./graph.js');
-var isNode = graph.isNode;
+var Node = graph.Node;
 var func = require('./func.js');
 var derivs = require('./derivatives.js');
 
@@ -141,21 +141,21 @@ fns.tensorEntry = func.newFunction({
 	OutputType: Scalar,
 	name: 'tensorEtry',
 	forward: function(t, i) {
-		return isNode(t) ? t.x.data[i] : t.data[i];
+		return t instanceof Node ? t.x.data[i] : t.data[i];
 	},
 	backward: function(t, i) {
-		if (graph.isNode(t)) {
+		if (t instanceof Node) {
 			t.dx.data[i] += this.dx;
 		}
 	},
 	getParents: function(t, i) {
-		return isNode(t) ? [t] : [];
+		return t instanceof Node ? [t] : [];
 	}
 });
 
 // Split a tensor into an array of its scalar entries
 fns.tensorToScalars = function(t) {
-	var n = isNode(t) ? t.x.length : t.length;
+	var n = t instanceof Node ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
 		s[n] = fns.tensorEntry(t, n);
@@ -168,7 +168,7 @@ fns.tensor.range = func.newFunction({
 	OutputType: Tensor,
 	name: 'tensor.range',
 	forward: function(t, start, end) {
-		t = isNode(t) ? t.x : t;
+		t = t instanceof Node ? t.x : t;
 		var n = end - start;
 		var tn = new Tensor([n]);
 		while (n--) {
@@ -178,7 +178,7 @@ fns.tensor.range = func.newFunction({
 		return tn;
 	},
 	backward: function(t, start, end) {
-		if (isNode(t)) {
+		if (t instanceof Node) {
 			var n = end - start;
 			while (n--) {
 				var i = start + n;
@@ -187,7 +187,7 @@ fns.tensor.range = func.newFunction({
 		}
 	},
 	getParents: function(t, start, end) {
-		return isNode(t) ? [t] : [];
+		return t instanceof Node ? [t] : [];
 	}
 });
 
@@ -216,7 +216,7 @@ fns.scalarsToTensor = func.newFunction({
 		var t = new Tensor([n]);
 		while (n--) {
 			var arg = args[n];
-			t.data[n] = isNode(arg) ? arg.x : arg;
+			t.data[n] = arg instanceof Node ? arg.x : arg;
 		}
 		return t;
 	},
@@ -226,7 +226,7 @@ fns.scalarsToTensor = func.newFunction({
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
-			if (isNode(arg)) {
+			if (arg instanceof Node) {
 				arg.dx += this.dx.data[n];
 			}
 		}
@@ -246,7 +246,7 @@ fns.tensor.concat = func.newFunction({
 		var size = 0;
 		while (n--) {
 			var arg = args[n];
-			var tn = isNode(arg) ? arg.x : arg;
+			var tn = arg instanceof Node ? arg.x : arg;
 			size += tn.length;
 		}
 		var t = new Tensor([size]);
@@ -254,7 +254,7 @@ fns.tensor.concat = func.newFunction({
 		var i = 0;
 		for (var j = 0; j < n; j++) {
 			var arg = args[j];
-			var tn = isNode(arg) ? arg.x : arg;
+			var tn = arg instanceof Node ? arg.x : arg;
 			t.copy(tn, i);
 			i += tn.length;
 		}
@@ -267,7 +267,7 @@ fns.tensor.concat = func.newFunction({
 		var i = 0;
 		for (var j = 0; j < n; j++) {
 			var arg = args[j];
-			if (isNode(arg)) {
+			if (arg instanceof Node) {
 				var tn = arg;
 				var len = tn.dx.length;
 				while (len--) {
@@ -297,7 +297,7 @@ fns.scalar.sum = func.newFunction({
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
-			var x = isNode(arg) ? arg.x : arg;
+			var x = arg instanceof Node ? arg.x : arg;
 			thesum += x;
 		}
 		return thesum;
@@ -308,7 +308,7 @@ fns.scalar.sum = func.newFunction({
 		var n = args.length;
 		while (n--) {
 			var arg = args[n];
-			if (isNode(arg)) {
+			if (arg instanceof Node) {
 				arg.dx += this.dx;
 			}
 		}
