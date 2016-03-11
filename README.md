@@ -163,6 +163,36 @@ var net = nn.sequence([
 
 #### Recurrent neural network ####
 
+adnn is also flexible enough to support recurrent neural networks. Here's an example of a rudimentary RNN:
+
+````javascript
+var ad = require('adnn/ad');
+var nn = require('adnn/nn');
+
+var inputSize = 10;
+var outputSize = 5;
+var stateSize = 20;
+
+// Component neural networks used by the RNN
+var inputNet = nn.linear(inputSize, stateSize);
+var stateNet = nn.linear(stateSize, stateSize);
+var outputNet = nn.linear(stateSize, outputSize);
+var initialStateNet = nn.constantparams([stateSize]);
+
+function processSequence(seq) {
+  // Initialize hidden state
+  var state = initialStateNet.eval();
+  // Process input sequence in order
+  var outputs = [];
+  for (var i = 0; i < seq.length; i++) {
+    // Update hidden state
+    state = ad.tensor.tanh(ad.tensor.add(inputNet.eval(seq[i]), stateNet.eval(state)))
+    // Generate output
+    outputs.push(outputNet.eval(state));
+  }
+}
+````
+
 ### The `ad` module ###
 
 ### The `nn` module ###
