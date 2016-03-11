@@ -135,6 +135,32 @@ var gradients = net.parameters.map(function(pvec) { return ad.derivative(pvec); 
 
 #### Convolutional neural network ####
 
+adnn includes the buildings blocks necessary to create convolutional networks. Here is a simple example, adapted from a [ConvNetJS](https://github.com/karpathy/convnetjs) example:
+
+````javascript
+var nn = require('adnn/nn');
+
+var net = nn.sequence([
+  // Assumes inputs are 32x32 RGB images (i.e. 3x32x32 Tensors)
+  nn.convolution({inDepth: 3, outDepth: 16, filterSize: 5}),
+  nn.relu,
+  nn.maxpool({filterSize: 2}),
+  // Data now has size 16x16x16
+  nn.convolution({inDepth: 16, outDepth: 20, filterSize: 5}),
+  nn.relu,
+  nn.maxpool({filterSize: 2}),
+  // Data now has size 20x8x8
+  nn.convolution({inDepth: 20, outDepth: 20, filterSize: 5}),
+  nn.relu,
+  nn.maxpool({filterSize: 2}),
+  // Data now has size 20x4x4 = 320
+  nn.linear(320, 10),
+  nn.softmax
+  // Output is 10 class probabilities
+]);
+
+````
+
 #### Recurrent neural network ####
 
 ### The `ad` module ###
