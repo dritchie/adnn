@@ -260,6 +260,31 @@ addReduction('all', 'true', 'accum && (x !== 0)');
 addReduction('any', 'false', 'accum || (x !== 0)');
 
 
+
+Tensor.prototype.softmax = function() {
+	// Find max elem
+	var max = -Infinity;
+	var n = this.data.length;
+	while (n--) {
+		max = Math.max(max, this.data[n]);
+	}
+	var t = new Tensor(this.dims);
+	// Exponentiate, guard against overflow
+	n = this.data.length;
+	var sum = 0;
+	while (n--) {
+		t.data[n] = Math.exp(this.data[n] - max);
+		sum += t.data[n];
+	}
+	// Normalize
+	n = this.data.length;
+	while (n--) {
+		t.data[n] /= sum;
+	}
+	return t;
+};
+
+
 module.exports = Tensor;
 
 

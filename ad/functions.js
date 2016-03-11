@@ -323,6 +323,43 @@ fns.scalar.sum = func.newFunction({
 	getParents: func.naryGetParents
 });
 
+// Sum reduce a tensor
+fns.scalar.sumreduce = func.newUnaryFunction({
+	OutputType: Scalar,
+	name: 'scalar.sumreduce',
+	forward: function(t) {
+		return t.sumreduce();
+	},
+	backward: function(t) {
+		var n = t.dx.data.length;
+		while (n--) {
+			t.dx.data[n] += this.dx;
+		}
+	}
+});
+
+// http://stats.stackexchange.com/questions/79454/softmax-layer-in-a-neural-network
+fns.tensor.softmax = func.newUnaryFunction({
+	OutputType: Tensor,
+	name: 'tensor.softmax',
+	forward: function(t) {
+		return t.softmax();
+	},
+	backward: function(t) {
+		// For each input entry, accumulate partial derivatives
+		//    for each output entry
+		var n = t.dx.data.length;
+		for (var j = 0; j < n; j++) {
+			var out_j = this.x.data[j];
+			for (var i = 0; i < n; i++) {
+				var out_i = this.x.data[i];
+				var d = out_i * ((i === j) - out_j);
+				t.dx.data[j] += d * this.dx.data[i];
+			}
+		}
+	}
+});
+
 
 module.exports = fns;
 
