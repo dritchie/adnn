@@ -9,7 +9,7 @@ adnn is not an optimization library--it does not (currently) provide any methods
 
 The simplest use case for adnn:
 
-````javascript
+```javascript
 var ad = require('adnn/ad')
 
 function dist(x1, y1, x2, y2) {
@@ -34,11 +34,11 @@ var out = dist(x1, y1, x2, y2);
 console.log(ad.value(out));   // still 3.162...
 out.backprop();   // Compute derivatives of inputs
 console.log(ad.derivative(x1)); // -0.316...
-````
+```
 
 It is also possible to write normal Javascript code that uses math operators such as `+` and `*`; adnn can transform this code using a [Sweet.js](http://sweetjs.org/) macro:
 
-````javascript
+```javascript
 // In a file called 'dist.js':
 function dist(x1, y1, x2, y2) {
   var xdiff = x1 - x2;
@@ -61,13 +61,13 @@ var out = dist(x1, y1, x2, y2);
 console.log(ad.value(out));   // 3.162...
 out.backprop();
 console.log(ad.derivative(x1)); // -0.316...
-````
+```
 
 #### Tensor code ####
 
 adnn also supports computations involving tensors, or a mixture of scalars and tensors:
 
-````javascript
+```javascript
 var ad = require('adnn/ad');
 var Tensor = require('adnn/tensor');
 
@@ -86,13 +86,13 @@ var out = dist(vec1, vec2);
 console.log(ad.value(out));   // 3
 out.backprop();
 console.log(ad.derivative(vec1).toFlatArray());  // [-0.66, 0.33, -0.66]
-````
+```
 
 #### Simple neural network ####
 
 adnn makes it easy to define simple, feedforward neural networks. Here's a basic multilayer perceptron that takes a feature vector as input and outputs class probabilities:
 
-````javascript
+```javascript
 var Tensor = require('adnn/tensor');
 var ad = require('adnn/ad');
 var nn = require('adnn/nn');
@@ -130,14 +130,13 @@ var trueClassLP = ad.scalar.log(ad.tensorEntry(classProbs, trueClass));
 trueClassLP.backprop();
 // Access parameter gradients
 var gradients = net.parameters.map(function(pvec) { return ad.derivative(pvec); };
-
-````
+```
 
 #### Convolutional neural network ####
 
 adnn includes the buildings blocks necessary to create convolutional networks. Here is a simple example, adapted from a [ConvNetJS](https://github.com/karpathy/convnetjs) example:
 
-````javascript
+```javascript
 var nn = require('adnn/nn');
 
 var net = nn.sequence([
@@ -158,14 +157,13 @@ var net = nn.sequence([
   nn.softmax
   // Output is 10 class probabilities
 ]);
-
-````
+```
 
 #### Recurrent neural network ####
 
 adnn is also flexible enough to support recurrent neural networks. Here's an example of a rudimentary RNN:
 
-````javascript
+```javascript
 var ad = require('adnn/ad');
 var nn = require('adnn/nn');
 
@@ -191,7 +189,7 @@ function processSequence(seq) {
     outputs.push(outputNet.eval(state));
   }
 }
-````
+```
 
 ### The `ad` module ###
 The `ad` module has its own documentation [here](ad/README.md)
@@ -203,7 +201,7 @@ The `nn` module has its own documentation [here](nn/README.md)
 
 adnn provides a `Tensor` type for representing multidimensional arrays of numbers and various operations on them. This is the core datatype underlying neural net computations.
 
-````javascript
+```javascript
 var Tensor = require('adnn/tensor');
 
 // Create a rank-1 tensor (i.e. a vector)
@@ -229,6 +227,6 @@ mat.fromFlatArray([1, 2, 3, 4]);
 var elem = mat.get([0, 1]);   // elem = 2
 // Set an individual element of mat
 mat.set([0, 1], 5);   // mat is now [[1, 5], [3, 4]]
-````
+```
 
 The `Tensor` type also provides a large number of mathematical functions--unary operators, binary operators, reductions, etc. See the bottom of [tensor.js](tensor.js) for a complete listing.
