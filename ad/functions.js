@@ -324,9 +324,9 @@ fns.scalar.sum = func.newFunction({
 });
 
 // Sum reduce a tensor
-fns.scalar.sumreduce = func.newUnaryFunction({
+fns.sumreduce = func.newUnaryFunction({
 	OutputType: Scalar,
-	name: 'scalar.sumreduce',
+	name: 'sumreduce',
 	forward: function(t) {
 		return t.sumreduce();
 	},
