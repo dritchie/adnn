@@ -122,7 +122,7 @@ net = nn.sequence([
 net.setTraining(true);
 
 // Evaluate the network on some features
-var features = ad.lift(new Tensor([10]).fillRandom());
+var features = ad.lift(new Tensor([nInputs]).fillRandom());
 var classProbs = net.eval(features);
 // Compute gradient w.r.t. log probability of the true class
 var trueClass = 3;
