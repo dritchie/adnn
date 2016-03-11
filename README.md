@@ -65,10 +65,53 @@ console.log(ad.derivative(x1)); // -0.316...
 
 #### Tensor code ####
 
-adnn also supports computations involving tensors:
+adnn also supports computations involving tensors, or a mixture of scalars and tensors:
 
+````javascript
+var ad = require('adnn/ad');
+var Tensor = require('adnn/tensor');
+
+function dot(vec) {
+  var sq = ad.tensor.mul(vec, vec);
+  return ad.scalar.sum(ad.tensorToScalars(sq));
+}
+
+function dist(vec1, vec2) {
+  return ad.scalar.sqrt(dot(ad.tensor.sub(vec1, vec2)));
+}
+
+var vec1 = ad.lift(new Tensor([3]).fromFlatArray([0, 1, 1]));
+var vec2 = ad.lift(new Tensor([3]).fromFlatArray([2, 0, 3]));
+var out = dist(vec1, vec2);
+console.log(ad.value(out));   // 3
+out.backprop();
+console.log(ad.derivative(vec1).toFlatArray());  // [-0.66, 0.33, -0.66]
+````
 
 #### Simple neural network ####
+
+adnn makes it easy to define simple, feedforward neural networks. Here's a basic multilayer perceptron that takes a feature vector as input and outputs class probabilities:
+
+````javascript
+var Tensor = require('adnn/Tensor');
+var ad = require('adnn/ad');
+var nn = require('adnn/nn');
+
+// A simple softmax layer
+var softmax = nn.lift(function(vec) {
+});
+
+var nInputs = 20;
+var nHidden = 10;
+var nClasses = 5;
+
+// Simple definition using 'nn.mlp' utility
+var mlpnet = nn.mlp(nInputs, [
+  {nOut: nHidden, activation: nn.tanh},
+  {nOut: nClasses}
+]);
+
+````
 
 #### Convolutional neural network ####
 
