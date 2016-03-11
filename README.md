@@ -194,7 +194,9 @@ function processSequence(seq) {
 ````
 
 ### The `ad` module ###
+The `ad` module has its own documentation [here](ad/README.md)
 
 ### The `nn` module ###
+The `nn` module has its own documentation [here](nn/README.md)
 
 ### Tensors ###
