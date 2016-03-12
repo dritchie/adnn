@@ -98,6 +98,9 @@ var maxp = nn.maxpool({
 
 ```
 
+#### Miscellaneous
+- **`nn.constantparams(tensorDims)`**: A network whose `eval()` method returns a constant parameter vector. Useful for e.g. defining the initial hidden state of a recurrent network.
+
 ### Creating your own neural nets
 
 There are several different avenues for creating your own neural nets:
