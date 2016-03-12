@@ -108,7 +108,7 @@ If you wish to implement a network layer that corresponds to a fixed function wi
 
 #### Extend `nn.Network`
 
-If you have a network with complex internal logic that cannot be capture by the composition of existing networks, then you can extend the `nn.Network` class (see [network.js](network.js)). Be sure to provide an implementation of `setTraining` that does the right thing, and make all parameters available in the `parameters` member. You'll also need to implement `serializeJSON`:
+If you have a network with complex internal logic that cannot be captured by the composition of existing networks, then you can extend the `nn.Network` class (see [network.js](network.js)). Be sure to provide an implementation of `setTraining` that does the right thing, and make all parameters available in the `parameters` member. You'll also need to implement `serializeJSON`:
 ```javascript
 var nn = require('adnn/nn');
 
