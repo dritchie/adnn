@@ -134,7 +134,7 @@ var gradients = net.parameters.map(function(pvec) { return ad.derivative(pvec); 
 
 #### Convolutional neural network ####
 
-adnn includes the buildings blocks necessary to create convolutional networks. Here is a simple example, adapted from a [ConvNetJS](https://github.com/karpathy/convnetjs) example:
+adnn includes the building blocks necessary to create convolutional networks. Here is a simple example, adapted from a [ConvNetJS](https://github.com/karpathy/convnetjs) example:
 
 ```javascript
 var nn = require('adnn/nn');
