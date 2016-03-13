@@ -188,6 +188,7 @@ function processSequence(seq) {
     // Generate output
     outputs.push(outputNet.eval(state));
   }
+  return outputs;
 }
 ```
 
