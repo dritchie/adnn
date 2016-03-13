@@ -109,6 +109,48 @@ There are several different avenues for creating your own neural nets:
 
 If you wish to implement a network layer that corresponds to a fixed function with no parameters, implement it as an AD function and then turn it into a NN by calling `nn.lift` on it. This is how all the functions in `ad.tensor` are turned into NNs.
 
+#### Composition
+
+There are three different ways to create a neural net by composing other neural nets:
+
+```javascript
+var nn = require('adnn/nn');
+
+// 'nn.sequence' creates a neural net out of a linear composition of other neural nets
+// i.e. f(g(h(...))
+// Useful for e.g. creating the linear 'tower' architectures common in CNNs.
+var seqnet = nn.sequence([
+ nn.linear(100, 50),
+ nn.sigmoid,
+ nn.linear(50, 20),
+ nn.sigmoid,
+ nn.linear(20, 10)
+]);
+
+// The nn module also provides a simple DSL for constructing a composite network out
+//    of an arbitrary directed graph of other networks.
+// This is similar to Torch's 'nngraph' module.
+// 'nn.sequence' is actually implemented using this DSL.
+// For example, here's a network that adds two inputs and then puts the result through
+//   a fully connected layer:
+var inputs = [nn.ast.input(), nn.ast.input()];
+var output = nn.linear(20, 10).compose(nn.add.compose(inputs[0], inputs[1]));
+var compilednet = nn.ast.compile(inputs, [output]);  // compile supports multi-output functions
+
+// More generally, 'nn.compound' creates a network out of *any* function involving
+//    neural nets, provided it is given a list of all the networks used by that function
+// The graph-compilation DSL is implemented in terms of 'nn.compound'
+// Here's how the above example would be expressed using 'nn.compound':
+var linearnet = nn.linear(20, 10);
+function addThenLinear(x1, x2) {
+ return linearnet.eval(nn.add.eval(x1, x2));
+}
+var compoundnet = nn.compound(addThenLinear, [linearnet, nn.add], 'addThenLinear');
+// The third argument is an optional name which must be provided in order to serialize
+//    the network. Any code which deserializes such a network must have first created
+//    at least one instance of the network in order to register its deserializer.
+```
+
 #### Extend `nn.Network`
 
 If you have a network with complex internal logic that cannot be captured by the composition of existing networks, then you can extend the `nn.Network` class (see [network.js](network.js)). Be sure to provide an implementation of `setTraining` that does the right thing, and make all parameters available in the `parameters` member. You'll also need to implement `serializeJSON`:
