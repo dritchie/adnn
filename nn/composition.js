@@ -8,7 +8,9 @@ var lift = require('./lift.js');
 
 // A computation involving neural nets can be encapsulated inside a larger
 //    neural net. This is essentially function abstraction.
-
+// NOTE: Neural nets created this way can only be serialized if 'optname'
+//    is provided. Any code attempting to deserialize such a network must
+//    first create an instance of one in order to register the deserializer. 
 function compound(fn, subnets, optname) {
 	function CompoundNetwork(subnets) {
 		Network.call(this);
