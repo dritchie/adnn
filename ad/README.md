@@ -120,7 +120,7 @@ See [transform.js](transform.js) to learn more about this function.
 
 #### Transforming code in the browser
 
-Currently, `ad.macroRequire` is not available in the browser, as attempting to load a [browserified](http://browserify.org/) script which includes Sweet.js will throw an error. For the time being, one workaround is to directly use Sweet.js to macro-transform your code (see their FAQ section on [How to run Sweet.js in the browser](http://sweetjs.org/doc/main/sweet.html#how-do-i-run-sweet.js-in-the-browser).
+Currently, `ad.macroRequire` is not available in the browser, as attempting to load a [browserified](http://browserify.org/) script which includes Sweet.js will throw an error. For the time being, one workaround is to directly use Sweet.js to macro-transform your code (see their FAQ section on [How to run Sweet.js in the browser](http://sweetjs.org/doc/main/sweet.html#how-do-i-run-sweet.js-in-the-browser)).
 
 #### Pre-compiling macro code for the browser
 
