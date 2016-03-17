@@ -34,7 +34,8 @@ function newUnaryFunction(opts) {
 
 	return function(x) {
 		if (x instanceof Node) {
-			return new NodeType(forward(x.x), [x], [x], bw, name);
+			var inputs = [x];
+			return new NodeType(forward(x.x), inputs, inputs, bw, name);
 		} else {
 			return forward(x);
 		}
@@ -77,7 +78,8 @@ function newBinaryFunction(opts) {
 		var xIsNode = x instanceof Node;
 		var yIsNode = y instanceof Node;
 		if (xIsNode && yIsNode) {
-			return new NodeType(forward(x.x, y.x), [x, y], [x, y], backward11, name);
+			var inputs = [x, y];
+			return new NodeType(forward(x.x, y.x), inputs, inputs, backward11, name);
 		} else if (xIsNode) {
 			return new NodeType(forward(x.x, y), [x], [x, y], backward10, name);
 		} else if (yIsNode) {
