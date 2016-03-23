@@ -139,9 +139,8 @@ fns.scalar.leq = func.liftBinaryFunction(
 
 
 
-// Scalar/tensor split/merge operations ---------------------------------------
-// (TODO: Variants that can output higher-rank tensors?)
-// (TODO: A lot of this might get moved to nn at some point...)
+// Scalar/tensor shaping operations ---------------------------------------
+
 
 // Select one entry out of a tensor (by linear indexing)
 fns.tensorEntry = func.newFunction({
@@ -171,6 +170,8 @@ fns.tensorToScalars = function(t) {
 };
 
 // Select a subtensor from a larger tensor
+// TODO: Eventually implement this as a view into existing storage,
+//    probably using refClone (+ other new stuff)
 fns.tensor.range = func.newFunction({
 	OutputType: Tensor,
 	name: 'tensor.range',
@@ -243,6 +244,7 @@ fns.scalarsToTensor = func.newFunction({
 
 // Concatentate multiple tensors into one big tensor
 // Can either take an array of tensors or a variable number of arguments
+// TODO: Eventually implement this as views into multiple storages?
 fns.tensor.concat = func.newFunction({
 	OutputType: Tensor,
 	name: 'tensor.concat',
@@ -287,6 +289,21 @@ fns.tensor.concat = func.newFunction({
 	getParents: func.naryGetParents
 });
 
+// Reshape a tensor
+// Creates a new TensorNode whose x and dx fields are refClones
+//    of the corresponding fields on the input node.
+fns.tensor.reshape = function(t, dims) {
+	if (t instanceof Node) {
+		var node = t.refClone();
+		node.x.reshape(dims);
+		node.dx.reshape(dims);
+		return node;
+	} else {
+		var ref = t.refClone();
+		ref.reshape(dims);
+		return ref;
+	}
+};
 
 
 // Misc. ----------------------------------------------------------------------

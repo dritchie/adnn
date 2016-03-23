@@ -39,7 +39,6 @@ function Tensor(dims) {
 	while (n--) size *= dims[n];
 	this.length = size;
 	this.data = BackingStore.new(size);
-	return this;
 }
 
 Object.defineProperties(Tensor.prototype, {
@@ -83,6 +82,21 @@ Tensor.prototype.copy = function(other, offset) {
 Tensor.prototype.clone = function() {
 	var copy = new Tensor(this.dims);
 	return copy.copy(this);
+};
+
+// Make this Tensor refer to the same backing store as other
+Tensor.prototype.refCopy = function(other) {
+	this.dims = other.dims;
+	this.length = other.length;
+	this.data = other.data;
+}
+
+// Create a new Tensor object that refers to the same backing store
+//    as this Tensor object
+Tensor.prototype.refClone = function() {
+	var t = Object.create(Tensor.prototype);
+	t.reference(this);
+	return t;
 };
 
 
