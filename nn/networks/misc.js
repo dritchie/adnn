@@ -9,27 +9,30 @@ function ConstantParamNetwork(dims, optname) {
 	Network.call(this);
 	this.name = optname || 'constantparams';
 	this.dims = dims;
-	this.parameters = [ad.params(dims, this.name)];
-	this.isTraining = false;
+
+	this.params = ad.params(dims, this.name);
+	this.paramGetters = [
+		function() { return this.params; }.bind(this)
+	];
+	this.paramSetters = [
+		function(params) { this.params = params; }.bind(this)
+	];
 };
 ConstantParamNetwork.prototype = Object.create(Network.prototype);
 ConstantParamNetwork.prototype.eval = function() {
-	return this.isTraining ? this.parameters[0] : ad.value(this.parameters[0]);
-};
-ConstantParamNetwork.prototype.setTraining = function(flag) {
-	this.isTraining = flag;
+	return this.isTraining ? this.params : ad.value(this.params);
 };
 ConstantParamNetwork.prototype.serializeJSON = function() {
 	return {
 		type: 'constantparams',
 		name: this.name,
 		dims: this.dims,
-		params: ad.value(this.parameters[0]).toFlatArray()
+		params: ad.value(this.params).toFlatArray()
 	};
 };
 Network.deserializers.constantparams = function(json) {
 	var net = new ConstantParamNetwork(json.dims, json.name);
-	ad.value(net.parameters[0]).fromFlatArray(json.params);
+	ad.value(net.params).fromFlatArray(json.params);
 	return net;
 };
 function constantparams(dims, optname) {

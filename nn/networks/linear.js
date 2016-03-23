@@ -12,16 +12,19 @@ function LinearNetwork(nIn, nOut, optname) {
 	this.name = optname || 'linear';
 	this.inSize = nIn;
 	this.outSize = nOut;
+
 	this.weights = ad.params([nOut, nIn], this.name+'_weights');
 	this.biases = ad.params([nOut], this.name+'_biases');
-	this.parameters = [this.weights, this.biases];
-	this.isTraining = false;
+	this.paramGetters = [
+		function() { return this.weights; }.bind(this),
+		function() { return this.biases; }.bind(this)
+	];
+	this.paramSetters = [
+		function(weights) { this.weights = weights; }.bind(this),
+		function(biases) { this.biases = biases; }.bind(this)
+	];
 }
 LinearNetwork.prototype = Object.create(Network.prototype);
-
-LinearNetwork.prototype.setTraining = function(flag) {
-	this.isTraining = flag;
-};
 
 LinearNetwork.prototype.serializeJSON = function() {
 	return {
@@ -114,16 +117,19 @@ function LayerwiseLinearNetwork(nIn, nOut, optname) {
 	this.name = optname || 'layerwiseLinear';
 	this.inSize = nIn;
 	this.outSize = nOut;
+
 	this.weights = ad.params([nOut, nIn], this.name+'_weights');
 	this.biases = ad.params([nOut], this.name+'_biases');
-	this.parameters = [this.weights, this.biases];
-	this.isTraining = false;
+	this.paramGetters = [
+		function() { return this.weights; }.bind(this),
+		function() { return this.biases; }.bind(this)
+	];
+	this.paramSetters = [
+		function(weights) { this.weights = weights; }.bind(this),
+		function(biases) { this.biases = biases; }.bind(this)
+	];
 }
 LayerwiseLinearNetwork.prototype = Object.create(Network.prototype);
-
-LayerwiseLinearNetwork.prototype.setTraining = function(flag) {
-	this.isTraining = flag;
-};
 
 LayerwiseLinearNetwork.prototype.serializeJSON = function() {
 	return {

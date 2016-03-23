@@ -129,7 +129,7 @@ var trueClass = 3;
 var trueClassLP = ad.scalar.log(ad.tensorEntry(classProbs, trueClass));
 trueClassLP.backprop();
 // Access parameter gradients
-var gradients = net.parameters.map(function(pvec) { return ad.derivative(pvec); };
+var gradients = net.getParameters().map(function(pvec) { return ad.derivative(pvec); };
 ```
 
 #### Convolutional neural network ####

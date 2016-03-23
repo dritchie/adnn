@@ -17,7 +17,7 @@ var input = new Tensor([10]).fillRandom();
 net.eval(input);
 
 // Networks have associated parameters, which is a list of tensors.
-net.parameters;   // May be empty for certain networks
+net.getParameters();   // May be empty for certain networks
 
 // When training is enabled, NNs will compute partial derivatives w.r.t.
 //    their parameters. Otherwise, they do not (for efficiency).
@@ -153,7 +153,7 @@ var compoundnet = nn.compound(addThenLinear, [linearnet, nn.add], 'addThenLinear
 
 #### Extend `nn.Network`
 
-If you have a network with complex internal logic that cannot be captured by the composition of existing networks, then you can extend the `nn.Network` class (see [network.js](network.js)). Be sure to provide an implementation of `setTraining` that does the right thing, and make all parameters available in the `parameters` member. You'll also need to implement `serializeJSON`:
+If you have a network with complex internal logic that cannot be captured by the composition of existing networks, then you can extend the `nn.Network` class (see [network.js](network.js)). Be sure to provide parameter getter/setter functions in the `paramGetter` and `paramSetter` members. You'll also need to implement `serializeJSON`:
 ```javascript
 var nn = require('adnn/nn');
 

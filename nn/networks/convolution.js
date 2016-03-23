@@ -31,16 +31,19 @@ function ConvolutionNetwork(nIn, nOut, fW, fH, sX, sY, pX, pY, optname) {
 	this.strideY = sY;
 	this.padX = pX;
 	this.padY = pY;
+
 	this.filters = ad.params([nOut, nIn, fH, fW], this.name+'_filters');
 	this.biases = ad.params([nOut], this.name+'_biases');
-	this.parameters = [this.filters, this.biases];
-	this.isTraining = false;
+	this.paramGetters = [
+		function() { return this.filters; }.bind(this),
+		function() { return this.biases; }.bind(this)
+	];
+	this.paramSetters = [
+		function(filters) { this.filters = filters; }.bind(this),
+		function(biases) { this.biases = biases; }.bind(this)
+	];
 }
 ConvolutionNetwork.prototype = Object.create(Network.prototype);
-
-ConvolutionNetwork.prototype.setTraining = function(flag) {
-	this.isTraining = flag;
-};
 
 ConvolutionNetwork.prototype.serializeJSON = function() {
 	return {

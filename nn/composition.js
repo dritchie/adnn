@@ -17,14 +17,17 @@ function compound(fn, subnets, optname) {
 		this.name = optname || 'compoundNetwork';
 		this.networks = subnets.slice();
 		for (var i = 0; i < subnets.length; i++) {
-			this.parameters = this.parameters.concat(subnets[i].parameters);
+			this.paramGetters = this.paramGetters.concat(subnets[i].paramGetters);
+			this.paramSetters = this.paramSetters.concat(subnets[i].paramSetters);
 		}
 		// In case this network uses any subnetworks more than once
-		this.parameters = utils.deduplicate(this.parameters);
+		this.paramGetters = utils.deduplicate(this.paramGetters);
+		this.paramSetters = utils.deduplicate(this.paramSetters);
 	}
 	CompoundNetwork.prototype = Object.create(Network.prototype);
 	CompoundNetwork.prototype.eval = fn;
 	CompoundNetwork.prototype.setTraining = function(flag) {
+		Network.prototype.setTraining.call(this, flag);
 		for (var i = 0; i < this.networks.length; i++) {
 			this.networks[i].setTraining(flag);
 		}

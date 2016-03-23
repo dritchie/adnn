@@ -23,6 +23,7 @@ var ad = {
 };
 
 // Create randomly-initialized params
+// TODO: Use orthogonal initialization?
 ad.params = function(dims, name) {
 	return ad.lift(new Tensor(dims).fillRandom(), name); 
 };

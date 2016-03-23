@@ -45,10 +45,10 @@ for (var iter = 0; iter < 20; iter++) {
 		var y = trainFunc.eval(datum.input);
 		var loss = dist(y, datum.output);
 		loss.backprop();
-		var prms = trainFunc.parameters.map(ad.value);
-		var grad = trainFunc.parameters.map(ad.derivative);
+		var prms = trainFunc.getParameters().map(ad.value);
+		var grad = trainFunc.getParameters().map(ad.derivative);
 		for (var k = 0; k < prms.length; k++) {
-			var prm = trainFunc.parameters[k];
+			var prm = trainFunc.getParameters()[k];
 			var p = ad.value(prm);
 			var g = ad.derivative(prm);
 			g.muleq(learnRate);
