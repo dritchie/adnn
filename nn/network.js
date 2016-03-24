@@ -37,8 +37,8 @@ Network.prototype.setParameters = function(params) {
 	for (var i = 0; i < params.length; i++) {
 		this.paramSetters[i](params[i]);
 	}
-	// Delete the cached result
-	this.__parameters === undefined;
+	// Replace the cached parameters with the new ones
+	this.__parameters = params.slice();
 };
 
 // Set whether the network is training or not (this controls whether
