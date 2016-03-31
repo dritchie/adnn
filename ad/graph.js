@@ -84,7 +84,7 @@ TensorNode.prototype.copy = function(other) {
 	this.x = other.x.clone();
 	this.dx = other.dx.clone();
 };
-Tensor.prototype.clone = function() {
+TensorNode.prototype.clone = function() {
 	var node = Object.create(Tensor.prototype);
 	node.copy(this);
 	return node;
