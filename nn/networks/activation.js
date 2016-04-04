@@ -2,7 +2,7 @@
 
 var Tensor = require('../../tensor.js');
 var ad = require('../../ad');
-var lift = require('../lift.js');
+var lift = require('../lifting.js').lift;
 
 
 // The 'lifted' module already defines sigmoid and tanh.

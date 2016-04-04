@@ -1,19 +1,15 @@
 'use strict';
 
 var Network = require('./network.js');
-var lift = require('./lift.js');
 
 module.exports = {
 	Network: Network,
-	lift: lift,
 	deserializeJSON: Network.deserializeJSON
 };
 
-// Include everything from composition
+// Utilities
+var lifting = require('./lifting.js');
 var composition = require('./composition.js');
-for (var prop in composition) {
-	module.exports[prop] = composition[prop];
-}
 
 // Networks
 var lifted = require('./networks/lifted.js');
@@ -23,8 +19,9 @@ var pooling = require('./networks/pooling.js');
 var activation = require('./networks/activation.js');
 var perceptron = require('./networks/perceptron.js');
 var misc = require('./networks/misc.js');
+
 var modules = [
-	lifted, linear, convolution, pooling, activation, perceptron, misc
+	lifting, composition, lifted, linear, convolution, pooling, activation, perceptron, misc
 ];
 for (var i = 0; i < modules.length; i++) {
 	var m = modules[i];

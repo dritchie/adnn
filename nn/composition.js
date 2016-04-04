@@ -3,7 +3,6 @@
 var assert = require('assert');
 var utils = require('../utils.js');
 var Network = require('./network.js');
-var lift = require('./lift.js');
 
 
 // A computation involving neural nets can be encapsulated inside a larger
@@ -56,6 +55,7 @@ function compound(fn, subnets, optname) {
 
 
 // ----------------------------------------------------------------------------
+
 
 // What follows in this module is basically a little DSL for defining
 //    compound functions involving neural nets, by manually constructing the
@@ -212,6 +212,7 @@ Network.deserializers.compiled = function(json) {
 
 // ----------------------------------------------------------------------------
 
+
 // A common composition pattern is a sequence of 1-to-1 networks
 function sequence(networks, optname) {
 	var inputNode = input();
@@ -239,6 +240,9 @@ Network.deserializers.sequence = function(json) {
 	});
 	return sequence(networks, json.name);
 };
+
+
+// ----------------------------------------------------------------------------
 
 
 module.exports = {
