@@ -89,14 +89,14 @@ Tensor.prototype.refCopy = function(other) {
 	this.dims = other.dims;
 	this.length = other.length;
 	this.data = other.data;
+	return this;
 }
 
 // Create a new Tensor object that refers to the same backing store
 //    as this Tensor object
 Tensor.prototype.refClone = function() {
 	var t = Object.create(Tensor.prototype);
-	t.reference(this);
-	return t;
+	return t.refCopy(this);
 };
 
 
