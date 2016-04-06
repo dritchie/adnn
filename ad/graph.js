@@ -95,7 +95,7 @@ TensorNode.prototype.refCopy = function(other) {
 	this.dx = other.dx.refClone();
 };
 TensorNode.prototype.refClone = function() {
-	var node = Object.create(Tensor.prototype);
+	var node = Object.create(TensorNode.prototype);
 	node.refCopy(this);
 	return node;
 };
