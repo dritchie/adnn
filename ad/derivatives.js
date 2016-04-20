@@ -77,6 +77,7 @@ function makeBinaryDerivatives(code1, code2) {
 
 var d = {};
 
+d.neg = makeUnaryDerivatives('-1');
 d.add = makeBinaryDerivatives('1', '1');
 d.sub = makeBinaryDerivatives('1', '-1');
 d.mul = makeBinaryDerivatives('y', 'x');

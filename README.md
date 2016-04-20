@@ -230,4 +230,4 @@ var elem = mat.get([0, 1]);   // elem = 2
 mat.set([0, 1], 5);   // mat is now [[1, 5], [3, 4]]
 ```
 
-The `Tensor` type also provides a large number of mathematical functions--unary operators, binary operators, reductions, etc. See the bottom of [tensor.js](tensor.js) for a complete listing.
+The `Tensor` type also provides a large number of mathematical functions--unary operators, binary operators, reductions, etc. See [tensor.js](tensor.js) for a complete listing.
