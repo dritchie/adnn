@@ -49,7 +49,7 @@ function makeBinaryDerivatives(code1, code2) {
 				].join('\n'))
 			],
 			// To match the implementations of the methods on Tensor objects,
-			//    the seoncd argument might be a scalar or a Tensor.
+			//    the second argument might be a scalar or a Tensor.
 			tensor: [
 				// First arg is definitely a Node, second may or may not be
 				new Function('_x', '_y', [

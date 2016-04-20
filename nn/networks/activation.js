@@ -29,6 +29,15 @@ var relu = lift(ad.newUnaryFunction({
 }), 'relu');
 
 
+// Sigmoid, shifted and scaled to the range (-1, 1)
+// Same output range as tanh, but numerically stable (i.e. doesn't give NaNs
+//    for large inputs).
+var sigmoidCentered = lift(function(x) {
+	return ad.tensor.sub(ad.tensor.mul(ad.tensor.sigmoid(x), 2), 1);
+});
+
+
 module.exports = {
-	relu: relu
+	relu: relu,
+	sigmoidCentered: sigmoidCentered
 };
