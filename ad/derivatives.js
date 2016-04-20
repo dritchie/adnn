@@ -33,12 +33,14 @@ function makeBinaryDerivatives(code1, code2) {
 	} else  {
 		return {
 			scalar: [
+				// First arg is definitely a Node, second may or may not be
 				new Function('_x', '_y', [
 					'var x = _x.x;',
 					'var y = (typeof _y === "number") ? _y : _y.x;',
 					'var out = this.x;',
 					'_x.dx += (' + code1 + ') * this.dx;'
 				].join('\n')),
+				// Second arg is definitely a Node, first may or may not be
 				new Function('_x', '_y', [
 					'var x = (typeof _x === "number") ? _x : _x.x;',
 					'var y = _y.x;',
@@ -46,27 +48,53 @@ function makeBinaryDerivatives(code1, code2) {
 					'_y.dx += (' + code2 + ') * this.dx;'
 				].join('\n'))
 			],
+			// To match the implementations of the methods on Tensor objects,
+			//    the seoncd argument might be a scalar or a Tensor.
 			tensor: [
+				// First arg is definitely a Node, second may or may not be
 				new Function('_x', '_y', [
 					'var _xx = _x.x;',
 					'var _yx = _y.x || _y;',
 					'var n = _xx.length;',
-					'while (n--) {',
-					'	var x = _xx.data[n];',
-					'	var y = _yx.data[n];',
-					'	var out = this.x.data[n];',
-					'   _x.dx.data[n] += (' + code1 + ') * this.dx.data[n];',
-					'}'
+					// y is a scalar
+					'if (typeof _yx === "number") {',
+					'	while (n--) {',
+					'		var x = _xx.data[n];',
+					'		var y = _yx;',
+					'		var out = this.x.data[n];',
+					'	   _x.dx.data[n] += (' + code1 + ') * this.dx.data[n];',
+					'	}',
+					// y is a tensor 
+					'} else {',
+					'	while (n--) {',
+					'		var x = _xx.data[n];',
+					'		var y = _yx.data[n];',
+					'		var out = this.x.data[n];',
+					'	   _x.dx.data[n] += (' + code1 + ') * this.dx.data[n];',
+					'	}',
+					'}',
 				].join('\n')),
+				// Second arg is definitely a Node, first may or may not be
 				new Function('_x', '_y', [
 					'var _xx = _x.x || _x;',
 					'var _yx = _y.x;',
-					'var n = _yx.length;',
-					'while (n--) {',
-					'	var x = _xx.data[n];',
-					'	var y = _yx.data[n];',
-					'	var out = this.x.data[n];',
-					'   _y.dx.data[n] += (' + code2 + ') * this.dx.data[n];',
+					'var n = _xx.length;',
+					// y is a scalar
+					'if (typeof _yx === "number") {',
+					'	while (n--) {',
+					'		var x = _xx.data[n];',
+					'		var y = _yx;',
+					'		var out = this.x.data[n];',
+					'	   _y.dx += (' + code2 + ') * this.dx.data[n];',
+					'	}',
+					// y is a tensor
+					'} else {',
+					'	while (n--) {',
+					'		var x = _xx.data[n];',
+					'		var y = _yx.data[n];',
+					'		var out = this.x.data[n];',
+					'	   _y.dx.data[n] += (' + code2 + ') * this.dx.data[n];',
+					'	}',
 					'}'
 				].join('\n'))
 			]

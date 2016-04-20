@@ -1,6 +1,6 @@
-var Tensor = require('tensor');
-var ad = require('ad');
-var nn = require('nn');
+var Tensor = require('../tensor');
+var ad = require('../ad');
+var nn = require('../nn');
 
 
 // Linear regression test
