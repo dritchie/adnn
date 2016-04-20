@@ -73,7 +73,7 @@ var Tensor = require('adnn/tensor');
 
 function dot(vec) {
   var sq = ad.tensor.mul(vec, vec);
-  return ad.sumreduce(sq);
+  return ad.tensor.sumreduce(sq);
 }
 
 function dist(vec1, vec2) {

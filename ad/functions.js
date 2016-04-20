@@ -86,6 +86,14 @@ function makeFunctions(OutputType) {
 		});
 	}
 
+	// NaN and infinity checks
+	fns.isNaN = OutputType === Scalar ?
+		func.liftUnaryFunction(isNaN) :
+		func.liftUnaryFunction(function(t) { return t.isNaN(); });
+	fns.isFinite = OutputType === Scalar ?
+		func.liftUnaryFunction(isFinite) :
+		func.liftUnaryFunction(function(t) { return t.isFinite(); });
+
 	return fns;
 }
 
@@ -137,6 +145,33 @@ fns.scalar.leq = func.liftBinaryFunction(
 	function(x, y) { return x <= y; }
 );
 
+
+// Tensor reductions  -----------------------------------------------------
+
+
+fns.tensor.sumreduce = func.newUnaryFunction({
+	OutputType: Scalar,
+	name: 'sumreduce',
+	forward: function(t) {
+		return t.sumreduce();
+	},
+	backward: function(t) {
+		var n = t.dx.data.length;
+		while (n--) {
+			t.dx.data[n] += this.dx;
+		}
+	}
+});
+
+fns.tensor.allreduce = func.liftUnaryFunction(function(t) {
+	return t.allreduce();
+});
+
+fns.tensor.anyreduce = func.liftUnaryFunction(function(t) {
+	return t.anyreduce();
+});
+
+// TODO: min/max?
 
 
 // Scalar/tensor shaping operations ---------------------------------------
@@ -338,21 +373,6 @@ fns.scalar.sum = func.newFunction({
 		}
 	},
 	getParents: func.naryGetParents
-});
-
-// Sum reduce a tensor
-fns.sumreduce = func.newUnaryFunction({
-	OutputType: Scalar,
-	name: 'sumreduce',
-	forward: function(t) {
-		return t.sumreduce();
-	},
-	backward: function(t) {
-		var n = t.dx.data.length;
-		while (n--) {
-			t.dx.data[n] += this.dx;
-		}
-	}
 });
 
 // http://stats.stackexchange.com/questions/79454/softmax-layer-in-a-neural-network
