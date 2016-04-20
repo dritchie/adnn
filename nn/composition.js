@@ -116,7 +116,7 @@ Network.prototype.compose = function() {
 
 
 // Actually compiling the AST
-function compile(inputs, outputs, optname, optDebugNaNs) {
+function compile(inputs, outputs, optname, optDebug) {
 	for (var i = 0; i < inputs.length; i++) {
 		assert(inputs[i].type === 'input',
 			'Inputs to composite neural network must be nn.ast.input()');
@@ -153,15 +153,17 @@ function compile(inputs, outputs, optname, optDebugNaNs) {
 			assert(false, 'impossible');
 		});
 		body += 'var r'+i+' = this.networks['+i+'].eval('+ins+');\n';
-		// Optionally, catch NaNs at each intermediate network
-		if (optDebugNaNs) {
+		// Optionally, catch NaNs and Infinities at each intermediate network
+		if (optDebug) {
 			var ri = 'r'+i;
 			var ri_val = ri +'_val';
 			var neti = 'this.networks['+i+']';
 			body += [
 				'var '+ri_val+' = '+ri+'.x || '+ri+';',
-				'if ('+ri_val+'.isNaN().anyreduce()) {',
-				'	var err = "NaN in output of network '+i+' ("+'+neti+'.name+")\\n";',
+				'if (!'+ri_val+'.isFinite().allreduce()) {',
+				'	var err = "Non-finite value in output of network '+i+' ("+'+neti+'.name+")\\n";',
+				'   err += "Output:\\n";',
+				'	err += "["+'+ri_val+'.toString()+"]\\n";',
 				'   err += "Inputs:\\n";',
 				ins.map(function(input) {
 					var inval = '('+input+'.x || ' + input+')';
@@ -232,13 +234,13 @@ Network.deserializers.compiled = function(json) {
 
 
 // A common composition pattern is a sequence of 1-to-1 networks
-function sequence(networks, optname, optDebugNaNs) {
+function sequence(networks, optname, optDebug) {
 	var inputNode = input();
 	var currNode = inputNode;
 	for (var i = 0; i < networks.length; i++) {
 		currNode = networks[i].compose(currNode);
 	}
-	var net = compile([inputNode], [currNode], undefined, optDebugNaNs);
+	var net = compile([inputNode], [currNode], undefined, optDebug);
 	net.name = optname || 'sequenceNetwork';
 	// Could use compile's serialization, but there's a more concise option
 	net.serializeJSON = function() {
