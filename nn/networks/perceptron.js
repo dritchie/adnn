@@ -5,7 +5,7 @@ var linear = require('./linear.js').linear;
 
 
 // Convenience function for defining multilayer perceptrons
-function mlp(nIn, layerdefs, optname) {
+function mlp(nIn, layerdefs, optname, optDebugNaNs) {
 	optname = optname || 'mlp';
 	var nets = [];
 	for (var i = 0; i < layerdefs.length; i++) {
@@ -16,7 +16,7 @@ function mlp(nIn, layerdefs, optname) {
 		}
 		nIn = ldef.nOut;
 	}
-	return sequence(nets, optname || 'multiLayerPerceptron');
+	return sequence(nets, optname || 'multiLayerPerceptron', optDebugNaNs);
 }
 
 
