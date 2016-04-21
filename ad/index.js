@@ -1,5 +1,6 @@
 'use strict';
 
+var utils = require('../utils.js');
 var graph = require('./graph.js');
 var Tensor = require('../tensor.js');
 
@@ -30,18 +31,12 @@ ad.params = function(dims, name) {
 
 var func = require('./func.js');
 var functions = require('./functions.js');
-var modules = [
-	func, functions
-];
+ad = utils.mergeObjects(ad, func, functions);
+
+
 // The macro-transform code only works via node
 if (typeof window === "undefined") {
-	modules.push(require('./transform.js'));
-}
-for (var i = 0; i < modules.length; i++) {
-	var m = modules[i];
-	for (var prop in m) {
-		ad[prop] = m[prop];
-	}
+	ad = utils.mergeObjects(ad, require('./transform.js'));
 }
 
 module.exports = ad;

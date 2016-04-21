@@ -1,5 +1,6 @@
 'use strict';
 
+var utils = require('../utils.js');
 var Network = require('./network.js');
 
 module.exports = {
@@ -20,12 +21,6 @@ var activation = require('./networks/activation.js');
 var perceptron = require('./networks/perceptron.js');
 var misc = require('./networks/misc.js');
 
-var modules = [
+module.exports = utils.mergeObjects(module.exports,
 	lifting, composition, lifted, linear, convolution, pooling, activation, perceptron, misc
-];
-for (var i = 0; i < modules.length; i++) {
-	var m = modules[i];
-	for (var prop in m) {
-		module.exports[prop] = m[prop];
-	}
-}
+);

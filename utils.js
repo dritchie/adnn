@@ -23,10 +23,14 @@ function deduplicate(list) {
 	return retlist;
 }
 
-function mergeObjects(tgt, src) {
+// source objects from which to copy are in arguments[1] - arguments[arguments.length-1]
+function mergeObjects(tgt) {
 	tgt = tgt || {};
-	for (var prop in src) {
-		tgt[prop] = src[prop];
+	for (var i = 1; i < arguments.length; i++) {
+		var src = arguments[i];
+		for (var prop in src) {
+			tgt[prop] = src[prop];
+		}
 	}
 	return tgt;
 }
