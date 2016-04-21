@@ -1,19 +1,5 @@
 'use strict';
 
-// Simple single-arg function memoization using stringified keys
-function memoize(fn) {
-	var cache = {};
-	return function(x) {
-		var key = x instanceof Function ? x.toString() : JSON.stringify(x);
-		var y = cache[key];
-		if (y === undefined) {
-			y = fn(x);
-			cache[key] = y;
-		}
-		return y;
-	};
-}
-
 function gaussianSample(mu, sigma) {
 	var u, v, x, y, q;
 	do {
@@ -37,9 +23,22 @@ function deduplicate(list) {
 	return retlist;
 }
 
+function mergeObjects(tgt, src) {
+	tgt = tgt || {};
+	for (var prop in src) {
+		tgt[prop] = src[prop];
+	}
+	return tgt;
+}
+
+function cloneObject(obj) {
+	return mergeObjects({}, obj);
+};
+
 
 module.exports = {
-	memoize: memoize,
 	gaussianSample: gaussianSample,
-	deduplicate: deduplicate
+	deduplicate: deduplicate,
+	mergeObjects: mergeObjects,
+	cloneObject: cloneObject
 };
