@@ -6,8 +6,7 @@ var nn = require('../nn');
 // Linear regression test
 
 
-// Build training data by putting random inputs
-// through a known function
+// Build training data by putting random inputs through a known function
 var trueFunc = nn.linear(5, 5);
 ad.value(trueFunc.weights).fromArray(
 	[[1, 0, 0, 0, 0],

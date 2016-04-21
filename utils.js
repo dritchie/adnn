@@ -37,7 +37,7 @@ function mergeObjects(tgt) {
 
 function cloneObject(obj) {
 	return mergeObjects({}, obj);
-};
+}
 
 
 module.exports = {
@@ -46,3 +46,5 @@ module.exports = {
 	mergeObjects: mergeObjects,
 	cloneObject: cloneObject
 };
+
+
