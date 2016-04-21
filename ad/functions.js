@@ -354,7 +354,7 @@ fns.tensor.range = func.newFunction({
 			var n = end - start;
 			while (n--) {
 				var i = start + n;
-				this.dx.data[i] += t.dx.data[n];
+				t.dx.data[i] += this.dx.data[n];
 			}
 		}
 	},
