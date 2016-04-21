@@ -51,6 +51,7 @@ Tensor.prototype.reshape = function(dims) {
 	while (n--) size *= dims[n];
 	assert(size === this.length, 'Tensor reshape invalid size');
 	this.dims = dims;
+  return this;
 }
 
 Tensor.prototype.fill = function(val) {

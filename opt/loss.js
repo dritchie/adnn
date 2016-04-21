@@ -1,6 +1,7 @@
 'use strict';
 
 
+var assert = require('assert');
 var ad = require('../ad');
 
 
@@ -17,11 +18,12 @@ function regressionLoss(output, trueOutput) {
 	var m = trueOutput.length;
 	assert(n === m,
 		'Network output has different dimensionality than training data (' + n + ' vs. ' + m + ')');
-	return ad.tensor.dot(ad.tensor.sub(output, trueOutput));
+	var diff = ad.tensor.sub(output, trueOutput);
+	return ad.tensor.sumreduce(ad.tensor.mul(diff, diff));
 };
 
 
-modules.exports = {
+module.exports = {
 	classificationLoss: classificationLoss,
 	regressionLoss: regressionLoss
 };
