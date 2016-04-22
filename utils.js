@@ -39,12 +39,17 @@ function cloneObject(obj) {
 	return mergeObjects({}, obj);
 }
 
+function mergeDefaults(obj, defaults) {
+	return mergeObjects({}, defaults, obj);
+}
+
 
 module.exports = {
 	gaussianSample: gaussianSample,
 	deduplicate: deduplicate,
 	mergeObjects: mergeObjects,
-	cloneObject: cloneObject
+	cloneObject: cloneObject,
+	mergeDefaults: mergeDefaults
 };
 
 

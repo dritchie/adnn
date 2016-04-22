@@ -4,6 +4,7 @@
 var assert = require('assert');
 var utils = require('../utils.js');
 var Tensor = require('../tensor.js');
+var ad = require('../ad');
 
 
 // Code for handling arbitrary nesting of list/object structures
@@ -13,7 +14,9 @@ var Tensor = require('../tensor.js');
 
 
 function type(struct) {
-	if (struct instanceof Tensor) {
+	// We also consider Tensor Nodes to be Tensors
+	if (struct instanceof Tensor ||
+		(ad.isLifted(struct) && ad.value(struct) instanceof Tensor) ) {
 		return 'tensor';
 	} else if (Array.isArray(struct)) {
 		return 'array';
@@ -155,6 +158,7 @@ var ifMissing = {
 
 module.exports = {
 	type: type,
+	map: map,
 	foreach: foreach,
 	ifMissing: ifMissing
 };

@@ -10,7 +10,7 @@ var tstruct = require('./tensorStruct.js');
 
 // fn returns params and grads
 function optimize(fn, options) {
-	options = utils.mergeObjects(options, {
+	options = utils.mergeDefaults(options, {
 		iterations: 100,
 		method: methods.sgd(),
 		verbose: false
@@ -41,11 +41,16 @@ function makeOptimizable(fn) {
 		var rets = fn();
 		assert(rets.parameters !== undefined);
 		assert(rets.loss !== undefined);
+		// Clear out any derivatives left around from previous iterations
+		tstruct.foreach(rets.parameters, [], function(p) {
+			p.zeroDerivatives();
+		});
 		rets.loss.backprop();
-		return {
-			gradients: rets.parameters.map(ad.derivative),
-			parameters: rets.parameters.map(ad.value),
+		var newrets = {
+			gradients: tstruct.map(rets.parameters, ad.derivative),
+			parameters: tstruct.map(rets.parameters, ad.value)
 		};
+		return newrets;
 	};
 }
 
@@ -62,7 +67,7 @@ function adOptimize(fn, options) {
 //    ground truth output value and producing a loss
 // Constructs minibatches uniformly at random from trainingData
 function adTrain(fn, trainingData, lossFn, options) {
-	options = utils.mergeObjects(options, {
+	options = utils.mergeDefaults(options, {
 		batchSize: 1
 	});
 
@@ -101,9 +106,11 @@ function adTrain(fn, trainingData, lossFn, options) {
 				);
 			}
 		}
-		tstruct.foreach(gradients, [], function(g) {
-			g.diveq(batchSize);
-		});
+		if (batchSize > 1) {
+			tstruct.foreach(gradients, [], function(g) {
+				g.diveq(batchSize);
+			});
+		}
 		return {
 			parameters: parameters,
 			gradients: gradients
