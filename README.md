@@ -1,7 +1,5 @@
 # adnn
-adnn provides Javascript-native neural networks on top of general scalar/tensor reverse-mode automatic differentiation. You can use just the AD code, or the NN layer built on top of it. This architecture makes it easy to define big, complex numerical computations and compute derivatives w.r.t. their inputs/parameters.
-
-adnn is not an optimization library--it does not (currently) provide any methods for optimizing the parameters of neural nets / big differentiable computations (e.g. SGD, AdaGrad). However, these algorithms are simple to implement on top of adnn.
+adnn provides Javascript-native neural networks on top of general scalar/tensor reverse-mode automatic differentiation. You can use just the AD code, or the NN layer built on top of it. This architecture makes it easy to define big, complex numerical computations and compute derivatives w.r.t. their inputs/parameters. adnn also includes utilities for optimizing/training the parameters of such computations.
 
 ### Examples ###
 
@@ -96,6 +94,7 @@ adnn makes it easy to define simple, feedforward neural networks. Here's a basic
 var Tensor = require('adnn/tensor');
 var ad = require('adnn/ad');
 var nn = require('adnn/nn');
+var opt = require('adnn/opt');
 
 var nInputs = 20;
 var nHidden = 10;
@@ -118,18 +117,20 @@ net = nn.sequence([
   nn.softmax
 ]);
 
-// Enable training
-net.setTraining(true);
+// Train the parameters of the network from some dataset
+// 'loadData' is a stand-in for a user-provided function that
+//    loads in an array of {input: , output: } objects
+// Here, 'input' is a feature vector, and 'output' is a class label
+var trainingData = loadData(...);
+opt.nnTrain(net, trainingData, opt.classificationLoss, {
+  batchSize: 10,
+  iterations: 100,
+  method: opt.adagrad()
+});
 
-// Evaluate the network on some features
-var features = ad.lift(new Tensor([nInputs]).fillRandom());
+// Predict class probabilities for new, unseen features
+var features = new Tensor([nInputs]).fillRandom();
 var classProbs = net.eval(features);
-// Compute gradient w.r.t. log probability of the true class
-var trueClass = 3;
-var trueClassLP = ad.scalar.log(ad.tensorEntry(classProbs, trueClass));
-trueClassLP.backprop();
-// Access parameter gradients
-var gradients = net.getParameters().map(function(pvec) { return ad.derivative(pvec); };
 ```
 
 #### Convolutional neural network ####
@@ -198,6 +199,9 @@ The `ad` module has its own documentation [here](ad/README.md)
 ### The `nn` module ###
 The `nn` module has its own documentation [here](nn/README.md)
 
+### The `opt` module ###
+The `opt` module has its own documentation [here](opt/README.md)
+
 ### Tensors ###
 
 adnn provides a `Tensor` type for representing multidimensional arrays of numbers and various operations on them. This is the core datatype underlying neural net computations.
@@ -230,4 +234,4 @@ var elem = mat.get([0, 1]);   // elem = 2
 mat.set([0, 1], 5);   // mat is now [[1, 5], [3, 4]]
 ```
 
-The `Tensor` type also provides a large number of mathematical functions--unary operators, binary operators, reductions, etc. See [tensor.js](tensor.js) for a complete listing.
+The `Tensor` type also provides a large number of mathematical functions--unary operators, binary operators, reductions, matrix operations, etc. See [tensor.js](tensor.js) for a complete listing.
