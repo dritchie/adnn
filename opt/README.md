@@ -100,7 +100,29 @@ var parameters4 = {
 ```
  
 ### Optimizing AD functions
-(if the objective you want to optimize isn’t based on training data)
+If you want to optimize an objective that isn't based on training data, then you want `opt.adOptimize`.
+The function to be optimized must return a loss value (a scalar AD node) as well as its free parameters.
+
+```javascript
+var ad = require('adnn/ad');
+var opt = require('adnn/opt');
+
+// Find the minimum of some arbitrary function
+var params = ad.params([10]);
+function foo(input) {
+  var output = ad.tensor.sumreduce(
+    ad.tensor.exp(ad.tensor.sqrt(ad.tensor.add(input, params)))
+  );
+  return {
+    loss: output,
+    parameters: params
+  };
+}
+opt.adOptimize(foo, {
+  iterations: 1000,
+  method: opt.sgd({stepSize: 0.1})
+});
+```
 
 ### Optimizing with user-provided gradients
 If you just want to use opt with your own, hand-calculated gradients, that’s cool too
