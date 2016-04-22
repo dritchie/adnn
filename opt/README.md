@@ -23,18 +23,19 @@ var classifier = nn.sequence([
   nn.linear(10, 5),
   nn.softmax
 ]);
-var data = ...; // Load data here
+var data = ...; // Load training data here
 opt.nnTrain(classifier, data, opt.classificationLoss, {
   batchSize: 10,
   iterations: 1000,
-  method: opt.adagrad()
+  method: opt.adagrad(),
+  verbose: true   // prints iteration count
 });
 
 // Train a regressor
 // e.g. linear function R^20 -> R^5
 // data is an array of {input: Tensor([20]), output: Tensor([5])}
 var regressor = nn.linear(20, 5);
-var data = ...; // Load data here
+var data = ...; // Load training data here
 opt.nnTrain(regressor, data, opt.regressionLoss, {
   batchSize: 10,
   iterations: 1000,
@@ -62,11 +63,41 @@ var optMethods = [
 
 ### Training AD functions
 
-(if you’re using ad directly, or if the function you want to train isn’t easily expressible as a single neural net)
-nnTrain is implemented in terms of this
-Show how parameters work
- - ParamStruct = Tensor | array(ParamStruct) | object(ParamStruct)
- - show examples, too
+`opt.adTrain` provides a nearly identical interface to `opt.nnTrain`, but for training general AD functions that are not encapsulated in a neural net. In this case, in addition to its output, the function must also return its parameters so that the optimizer knows what free parameters to optimize. `opt.nnTrain` is actually implemented in terms of `opt.adTrain`.
+
+```javascript
+var ad = require('adnn/ad');
+var opt = require('adnn/opt');
+
+// Learn the parameters of a simple linear function
+// (i.e. 'params' dot 'input')
+var params = ad.params([10]);
+function dot(input) {
+  var output = ad.tensor.sumreduce(ad.scalar.mul(input, params));
+  return {
+    output: output,
+    parameters: params
+  };
+}
+var data = ...;   // Load training data here
+opt.adTrain(dot, data, opt.regressionLoss, {
+  batchSize: 1,
+  iterations: 1000,
+  method: opt.sgd({stepSize: 0.1})
+});
+
+// In the above example, 'parameters' was a single lifted Tensor
+// In general, 'parameters' can be an arbitrary structure of the following type:
+//    ParamStruct = Tensor | array(ParamStruct) | object(ParamStruct})
+// So the following are all valid parameter structures:
+var parameters1 = ad.params([20]);
+var parameters2 = [ ad.params([5]), ad.params([10]) ];
+var parameters3 = { p1: ad.params([5]), p2: ad.params([10]);
+var parameters4 = {
+  p1: [ ad.params([5]), ad.params([10]) ],
+  p2: [ ad.params([6]), ad.params([14]) ]
+};
+```
  
 ### Optimizing AD functions
 (if the objective you want to optimize isn’t based on training data)
