@@ -119,8 +119,6 @@ function adam(options) {
     }
 }
 
-// TODO: adadelta
-
 
 
 module.exports = {
