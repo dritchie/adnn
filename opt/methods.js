@@ -2,7 +2,7 @@
 
 
 var utils = require('../utils.js');
-var tensorStruct = require('./tensorStruct.js');
+var tstruct = require('./tensorStruct.js');
 
 
 
@@ -11,7 +11,12 @@ function sgd(options) {
 	var stepSize = options.stepSize;
 
 	return function(grad, param, step) {
-		tensorStruct.foreachN(grad, param, function(g, p) {
+		tstruct.foreach(
+			grad,
+			[
+				{ struct: param, ifMissing: tstruct.ifMissing.impossible }
+			],
+			function(g, p) {
 			// p = p - stepSize*g;
 			p.subeq(g.mul(stepSize));
 		});
@@ -26,8 +31,13 @@ function adagrad(options) {
 	var g2State;
 
 	return function(grad, param, step) {
-		g2State = tensorStruct.ensureZerosLike(g2State, grad);
-		tensorStruct.foreachN(grad, param, g2State, function(g, p, g2) {
+		tstruct.foreach(
+			grad,
+			[
+				{ struct: param, ifMissing: tstruct.ifMissing.impossible },
+				{ struct: g2State, ifMissing: tstruct.ifMissing.zeros }
+			],
+			function(g, p, g2) {
 			// g2 = g2 + g*g;
 			g2.addeq(g.mul(g));
 			// p = p - stepSize*(g / (g2 + 1e-8))

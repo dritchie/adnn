@@ -5,7 +5,7 @@ var assert = require('assert');
 var ad = require('../ad');
 var utils = require('../utils.js');
 var methods = require('./methods.js');
-var tensorStruct = require('./tensorStruct.js');
+var tstruct = require('./tensorStruct.js');
 
 
 // fn returns params and grads
@@ -24,6 +24,7 @@ function optimize(fn, options) {
 		var rets = fn();
 		assert(rets.gradients !== undefined);
 		assert(rets.parameters !== undefined);
+		// TODO: assert that there exists a parameter for each gradient?
 		method(rets.gradients, rets.parameters, i);
 		if (verbose) {
 			console.log('[optimize] done iteration ' + (i+1) + '/' + iters);
@@ -85,15 +86,26 @@ function adTrain(fn, trainingData, lossFn, options) {
 			var rets = singleFn();
 			if (gradients === undefined) {
 				gradients = rets.gradients;
+				parameters = rets.parameters;
 			} else {
-				tensorStruct.addeq(gradients, rets.gradients);
+				tstruct.foreach(
+					rets.gradients,
+					[
+						{ struct: gradients, ifMissing: tstruct.ifMissing.zeros },
+						{ struct: ret.parameters, ifMissing: tstruct.ifMissing.impossible },
+						{ struct: parameters, ifMissing: tstruct.ifMissing.copyFromCoStruct(1) }
+					],
+					function(newg, g) {
+						g.addeq(newg);
+					}
+				);
 			}
-			// TODO: merge these?
-			parameters = rets.parameters;
 		}
-		tensorStruct.diveq(gradients, batchSize);
+		tstruct.foreach(gradients, [], function(g) {
+			g.diveq(batchSize);
+		});
 		return {
-			parameters: paramvals,
+			parameters: parameters,
 			gradients: gradients
 		};
 	}
