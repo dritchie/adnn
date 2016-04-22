@@ -31,14 +31,15 @@ function adagrad(options) {
 	var stepSize = options.stepSize;
 
 	// State
-	var g2State;
+	var g2Struct;
 
 	return function(grad, param, step) {
+		if (!g2Struct) g2Struct = tstruct.emptyLike(grad);
 		tstruct.foreach(
 			grad,
 			[
 				{ struct: param, ifMissing: tstruct.ifMissing.impossible },
-				{ struct: g2State, ifMissing: tstruct.ifMissing.zeros }
+				{ struct: g2Struct, ifMissing: tstruct.ifMissing.zeros },
 			],
 			function(g, p, g2) {
 				// g2 = g2 + g*g;

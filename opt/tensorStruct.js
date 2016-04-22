@@ -27,6 +27,17 @@ function type(struct) {
 	}
 }
 
+function emptyLike(struct) {
+	var t = type(struct);
+	if (t === 'tensor') {
+		return new Tensor(struct.dims);	// Initializes to zero
+	} else if (t === 'array') {
+		return [];
+	} else if (t === 'object') {
+		return {};
+	}
+}
+
 function map(struct, fn) {
 	var t = type(struct);
 	if (t === 'tensor') {
@@ -85,9 +96,10 @@ function foreach(struct, coIteratees, fn) {
 				// Build coStruct lists for recursive calls
 				var subCoStructLists = [];
 				for (var j = 0; j < struct.length; j++) {
-					subCoStructLists.push(coStructs.map(function(s) { return s[j]; }));
+					var subCoStructList = [];
+					for (var i = 0; i < coStructs.length; i++) subCoStructList.push(coStructs[i][j]);
+					subCoStructLists.push(subCoStructList);
 				}
-				for (var i = 0; i < coStructs.length; i++)
 				// Fill in any missing substructs
 				for (var i = 0; i < coStructs.length; i++) {
 					var coStruct = coStructs[i];
@@ -95,7 +107,9 @@ function foreach(struct, coIteratees, fn) {
 					var n = struct.length;
 					var m = coStruct.length;
 					for (var j = m; j < n; j++) {
-						coStruct.push(missing(struct[j], subCoStructLists[j]));
+						var toAdd = missing(struct[j], subCoStructLists[j]);
+						coStruct.push(toAdd);
+						subCoStructLists[j][i] = toAdd;
 					}
 				}
 				// Recurse
@@ -106,7 +120,9 @@ function foreach(struct, coIteratees, fn) {
 				// Build coStruct lists for recursive calls
 				var subCoStructLists = {};
 				for (var prop in struct) {
-					subCoStructLists[prop] = coStructs.map(function(s) { return s[prop]; });
+					var subCoStructList = [];
+					for (var i = 0; i < coStructs.length; i++) subCoStructList.push(coStructs[i][prop]);
+					subCoStructLists[prop] = subCoStructList;
 				}
 				// Fill in any missing substructs
 				for (var i = 0; i < coStructs.length; i++) {
@@ -114,7 +130,9 @@ function foreach(struct, coIteratees, fn) {
 					var missing = missingFns[i];
 					for (var prop in struct) {
 						if (!coStruct.hasOwnProperty(prop)) {
-							coStruct[prop] = missing(struct[prop], subCoStructLists[prop]);
+							var toAdd = missing(struct[prop], subCoStructLists[prop]);
+							coStruct[prop] = toAdd;
+							subCoStructLists[prop][i] = toAdd;
 						}
 					}
 				}
@@ -137,15 +155,15 @@ var ifMissing = {
 	},
 	zeros: function(struct, coStructs) {
 		return map(struct, function(x) {
-			return new Tensor([x.dims]);	// Initializes to zeros
+			return new Tensor(x.dims);	// Initializes to zeros
 		});
 	},
-	copyStruct: function(struct, coStructs) {
+	copyFromStruct: function(struct, coStructs) {
 		return map(struct, function(x) {
 			return x;
 		});
 	},
-	copyCoStruct: function(index) {
+	copyFromCoStruct: function(index) {
 		return function(struct, coStructs) {
 			return map(coStructs[index], function(x) {
 				return x;
@@ -157,7 +175,7 @@ var ifMissing = {
 
 
 module.exports = {
-	type: type,
+	emptyLike: emptyLike,
 	map: map,
 	foreach: foreach,
 	ifMissing: ifMissing

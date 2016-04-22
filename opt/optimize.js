@@ -97,7 +97,7 @@ function adTrain(fn, trainingData, lossFn, options) {
 					rets.gradients,
 					[
 						{ struct: gradients, ifMissing: tstruct.ifMissing.zeros },
-						{ struct: ret.parameters, ifMissing: tstruct.ifMissing.impossible },
+						{ struct: rets.parameters, ifMissing: tstruct.ifMissing.impossible },
 						{ struct: parameters, ifMissing: tstruct.ifMissing.copyFromCoStruct(1) }
 					],
 					function(newg, g) {
