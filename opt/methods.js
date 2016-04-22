@@ -5,6 +5,8 @@ var utils = require('../utils.js');
 var tstruct = require('./tensorStruct.js');
 
 
+var EPS = 1e-8;
+
 
 function sgd(options) {
 	options = utils.mergeDefaults(options, { stepSize: 0.1, stepSizeDecay: 1 });
@@ -45,14 +47,14 @@ function adagrad(options) {
 				// g2 = g2 + g*g;
 				g2.addeq(g.mul(g));
 				// p = p - stepSize * (g / (sqrt(g2) + 1e-8))
-				p.subeq(g.div(g2.sqrt().addeq(1e-8)).muleq(stepSize));
+				p.subeq(g.div(g2.sqrt().addeq(EPS)).muleq(stepSize));
 			}
 		);
 	};
 }
 
 function rmsprop(options) {
-	options = utils.mergeDefaults(options, {stepSize: 0.001, decayRate: 0.9});
+	options = utils.mergeDefaults(options, {stepSize: 0.1, decayRate: 0.9});
     var stepSize = options.stepSize;
     var decayRate = options.decayRate;
 
@@ -71,7 +73,7 @@ function rmsprop(options) {
 				// g2 = decayRate*g2 + (1-decayRate)*(g*g)
 				g2.muleq(decayRate).addeq(g.mul(g).muleq(1-decayRate));
 				// p = p - stepSize * (g / (sqrt(g2) + 1e-8))
-				p.subeq(g.div(g2.sqrt().addeq(1e-8)).muleq(stepSize));
+				p.subeq(g.div(g2.sqrt().addeq(EPS)).muleq(stepSize));
 			}
 		);
 	};
@@ -79,16 +81,14 @@ function rmsprop(options) {
 
 function adam(options) {
 	options = utils.mergeDefaults(options, {
-    	stepSize: 0.001, // alpha
+    	stepSize: 0.1, // alpha
     	decayRate1: 0.9, // beta1
     	decayRate2: 0.999, // beta2
-    	eps: 1e-8
     });
 
     var stepSize = options.stepSize;
     var decayRate1 = options.decayRate1;
     var decayRate2 = options.decayRate2;
-    var eps = options.eps;
 
     var mStruct;
     var vStruct;
@@ -113,7 +113,7 @@ function adam(options) {
 				var alpha_t = stepSize * Math.sqrt(1 - Math.pow(decayRate2, t)) / (1 - Math.pow(decayRate1, t));
 
 				// p = p - alpha_t * (m / (sqrt(v) + 1e-8))
-				p.subeq(m.div(v.sqrt().addeq(1e-8)).muleq(alpha_t));
+				p.subeq(m.div(v.sqrt().addeq(EPS)).muleq(alpha_t));
 			}
 		);
     }
