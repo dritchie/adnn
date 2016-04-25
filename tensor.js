@@ -456,10 +456,14 @@ Tensor.prototype.determinant = function() {
 };
 
 Tensor.prototype.dot = function(t) {
-
   var a = this, b = t;
-  assert.ok(a.rank === 2 && b.rank === 2, 'Inputs to dot should have rank = 2.');
-  assert.ok(a.dims[1] === b.dims[0], 'Dimension mismatch for ' + a + ' and ' + b);
+
+  if (a.rank !== 2 || b.rank !== 2) {
+    throw new Error('Inputs to dot should have rank = 2.');
+  }
+  if (a.dims[1] !== b.dims[0]) {
+    throw new Error('Dimension mismatch in dot. Inputs have dimension ' + a.dims + ' and ' + b.dims + '.');
+  }
 
   var l = a.dims[1];
   var h = a.dims[0], w = b.dims[1];
