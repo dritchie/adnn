@@ -1,9 +1,9 @@
 # adnn
 adnn provides Javascript-native neural networks on top of general scalar/tensor reverse-mode automatic differentiation. You can use just the AD code, or the NN layer built on top of it. This architecture makes it easy to define big, complex numerical computations and compute derivatives w.r.t. their inputs/parameters. adnn also includes utilities for optimizing/training the parameters of such computations.
 
-### Examples ###
+### Examples
 
-#### Scalar code ####
+#### Scalar code
 
 The simplest use case for adnn:
 
@@ -61,7 +61,7 @@ out.backprop();
 console.log(ad.derivative(x1)); // -0.316...
 ```
 
-#### Tensor code ####
+#### Tensor code
 
 adnn also supports computations involving tensors, or a mixture of scalars and tensors:
 
@@ -86,7 +86,7 @@ out.backprop();
 console.log(ad.derivative(vec1).toFlatArray());  // [-0.66, 0.33, -0.66]
 ```
 
-#### Simple neural network ####
+#### Simple neural network
 
 adnn makes it easy to define simple, feedforward neural networks. Here's a basic multilayer perceptron that takes a feature vector as input and outputs class probabilities:
 
@@ -133,7 +133,7 @@ var features = new Tensor([nInputs]).fillRandom();
 var classProbs = net.eval(features);
 ```
 
-#### Convolutional neural network ####
+#### Convolutional neural network
 
 adnn includes the building blocks necessary to create convolutional networks. Here is a simple example, adapted from a [ConvNetJS](https://github.com/karpathy/convnetjs) example:
 
@@ -160,7 +160,7 @@ var net = nn.sequence([
 ]);
 ```
 
-#### Recurrent neural network ####
+#### Recurrent neural network
 
 adnn is also flexible enough to support recurrent neural networks. Here's an example of a rudimentary RNN:
 
@@ -193,16 +193,16 @@ function processSequence(seq) {
 }
 ```
 
-### The `ad` module ###
+### The `ad` module 
 The `ad` module has its own documentation [here](ad/README.md)
 
-### The `nn` module ###
+### The `nn` module
 The `nn` module has its own documentation [here](nn/README.md)
 
-### The `opt` module ###
+### The `opt` module
 The `opt` module has its own documentation [here](opt/README.md)
 
-### Tensors ###
+### Tensors
 
 adnn provides a `Tensor` type for representing multidimensional arrays of numbers and various operations on them. This is the core datatype underlying neural net computations.
 
@@ -235,3 +235,10 @@ mat.set([0, 1], 5);   // mat is now [[1, 5], [3, 4]]
 ```
 
 The `Tensor` type also provides a large number of mathematical functions--unary operators, binary operators, reductions, matrix operations, etc. See [tensor.js](tensor.js) for a complete listing.
+
+### Projects using adnn
+
+If you use adnn for anything, let us know and we'll list it here! Send email to daniel.c.ritchie@gmail.com
+
+ - [Neurally-Guided Procedural Models: Learning to Guide Procedural Models with Deep Neural Networks](http://arxiv.org/abs/1603.06143)
+ - [WebPPL](https://github.com/probmods/webppl) uses adnn as part of its variational inference implementation.
