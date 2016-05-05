@@ -39,10 +39,17 @@ Node.prototype.backpropRec = function() {
 		while (n--) this.parents[n].backpropRec();
 	}
 };
+Node.prototype.zeroDerivativesRec = function() {
+	this.outDegree--;
+	if (this.outDegree === 0) {
+		this.zeroDerivativesImpl();
+		var n = this.parents.length;
+		while (n--) this.parents[n].zeroDerivativesRec();
+	}
+};
 Node.prototype.zeroDerivatives = function() {
-	this.zeroDerivativesImpl();
-	var n = this.parents.length;
-	while (n--) this.parents[n].zeroDerivatives();
+	this.computeOutDegree();
+	this.zeroDerivativesRec();
 };
 // By default, backward does nothing
 Node.prototype.backward = function() {};
