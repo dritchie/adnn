@@ -41,8 +41,11 @@ Node.prototype.backpropRec = function() {
 };
 Node.prototype.zeroDerivatives = function() {
 	this.zeroDerivativesImpl();
-	var n = this.parents.length;
-	while (n--) this.parents[n].zeroDerivatives();
+	this.outDegree--;
+	if (this.outDegree === 0) {
+		var n = this.parents.length;
+		while (n--) this.parents[n].zeroDerivatives();
+	}
 };
 // By default, backward does nothing
 Node.prototype.backward = function() {};
