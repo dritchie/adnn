@@ -9,19 +9,27 @@ var EPS = 1e-8;
 
 
 function sgd(options) {
-	options = utils.mergeDefaults(options, { stepSize: 0.1, stepSizeDecay: 1 });
+	options = utils.mergeDefaults(options, { stepSize: 0.1, stepSizeDecay: 1, mu: 0 });
 	var stepSize = options.stepSize;
 	var decay = options.stepSizeDecay;
+	var mu = options.mu; // mu > 0 yields gradient descent with momentum
+
+	// State
+	var vStruct;
 
 	return function(grad, param, step) {
+		if (!vStruct) vStruct = tstruct.emptyLike(grad);
 		tstruct.foreach(
 			grad,
 			[
-				{ struct: param, ifMissing: tstruct.ifMissing.impossible }
+				{ struct: param, ifMissing: tstruct.ifMissing.impossible },
+				{ struct: vStruct, ifMissing: tstruct.ifMissing.zeros },
 			],
-			function(g, p) {
-				// p = p - stepSize * g;
-				p.subeq(g.mul(stepSize));
+			function(g, p, v) {
+				// v = v * mu - g * stepSize;
+				v.muleq(mu).subeq(g.mul(stepSize));
+				// p = p + v
+				p.addeq(v);
 			}
 		);
 		stepSize *= decay;
