@@ -64,10 +64,10 @@ function map(struct, fn) {
 //    is a function indicating what insert into this coIteratee struct
 //    when it is missing a substructure that is present in 'struct'
 function foreach(struct, coIteratees, fn) {
-
+	var _foreach;
 	// If there are no coIteratees, then we can use the super simple version
 	if (coIteratees.length === 0) {
-		function _foreach(struct) {
+		_foreach = function(struct) {
 			var t = type(struct);
 			if (t === 'tensor') {
 				fn(struct);
@@ -80,14 +80,14 @@ function foreach(struct, coIteratees, fn) {
 					_foreach(struct[prop]);
 				}
 			}
-		}
+		};
 		_foreach(struct);
 	}
 	// Otherwise, go with fully-general version
 	else {
 		var missingFns = coIteratees.map(function(c) { return c.ifMissing; })
 
-		function _foreach(struct, coStructs) {
+		_foreach = function(struct, coStructs) {
 			var t = type(struct);
 			// TODO: assert that all the coIteratees have the same type?
 			if (t === 'tensor') {
@@ -141,7 +141,7 @@ function foreach(struct, coIteratees, fn) {
 					_foreach(struct[prop], subCoStructLists[prop]);
 				}
 			}
-		}
+		};
 
 		var coStructs = coIteratees.map(function(c) { return c.struct; });
 		_foreach(struct, coStructs, fn);
