@@ -309,7 +309,7 @@ fns.tensor.anyreduce = func.liftUnaryFunction(function(t) {
 // Select one entry out of a tensor (by linear indexing)
 fns.tensorEntry = func.newFunction({
 	OutputType: Scalar,
-	name: 'tensorEtry',
+	name: 'tensorEntry',
 	forward: function(t, i) {
 		return t instanceof Node ? t.x.data[i] : t.data[i];
 	},
