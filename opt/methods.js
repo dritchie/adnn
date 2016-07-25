@@ -89,7 +89,7 @@ function rmsprop(options) {
 
 function adam(options) {
 	options = utils.mergeDefaults(options, {
-    	stepSize: 0.1, // alpha
+    	stepSize: 0.001, // alpha
     	decayRate1: 0.9, // beta1
     	decayRate2: 0.999, // beta2
     });
