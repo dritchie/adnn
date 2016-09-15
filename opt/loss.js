@@ -10,7 +10,7 @@ function classificationLoss(outputProbs, trueClassIndex) {
 	assert(trueClassIndex < n,
 		'Training datum has true class label ' + trueClassIndex + ', but network only outputs ' + n + ' class probabilities.');
 	return ad.scalar.neg(ad.scalar.log(
-		ad.tensorEntry(outputProbs, trueClassIndex)));
+		ad.tensor.get(outputProbs, trueClassIndex)));
 };
 
 function regressionLoss(output, trueOutput) {

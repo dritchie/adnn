@@ -38,20 +38,31 @@ adnn comes with a large number of built-in AD primitives:
   - Defined for both scalars (in `ad.scalar`) and tensors (in `ad.tensor`)
   - floor, ceil, round, sqrt, exp, log, abs, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, sigmoid
 - **Binary operators**
-  - Defined for both scalars (in `ad.scalar`) and tensors (in `ad.tensor`)
+  - Defined for both scalars (in `ad.scalar`) and tensors (in `ad.tensor`). Tensor operators can accept a scalar as their second argument.
   - add, sub, mul, div, pow, min, max, atan2
 - **Comparators**
   - Currently defined for scalars only (in `ad.scalar`)
   - eq (==), neq (!=), peq (===), pneq (!==), gt (>), lt (<), geq (>=), leq (<=)
-- **Miscellaneous**
-  - **`ad.tensorEntry(x, i)`**: Extracts the `i`th element of `x` and returns it as a scalar.
-  - **`ad.tensorToScalars(x)`**: Turns tensor `x` into a list of scalars.
-  - **`ad.scalarsToTensor(lst)`**: Turns a list of scalars `lst` into a tensor.
-  - **`ad.sumreduce(x)`**: Returns the sum of entries of a tensor `x`.
+- **Reductions**
   - **`ad.scalar.sum(lst)`**: Returns the sum of the list of scalars `lst`.
+  - **`ad.tensor.sumreduce(x)`**: Returns the sum of entries of a tensor `x`.
+  - **`ad.tensor.allreduce(x)`**: Returns true if all entries of a tensor `x` are nonzero.
+  - **`ad.tensor.anyreduce(x)`**: Returns true if any entry of a tensor `x` is nonzero.
+- **Indexing and Reshaping**
+  - **`ad.tensor.get(x, i)`**: Extracts the `i`th element of `x` and returns it as a scalar.
+  - **`ad.tensor.toScalars(x)`**: Turns tensor `x` into an array of scalars.
+  - **`ad.tensor.fromScalars(lst)`**: Turns a list of scalars `lst` into a tensor.
   - **`ad.tensor.range(x, i, j)`**: Returns a tensor constructed from elements `i` through `j` (non-inclusive) of tensor `x`.
   - **`ad.tensor.split(x, sizes)`**: Split tensor `x` into `sizes.length` tensors, where the size of the output tensors are given by `sizes`.
   - **`ad.tensor.concat(lst)`**: Concatenate a list of tensors `lst` into one tensor.
+- **Linear Algebra**
+  - Requires inputs to be rank 2 tensors (i.e. matrices are NxN, vectors are Nx1).
+  - ** `ad.tensor.transpose(x)`**: Returns the transpose of the matrix `x`.
+  - ** `ad.tensor.diagonal(x)`**: Extracts the diagonal components of the matrix `x` as a vector. 
+  - ** `ad.tensor.inverse(x)`**: Returns the inverse of the matrix `x`.
+  - ** `ad.tensor.determinant(x)`**: Returns the determinant of the matrix `x`.
+  - ** `ad.tensor.dot(x, y)`**: Returns the inner product of the matrices `x` and `y`.
+- **Miscellaneous**
   - **`ad.tensor.softmax(x)`**: Compute the [Softmax](https://en.wikipedia.org/wiki/Softmax_function) function for a tensor `x`.
 
 For more information, see [functions.js](functions.js).
