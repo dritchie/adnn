@@ -515,13 +515,12 @@ fns.tensor.softmax = func.newUnaryFunction({
 		// For each input entry, accumulate partial derivatives
 		//    for each output entry
 		var n = t.dx.data.length;
+		var s = 0;
+		for (var i = 0; i < n; i++) {
+			s += this.x.data[i] * this.dx.data[i];
+		}
 		for (var j = 0; j < n; j++) {
-			var out_j = this.x.data[j];
-			for (var i = 0; i < n; i++) {
-				var out_i = this.x.data[i];
-				var d = out_i * ((i === j) - out_j);
-				t.dx.data[j] += d * this.dx.data[i];
-			}
+			t.dx.data[j] += this.x.data[j] * (this.dx.data[j] - s);
 		}
 	}
 });
