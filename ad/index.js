@@ -34,9 +34,4 @@ var functions = require('./functions.js');
 ad = utils.mergeObjects(ad, func, functions);
 
 
-// The macro-transform code only works via node
-if (typeof window === "undefined") {
-	ad = utils.mergeObjects(ad, require('./transform.js'));
-}
-
 module.exports = ad;
