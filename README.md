@@ -198,7 +198,7 @@ var dupvec = vec.clone();
 // Create a rank-2 tensor (i.e. a matrix)
 var mat = new Tensor([2, 2]);  // mat is a 2x2 matrix
 // Fill mat with the contents of an array
-mat.fromArray([[1, 2], [3, 4]);
+mat.fromArray([[1, 2], [3, 4]]);
 // Can also use a flattened array
 mat.fromFlatArray([1, 2, 3, 4]);
 // Retrieve an individual element of mat
