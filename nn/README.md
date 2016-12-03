@@ -51,7 +51,7 @@ var activations = [
 ];
 
 // 'nn.mlp' is a convenience function for defining multilayer perceptrons
-var mlp = nn.mlp(100  // Number of inputs
+var mlp = nn.mlp(100,  // Number of inputs
   [{nOut: 50, activation: nn.tanh},   // 'activation' is optional
   {nOut: 10}]
 );
