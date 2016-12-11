@@ -92,7 +92,7 @@ var newBinaryFn = ad.newBinaryFunction({
 });
 
 // Defining arbitrary functions
-var newUnaryFn = ad.newUnaryFunction({
+var newFunction = ad.newFunction({
   OutputType: // Either Number or Tensor
   name:       // The name of the new function
   forward: function(...) {...}  // Implements the function
