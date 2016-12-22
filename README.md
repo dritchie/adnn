@@ -1,6 +1,13 @@
 # adnn
 adnn provides Javascript-native neural networks on top of general scalar/tensor reverse-mode automatic differentiation. You can use just the AD code, or the NN layer built on top of it. This architecture makes it easy to define big, complex numerical computations and compute derivatives w.r.t. their inputs/parameters. adnn also includes utilities for optimizing/training the parameters of such computations.
 
+### Installation
+To install:
+`npm install adnn`
+
+To upgrade:
+`npm update adnn`
+
 ### Examples
 
 #### Scalar code
