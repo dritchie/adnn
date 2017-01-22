@@ -31,7 +31,6 @@ var ArrayBackingStore = {
 // The actual backing store we're using
 var BackingStore = TypedArrayBackingStore(Float64Array);
 
-
 function Tensor(dims) {
 	this.dims = dims;
 	var size = 1;
