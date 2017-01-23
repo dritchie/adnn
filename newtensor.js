@@ -104,7 +104,7 @@ function Tensor(dims) {
   this.data = tensor;
   this.ref = this.data.ref()
   this.type = THType;
-  this._tensor_object = TH.THFloatTensor;
+  //this._tensor_object = TH.THFloatTensor;
 }
 
 
@@ -132,16 +132,6 @@ Tensor.prototype.reshape = function(dims) {
   this.ref = this.data.ref()
   return this
 }
-
-Tensor.prototype.sum = function(ix){
-  if(ix == undefined || ix == null)
-    return TH.THFloatTensor_sumall(this.ref)
-  else{
-    throw new Error("Sum across dimensions is not yet supported")
-  }
-}
-
-Tensor.prototype.sumreduce = Tensor.prototype.sum
 
 Tensor.prototype.view = function(dims) {
   return Tensor.view_tensor(this.data, dims)
@@ -227,21 +217,59 @@ Tensor.getSize = function(ts, TensorType) {
 
 Tensor.prototype.size = function(ix) {
     if(ix != undefined)
-        return TH.THFloatTensor_size(this.data.ref(), ix)
+        return TH.THFloatTensor_size(this.data.ref(), ix);
     else
-        return Tensor.ls_to_array(Tensor.getSize(this.data.ref()))
+        return Tensor.ls_to_array(Tensor.getSize(this.data.ref()));
 };
 
+Tensor.byte_sizeof = function(sz, ttype) {
+  var bempty = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
+  // console.log("empty in habitat: ", bempty)
+  return {empty: bempty, byte_tensor: bbtensor};
+}
+
+Tensor.byte_nonzero = function(ts, ttype) {
+  var sz = Tensor.get_size(ts.ref());
+  var tempty = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
+  TH.THFloatTensor_zero(tempty.ref());
+  var b_obj = Tensor.byte_sizeof(sz, ttype);
+  var bempty = b_obj.empty;
+  var bbtensor = b_obj.byte_tensor;
+
+  // fill byte tensor with not equals
+  TH.THFloatTensor_neTensor(bempty.ref(), tempty.ref(), ts.ref())
+  return bbtensor.sumall(bempty.ref())
+}
+
+Tensor.prototype.sum = function(ix) {
+  if(ix == undefined || ix == null)
+    return TH.THFloatTensor_sumall(this.ref);
+  else{
+    throw new Error("Sum across dimension not yet supported");
+  }
+}
+Tensor.prototype.sumreduce = Tensor.prototype.sum
 
 Tensor.prototype.min = function() {
-  return TH.THFloatTensor_minall(this.data.ref())
+  return TH.THFloatTensor_minall(this.data.ref());
 }
-Tensor.prototype.minreduce = Tensor.prototype.min
+Tensor.prototype.minreduce = Tensor.prototype.min;
 
 Tensor.prototype.max = function() {
-  return TH.THFloatTensor.maxall(this.data.ref())
+  return TH.THFloatTensor_maxall(this.data.ref());
 }
-Tensor.prototype.maxreduce = Tensor.prototype.max
+Tensor.prototype.maxreduce = Tensor.prototype.max;
+
+Tensor.prototype.all = function() {
+  return Tensor.byte_nonzero(this.data, this.type) == this.length;
+}
+Tensor.prototype.allreduce = Tensor.prototype.all;
+
+Tensor.prototype.any = function() {
+  return Tensor.byte_nonzero(this.data, this.type) > 0;
+}
+Tensor.prototype.anyreduce = Tensor.prototype.any;
+
 // function toArrayRec(tensor, coords) {
 //     if (coords.length === tensor.rank) {
 //         return tensor.get(coords);
@@ -276,7 +304,6 @@ Tensor.prototype.toString = function() {
     return this.toArray().toString();
 };
 
-
 Tensor.prototype.toFlatArray = function() {
     return Array.prototype.slice.call(this.data);
 }
@@ -285,22 +312,51 @@ Tensor.prototype.fromFlatArray = function(arr) {
     return this;
 }
 
+function addUnaryMethod(name) {
+    //need to differentiate between in-place and non in-place operations
+    Tensor[name] = new Function([
+    'return function(adata, inplace){',
+    'var end_ref = adata.data',
+    'if(!inplace) {',
+      'end_ref = Tensor.create_empty_of_size(adata.data.ref())',
+    '}',
+    // operation in place please
+    'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref())',
+    'return end_ref}'
+  ].join('\n'))();
+    // var fneq = new Function([
+    //     'var n = this.data.length;',
+    //     'while (n--) {',
+    //     '   var x = this.data[n];',
+    //     '   this.data[n] = ' + fncode + ';',
+    //     '}',
+    //     'return this;'
+    // ].join('\n'));
+    // Tensor.prototype[name + 'eq'] = fneq;
+    // Tensor.prototype[name] = function() {
+    //     var nt = this.clone();
+    //     return fneq.call(nt);
+    // };
+}
 
+function addUnaryPrototype(name){
+  // Use method generated in addUnaryMethod()
+  var fn_inplace = new Function('Tensor', [
+      'return function(){',
+      'Tensor.' + name + '(this, true)',
+      'return this}'
+  ].join('\n'))(Tensor);
+  //clone if not in-place
+  var fn_notinplace = new Function('Tensor', [
+      'return function(){',
+      'var atensor = Tensor.' + name + '(this, false)',
+      'var cc = this.refClone()',
+      'cc.override(atensor, this.dims.slice(0))',
+      'return cc}'
+  ].join('\n'))(Tensor);
 
-function addUnaryMethod(name, fncode) {
-    var fneq = new Function([
-        'var n = this.data.length;',
-        'while (n--) {',
-        '   var x = this.data[n];',
-        '   this.data[n] = ' + fncode + ';',
-        '}',
-        'return this;'
-    ].join('\n'));
-    Tensor.prototype[name + 'eq'] = fneq;
-    Tensor.prototype[name] = function() {
-        var nt = this.clone();
-        return fneq.call(nt);
-    };
+  Tensor.prototype[name + 'eq'] = fn_inplace;
+  Tensor.prototype[name] = fn_notinplace
 }
 
 function addBinaryMethod(name, fncode) {
@@ -309,7 +365,7 @@ function addBinaryMethod(name, fncode) {
         'var b = s;',
         'while (n--) {',
         '   var a = this.data[n];',
-        '   this.data[n] = ' + fncode + ';',
+        '   this.data[n] = ' + name + ';',
         '}',
         'return this;'
     ].join('\n'));
@@ -336,52 +392,62 @@ function addBinaryMethod(name, fncode) {
     };
 }
 
-function addReduction(name, initcode, fncode) {
-    Tensor.prototype[name+'reduce'] = new Function([
-        'var accum = ' + initcode + ';',
-        'var n = this.data.length;',
-        'while (n--) {',
-        '   var x = this.data[n];',
-        '   accum = ' + fncode + ';',
-        '}',
-        'return accum;'
-    ].join('\n'));
+// function addReduction(name, initcode, fncode) {
+//     Tensor.prototype[name+'reduce'] = new Function([
+//         'var accum = ' + initcode + ';',
+//         'var n = this.data.length;',
+//         'while (n--) {',
+//         '   var x = this.data[n];',
+//         '   accum = ' + fncode + ';',
+//         '}',
+//         'return accum;'
+//     ].join('\n'));
+// }
+
+function createPrototype(name, isUnary) {
+    if (isUnary) {
+        addUnaryMethod(name);
+        addUnaryPrototype(name);
+    } else {
+        addBinaryMethod("name");
+    }
 }
 
+createPrototype('neg', true);
+createPrototype('round', true);
+createPrototype('log', true);
+createPrototype('exp', true);
+createPrototype('sqrt', true);
+createPrototype('abs', true);
+createPrototype('ceil', true);
+createPrototype('floor', true);
+createPrototype('cos', true);
+createPrototype('sin', true);
+createPrototype('tan', true);
+createPrototype('acos', true);
+createPrototype('asin', true);
+createPrototype('atan', true);
+createPrototype('cosh', true);
+createPrototype('sinh', true);
+createPrototype('tanh', true);
+createPrototype('sigmoid', true);
 
-addUnaryMethod('neg', '-x');
-addUnaryMethod('round', 'Math.round(x)');
-addUnaryMethod('log', 'Math.log(x)');
-addUnaryMethod('exp', 'Math.exp(x)');
-addUnaryMethod('sqrt', 'Math.sqrt(x)');
-addUnaryMethod('abs', 'Math.abs(x)');
-addUnaryMethod('ceil', 'Math.ceil(x)');
-addUnaryMethod('floor', 'Math.floor(x)');
-addUnaryMethod('cos', 'Math.cos(x)');
-addUnaryMethod('sin', 'Math.sin(x)');
-addUnaryMethod('tan', 'Math.tan(x)');
-addUnaryMethod('acos', 'Math.acos(x)');
-addUnaryMethod('asin', 'Math.asin(x)');
-addUnaryMethod('atan', 'Math.atan(x)');
-addUnaryMethod('cosh', 'Math.cosh(x)');
-addUnaryMethod('sinh', 'Math.sinh(x)');
-addUnaryMethod('tanh', 'Math.tanh(x)');
-addUnaryMethod('acosh', 'Math.acosh(x)');
-addUnaryMethod('asinh', 'Math.asinh(x)');
-addUnaryMethod('atanh', 'Math.atanh(x)');
-addUnaryMethod('sigmoid', '1 / (1 + Math.exp(-x))');
-addUnaryMethod('isFinite', 'isFinite(x)');
-addUnaryMethod('isNaN', 'isNaN(x)');
-addUnaryMethod('invert', '1/x');
-addUnaryMethod('pseudoinvert', 'x === 0 ? 0 : 1/x');
+// Warning: These do not exist in THm impl
+createPrototype('acosh', true);
+createPrototype('asinh',  true);
+createPrototype('atanh', true);
+
+//TODO: impl
+createPrototype('isFinite', true);
+createPrototype('isNaN', true);
+createPrototype('invert', true);
+createPrototype('pseudoinvert', true);
 
 addBinaryMethod('add', 'a + b');
 addBinaryMethod('sub', 'a - b');
 addBinaryMethod('mul', 'a * b');
 addBinaryMethod('div', 'a / b');
 addBinaryMethod('mod', 'a % b');
-addBinaryMethod('min', 'Math.min(a, b)');
-addBinaryMethod('max', 'Math.max(a, b)');
 addBinaryMethod('pow', 'Math.pow(a, b)');
 addBinaryMethod('atan2', 'Math.atan2(a, b)');
 addBinaryMethod('eq', 'a === b');
@@ -391,14 +457,8 @@ addBinaryMethod('ge', 'a >= b');
 addBinaryMethod('lt', 'a < b');
 addBinaryMethod('le', 'a <= b');
 
-addReduction('sum', '0', 'accum + x');
-addReduction('min', 'Infinity', 'Math.min(accum, x)');
-addReduction('max', '-Infinity', 'Math.max(accum, x)');
-addReduction('all', 'true', 'accum && (x !== 0)');
-addReduction('any', 'false', 'accum || (x !== 0)');
 
-
-
+//TODO: implement
 Tensor.prototype.softmax = function() {
     // Find max elem
     var max = -Infinity;
@@ -425,7 +485,7 @@ Tensor.prototype.softmax = function() {
 Tensor.prototype.transpose = function(ix, ix2) {
   var ccTensor = this.clone()
   if(ix == undefined)
-    THFloatTensor_transpose(ccTensor.data.ref(), ref.NULL, 0, 1)
+    TH.THFloatTensor_transpose(ccTensor.data.ref(), ref.NULL, 0, 1)
   else
     TH.THFloatTensor_transpose(ccTensor.data.ref(), ref.NULL, ix, ix2)
   return ccTensor
@@ -470,8 +530,7 @@ Tensor.prototype.inverse = function() {
   return ccTensor
 };
 
-// Determinant.
-// Ported from numeric.js.
+// Determinant - cannot port from TH
 Tensor.prototype.determinant = function() {
   assert.ok(this.rank === 2);
   assert.ok(this.dims[0] === this.dims[1]);
@@ -526,28 +585,19 @@ Tensor.prototype.determinant = function() {
 
 Tensor.prototype.dot = function(t) {
   var a = this, b = t;
-
   if (a.rank !== 2 || b.rank !== 2) {
     throw new Error('Inputs to dot should have rank = 2.');
   }
   if (a.dims[1] !== b.dims[0]) {
     throw new Error('Dimension mismatch in dot. Inputs have dimension ' + a.dims + ' and ' + b.dims + '.');
   }
-
-  var l = a.dims[1];
-  var h = a.dims[0], w = b.dims[1];
-  var y = new Tensor([h, w]);
-
-  for (var r = 0; r < h; r++) {
-    for (var c = 0; c < w; c++) {
-      var z = 0;
-      for (var i = 0; i < l; i++) {
-        z += a.data[r * l + i] * b.data[w * i + c];
-      }
-      y.data[r * w + c] = z;
-    }
-  }
-  return y;
+  var t_for_mul = TH.THFloatTensor_new().deref();
+  TH.THFloatTensor_resize2d(t_for_mul.ref(), a.dims[0], b.dims[1]);
+  var beta = 0, alpha = 1;
+  TH.THFloatTensor_addmm(t_for_mul.ref(), beta, t_for_mul.ref(), alpha, a.data.ref(), b.data.ref());
+  var mm_tensor = a.refClone();
+  mm_tensor.override(t_for_mul, [a.dims[0], b.dims[1]]);
+  return mm_tensor;
 };
 
 Tensor.prototype.cholesky = function() {
