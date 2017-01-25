@@ -5,6 +5,11 @@
   "author": "dritchie",
   "license": "MIT",
   "dependencies": {
+   "ffi": ">= 0",
+    "ffi-generate": ">= 0",
+    "ref": ">= 0",
+    "ref-array": ">= 0",
+    "ref-struct": ">= 0"
   },
   "repository": {
     "type": "git",

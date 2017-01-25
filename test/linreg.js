@@ -1,4 +1,4 @@
-var Tensor = require('../tensor');
+var Tensor = require('../newtensor');
 var ad = require('../ad');
 var nn = require('../nn');
 var opt = require('../opt');

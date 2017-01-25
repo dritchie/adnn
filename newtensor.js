@@ -4,7 +4,7 @@ var assert = require('assert');
 var utils = require('./utils.js');
 
 //var ffi = require('ffi')
-//var ref =  require('ref')
+var ref =  require('ref')
 //var THTensor = torch.THFloatTensor
 //var THStorage = torch.THFloatStorage
 var THType = "Float"
@@ -104,6 +104,7 @@ function Tensor(dims) {
   this.data = tensor;
   this.ref = this.data.ref()
   this.type = THType;
+  return this;
   //this._tensor_object = TH.THFloatTensor;
 }
 
@@ -134,11 +135,26 @@ Tensor.prototype.reshape = function(dims) {
 }
 
 Tensor.prototype.view = function(dims) {
-  return Tensor.view_tensor(this.data, dims)
+  var rsize = arr_to_ls(dims);
+  var nt = TH.THFloatTensor_new().deref()
+  // console.log("orig", orig)
+  TH.THFloatTensor_set(nt.ref(), orig.ref()) //orig.storage, orig.storageOffset, rsize.ref())
+  return nt;
 }
 
 Tensor.prototype.fill = function(val) {
+    // for (var i=0; i < 2; ++i) {
+    //   for (var j=0; j < 2; ++j) {
+    //   console.log("avant", TH.THFloatTensor_get2d(this.data.ref(), i, j));
+    //   }
+    // }
     TH.THFloatTensor_fill(this.ref, val);
+    // for (var i=0; i < 2; ++i) {
+    //   for (var j=0; j < 2; ++j) {
+    //   console.log("apres", TH.THFloatTensor_get2d(this.data.ref(), i, j));
+    //   }
+    // }
+    // console.log("this", this.data)
     return this;
 };
 
@@ -183,6 +199,28 @@ Tensor.prototype.refClone = function() {
     return t.refCopy(this);
 };
 
+Tensor.is_equal = function(a,b)
+{
+  if(a.length != b.length)
+    return false
+  for(var i=0; i < a.length; i++)
+    if(a[i] != b[i])
+      return false
+
+  return true
+}
+
+Tensor.prototype.assert_size_equal = function(other, assert_msg)
+{
+  if(typeof(other) == "number")
+    return true
+  else{
+    var are_equal = Tensor.is_equal(other.dims, this.dims)
+    assert.ok(are_equal, assert_msg)
+    return are_equal
+  }
+}
+
 
 // These are slow; don't use them inside any hot loops (i.e. they're good for
 //    debgugging/translating data to/from other formats, and not much else)
@@ -206,7 +244,7 @@ Tensor.prototype.set = function(coords, val) {
 Tensor.create_empty_of_size = function(ts, TensorType) {
   //Supporting floats for now.
   //TensorType = TensorType || THFloatTensor
-  return TH.THFlotTensor_newWithSize(Tensor.get_size(ts, TensorType).ref(), ref.NULL).deref()
+  return TH.THFloatTensor_newWithSize(Tensor.getSize(ts, TensorType).ref(), ref.NULL).deref()
 }
 
 Tensor.getSize = function(ts, TensorType) {
@@ -229,7 +267,7 @@ Tensor.byte_sizeof = function(sz, ttype) {
 }
 
 Tensor.byte_nonzero = function(ts, ttype) {
-  var sz = Tensor.get_size(ts.ref());
+  var sz = Tensor.getSize(ts.ref());
   var tempty = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
   TH.THFloatTensor_zero(tempty.ref());
   var b_obj = Tensor.byte_sizeof(sz, ttype);
@@ -251,6 +289,7 @@ Tensor.prototype.sum = function(ix) {
 Tensor.prototype.sumreduce = Tensor.prototype.sum
 
 Tensor.prototype.min = function() {
+  console.log(this.data);
   return TH.THFloatTensor_minall(this.data.ref());
 }
 Tensor.prototype.minreduce = Tensor.prototype.min;
@@ -270,21 +309,51 @@ Tensor.prototype.any = function() {
 }
 Tensor.prototype.anyreduce = Tensor.prototype.any;
 
-// function toArrayRec(tensor, coords) {
-//     if (coords.length === tensor.rank) {
-//         return tensor.get(coords);
-//     } else {
-//         var dim = coords.length;
-//         var arr = [];
-//         for (var i = 0; i < tensor.dims[dim]; i++) {
-//             arr.push(toArrayRec(tensor, coords.concat([i])));
-//         }
-//         return arr;
-//     }
-// }
-// Tensor.prototype.toArray = function() {
-//     return toArrayRec(this, []);
-// };
+
+Tensor.atan2 = function(adata, bdata, not_in_place, mval)
+{
+  mval = mval || 1;
+  var end_ref = adata.data;
+
+  if(not_in_place)
+    end_ref = Tensor.create_empty_of_size(adata.data.ref());
+
+  if(typeof(bdata) == "number"){
+    TH.THFloatTensor_add(end_ref.ref(), adata.data.ref(), bdata);
+    bdata = {data: Tensor.create_empty_of_size(adata.data.ref())};
+    TH.THFloatTensor_fill(bdata.data.ref(), bdata)
+  }
+
+  TH.THFloatTensor_atan2(end_ref.ref(), adata.data.ref(), bdata.data.ref())
+
+  return end_ref
+}
+
+function toArrayRec(tensor, coords) {
+    if (coords.length === tensor.rank) {
+        return tensor.get(coords);
+    } else {
+        var dim = coords.length;
+        var arr = [];
+        for (var i = 0; i < tensor.dims; i++) {
+            arr.push(toArrayRec(tensor, coords.concat([i])));
+        }
+        return arr;
+    }
+}
+
+Tensor.prototype.toFlatArray = function () {
+  var arr = [];
+  for (var i = 0; i < this.length; i++){
+    arr.push(this.data[i]);
+  }
+  return arr;
+}
+
+Tensor.prototype.toArray = function() {
+    return toArrayRec(this.data, []);
+};
+
 function fromArrayRec(tensor, coords, x) {
     if (!(x instanceof Array)) {
         tensor.set(coords, x);
@@ -304,9 +373,9 @@ Tensor.prototype.toString = function() {
     return this.toArray().toString();
 };
 
-Tensor.prototype.toFlatArray = function() {
-    return Array.prototype.slice.call(this.data);
-}
+// Tensor.prototype.toFlatArray = function() {
+//     return Array.prototype.slice.call(this.data);
+// }
 Tensor.prototype.fromFlatArray = function(arr) {
     BackingStore.set(this.data, arr, 0);
     return this;
@@ -314,7 +383,7 @@ Tensor.prototype.fromFlatArray = function(arr) {
 
 function addUnaryMethod(name) {
     //need to differentiate between in-place and non in-place operations
-    Tensor[name] = new Function([
+    Tensor[name] = new Function('TH', 'Tensor', [
     'return function(adata, inplace){',
     'var end_ref = adata.data',
     'if(!inplace) {',
@@ -323,7 +392,7 @@ function addUnaryMethod(name) {
     // operation in place please
     'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref())',
     'return end_ref}'
-  ].join('\n'))();
+  ].join('\n'))(TH, Tensor);
     // var fneq = new Function([
     //     'var n = this.data.length;',
     //     'while (n--) {',
@@ -359,38 +428,80 @@ function addUnaryPrototype(name){
   Tensor.prototype[name] = fn_notinplace
 }
 
-function addBinaryMethod(name, fncode) {
-    var fneqS = new Function('s', [
-        'var n = this.data.length;',
-        'var b = s;',
-        'while (n--) {',
-        '   var a = this.data[n];',
-        '   this.data[n] = ' + name + ';',
-        '}',
-        'return this;'
-    ].join('\n'));
-    var fneqT = new Function('t', [
-        'var n = this.data.length;',
-        'while (n--) {',
-        '   var a = this.data[n];',
-        '   var b = t.data[n];',
-        '   this.data[n] = ' + fncode + ';',
-        '}',
-        'return this;'
-    ].join('\n'));
+function addOperationOrComponentOpMethod(name, comp_method, no_mval) {
+  Tensor[name] = new Function('TH', 'Tensor', [
+    'return function(adata, bdata, not_in_place, mval){',
+    'mval = mval || 1',
+    'var end_ref = adata.data',
 
-    var fneq = function(x) {
-        if (x.constructor === Tensor)
-            return fneqT.call(this, x);
-        else
-            return fneqS.call(this, x);
-    }
-    Tensor.prototype[name + 'eq'] = fneq;
-    Tensor.prototype[name] = function(x) {
-        var nt = this.clone();
-        return fneq.call(nt, x);
-    };
+    // if not in place, we have to add
+    'if(not_in_place)',
+    '{',
+      'end_ref = Tensor.create_empty_of_size(adata.data.ref())',
+    '}',
+
+    'if(typeof(bdata) == "number")',
+      'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref(), mval*bdata)',
+    'else',
+      'TH.THFloatTensor_' + comp_method + '(end_ref.ref(), adata.data.ref(), ' + (no_mval ? '' : 'mval, ') + 'bdata.data.ref())',
+    'return end_ref}'
+  ].join('\n'))(TH, Tensor);
 }
+
+function addBinaryMethod(name, mulval) {
+  mulval = mulval || 1
+
+  var fn_inplace = new Function('Tensor', [
+      'return function(c_or_tensor){',
+      'this.assert_size_equal(c_or_tensor, "C' + name + ' must be equal sizes")',
+      'Tensor.' + name + '(this, c_or_tensor, false, ' + mulval + ')',
+      'return this}'
+  ].join('\n'))(Tensor);
+
+ var fn_notinplace = new Function('Tensor', [
+      'return function(c_or_tensor){',
+      'this.assert_size_equal(c_or_tensor, "C' + name + ' must be equal sizes")',
+      'var atensor = Tensor.' + name + '(this, c_or_tensor, true, ' + mulval + ')',
+      'var cc = this.refClone()',
+      ' cc.override(atensor, this.dims.slice(0))',
+      'return cc}'
+  ].join('\n'))(Tensor);
+
+  Tensor.prototype[name + 'eq'] = fn_inplace;
+  Tensor.prototype[name] = fn_notinplace
+}
+// function addBinaryMethod(name, fncode) {
+//     var fneqS = new Function('s', [
+//         'var n = this.data.length;',
+//         'var b = s;',
+//         'while (n--) {',
+//         '   var a = this.data[n];',
+//         '   this.data[n] = ' + name + ';',
+//         '}',
+//         'return this;'
+//     ].join('\n'));
+//     var fneqT = new Function('t', [
+//         'var n = this.data.length;',
+//         'while (n--) {',
+//         '   var a = this.data[n];',
+//         '   var b = t.data[n];',
+//         '   this.data[n] = ' + fncode + ';',
+//         '}',
+//         'return this;'
+//     ].join('\n'));
+
+//     var fneq = function(x) {
+//         if (x.constructor === Tensor)
+//             return fneqT.call(this, x);
+//         else
+//             return fneqS.call(this, x);
+//     }
+//     Tensor.prototype[name + 'eq'] = fneq;
+//     Tensor.prototype[name] = function(x) {
+//         var nt = this.clone();
+//         return fneq.call(nt, x);
+//     };
+// }
 
 // function addReduction(name, initcode, fncode) {
 //     Tensor.prototype[name+'reduce'] = new Function([
@@ -404,12 +515,18 @@ function addBinaryMethod(name, fncode) {
 //     ].join('\n'));
 // }
 
-function createPrototype(name, isUnary) {
+//sub not needed since it is -1 of add
+var arith = ['add', 'mul', 'div', 'pow'];
+
+function createPrototype(name, isUnary, comp_meth, no_mval) {
     if (isUnary) {
         addUnaryMethod(name);
         addUnaryPrototype(name);
     } else {
-        addBinaryMethod("name");
+        if (arith.indexOf(name) > -1){
+          addOperationOrComponentOpMethod(name, comp_meth, no_mval);
+        }
+        addBinaryMethod(name);
     }
 }
 
@@ -443,19 +560,20 @@ createPrototype('isNaN', true);
 createPrototype('invert', true);
 createPrototype('pseudoinvert', true);
 
-addBinaryMethod('add', 'a + b');
-addBinaryMethod('sub', 'a - b');
-addBinaryMethod('mul', 'a * b');
-addBinaryMethod('div', 'a / b');
-addBinaryMethod('mod', 'a % b');
-addBinaryMethod('pow', 'Math.pow(a, b)');
-addBinaryMethod('atan2', 'Math.atan2(a, b)');
-addBinaryMethod('eq', 'a === b');
-addBinaryMethod('neq', 'a !== b');
-addBinaryMethod('gt', 'a > b');
-addBinaryMethod('ge', 'a >= b');
-addBinaryMethod('lt', 'a < b');
-addBinaryMethod('le', 'a <= b');
+createPrototype('add', false, 'cadd');
+addBinaryMethod('sub', false, -1);
+createPrototype('mul', false, "cmul", true);
+createPrototype('div', false, "cdiv", true);
+createPrototype('fmod', false);
+createPrototype('pow', false, "cpow", true);
+createPrototype('atan2', false);
+//TODO: torch method name
+createPrototype('eq', false);
+createPrototype('ne', false);
+createPrototype('gt', false);
+createPrototype('ge', false);
+createPrototype('lt', false);
+createPrototype('le', false);
 
 
 //TODO: implement
