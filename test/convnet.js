@@ -1,5 +1,6 @@
 var Tensor = require('../newtensor');
-var ad = require('../ad');
+//var Tensor = require('../tensor');
+var ad = require('../newad');
 var nn = require('../nn');
 var opt = require('../opt');
 

@@ -6,20 +6,23 @@ var opt = require('../opt');
 
 // Tensor multiplication 
 
-var t = new Tensor([2,2]);
-t.fromArray([[1,2],[4,5]]);
-var t_1 = new Tensor([2,2]);
-t_1.fromArray([[0,3],[4,8]])
-//console.log(t_1)
+//var t = new Tensor([2,2]);
+//t.fromArray([[1,2],[4,5]]);
+//var t_1 = new Tensor([2,2]);
+//t_1.fromArray([[0,3],[4,8]])
 //var z = new Tensor([2,2]).zero;
-//return
 //var t_1 = new Tensor([2]);
 //var dat = t_1.fromArray([10,13]);
 
 var N = 2;
 //var mat = new Tensor([N,N]).fillRandom();
 var mat = new Tensor([N,N]).fill(3.0)
-console.log(mat.toArray());
+//console.log(mat.toArray());
+var ind = new Tensor([N,N]).fill(0);
+ind.set([1,1], 0.123);
+ind.set([0,0], 0.666);
+console.log("ind", ind.toArray());
+return;
 //console.log("filled", mat.fill(3.0).data);
 //console.log(mat.ls_to_array(mat.size));
 console.log(mat.toFlatArray());

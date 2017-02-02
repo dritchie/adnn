@@ -98,7 +98,7 @@ function Tensor(dims) {
   this.ref = this.data.ref()
   this.type = THType;
   return this;
-  //this._tensor_object = TH.THFloatTensor;
+  this._tensor_object = TH.THFloatTensor;
 }
 
 
@@ -151,10 +151,6 @@ Tensor.prototype.fillRandom = function() {
     var n = this.length;
     while (n--){
        this.data[n] = utils.gaussianSample(0, scale);
-       if (n%10000==0){
-          console.log("GC NOW", n)
-          global.gc()
-       }
     }
     return this;
 }
@@ -207,14 +203,14 @@ Tensor.prototype.assert_size_equal = function(other, assert_msg) {
   }
 }
 
+// Gets or sets values of tensor, determined by the val_or_tensor arg
 Tensor.get_set = function(js_tensor, coords, val_or_tensor) {
   var ndims = js_tensor.rank;
   var dfinal = ndims
   var cdim = 0;
 
   var o_tensor = js_tensor.data
-  var tensor = TH.THFloatTensor_newWithTensor(o_tensor.ref()).deref()
-
+  var tensor = TH.THFloatTensor_newWithTensor(o_tensor.ref()).deref();
   for(var dim = 0; dim < dfinal; dim++) {
     var pix = coords[dim]
     if(!Array.isArray(pix)) {
@@ -228,7 +224,7 @@ Tensor.get_set = function(js_tensor, coords, val_or_tensor) {
         if (val_or_tensor != undefined){
           if (typeof(val_or_tensor) != "number")
             throw new Error("Value being set needs to be number.");
-          TH.THStorage_set(tensor.storage, tensor.storageOffset+pix*tensor.stride[0], val_or_tensor);
+          TH.THFloatStorage_set(tensor.storage, tensor.storageOffset+pix*tensor.stride[0], val_or_tensor);
           return;
         }
         else{
@@ -244,7 +240,7 @@ Tensor.get_set = function(js_tensor, coords, val_or_tensor) {
     else if(typeof(pix) != "number") {
       // SAfety check
       tensor = null;
-      throw new Error("Tensor index must be an int or an Array of ints.");
+      throw new Error("Tensor index must be an Int or an Array of ints.");
     }
     else {
       //Array
@@ -269,14 +265,13 @@ Tensor.get_set = function(js_tensor, coords, val_or_tensor) {
       if(end < start)
         throw new Error("Starting index cannot be after End.");
       TH.THFloatTensor_narrow(tensor.ref(), ref.NULL, cdim++, start, end-start+1);
-      // now how many dimensions are we?
       ndims = TH.THFloatTensor_nDimension(tensor.ref());
     }
   }
-
   // copy from the tensor value
-  if(val_or_tensor) {
-    THFloatTensor['copy' + val_or_tensor.type](tensor.ref(), val_or_tensor.data.ref())
+  if (val_or_tensor) {
+    //THFloatTensor['copy' + val_or_tensor.type](tensor.ref(), val_or_tensor.data.ref())
+    TH.THLongStorage_copyFloat(tensor.ref(), val_or_tensor.data.ref());
   }
   return tensor
 }
@@ -296,6 +291,18 @@ Tensor.prototype.get = function(coords) {
     return tt_ref
   }
 };
+
+Tensor.prototype.set = function(coords, val) {
+  // val is a scalar or a tensor
+  var tensor = Tensor.get_set(this, coords, val)
+  if(tensor == undefined)
+    return tensor
+  // create a reference to tensor
+  var tt_ref = this.refClone()
+  tt_ref.override(tensor)
+  return tt_ref
+};
+
 // Tensor.prototype.get = function(coords) {
 //     var idx = 0;
 //     var n = this.dims.length;
@@ -304,14 +311,14 @@ Tensor.prototype.get = function(coords) {
 //     }
 //     return this.data[idx];
 // };
-Tensor.prototype.set = function(coords, val) {
-    var idx = 0;
-    var n = this.dims.length;
-    for (var i = 0; i < n; i++) {
-        idx = idx * this.dims[i] + coords[i];
-    }
-    this.data[idx] = val;
-};
+// Tensor.prototype.set = function(coords, val) {
+//     var idx = 0;
+//     var n = this.dims.length;
+//     for (var i = 0; i < n; i++) {
+//         idx = idx * this.dims[i] + coords[i];
+//     }
+//     this.data[idx] = val;
+// };
 
 Tensor.create_empty_of_size = function(ts, TensorType) {
   //Supporting floats for now.
@@ -361,7 +368,6 @@ Tensor.prototype.sum = function(ix) {
 Tensor.prototype.sumreduce = Tensor.prototype.sum
 
 Tensor.prototype.min = function() {
-  console.log(this.data);
   return TH.THFloatTensor_minall(this.data.ref());
 }
 Tensor.prototype.minreduce = Tensor.prototype.min;
