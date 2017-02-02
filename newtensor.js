@@ -17,17 +17,15 @@ var arr_to_ls = function(dims){
   var size = TH.THLongStorage_newWithSize(dims.length).deref();
   TH.THLongStorage_fill(size.ref(), 0)
   for(var i=0; i < dims.length; i++) {
-    // torch.THLongStorage.resize(size.ref(), dimension + 1);
     TH.THLongStorage_set(size.ref(), i, dims[i])
     // size.data[dimension] = dims[i];
     // dimension++;
 
     // console.log("s1:", size.data[i])
+    // if (i%1000==0){
+    //   global.gc()
+    // }
   }
-
-  // console.log("dim size:", TH.THLongStorage_size(size.ref()), " true: ", dims.length)
-  // console.log(size)
-  // console.log("dim info:", TH.THLongStorage_size(size.ref()), " true: ", dims.length)
   return size;
 }
 
@@ -41,8 +39,12 @@ Tensor.ls_to_array = function(ls) {
 
 var f_arr_prod = function(dims) {
     var prod = 1;
-    for(var i=0; i < dims.length; i++)
+    for(var i=0; i < dims.length; i++) {
         prod *= dims[i];
+        // if (i%1000==0){
+        //   global.gc()
+        // }
+      }
     return prod;
 }
 
@@ -74,7 +76,7 @@ var ArrayBackingStore = {
         for (var i = 0; i < src.length; i++) {
             tgt[i+offset] = src[i];
         }
-    }
+   o }
 };
 
 
@@ -85,22 +87,13 @@ function Tensor(dims) {
   if(!Array.isArray(dims))
     throw new Error("Tensor must have an array provided for construction");
 
-  var i, j;
-  var counter, tensor;
-  var si = 0;
-  var dimension = 0;
-  var is_finished = 0;
-
   var size = arr_to_ls(dims)
-
   var prod = f_arr_prod(dims)
   this.dims = dims;
   this.length = prod
 
   // var tensor = THTensor.newWithSize1d(prod).deref();
   var tensor = TH.THFloatTensor_newWithSize(size.ref(), ref.NULL).deref();
-  // var tensor = THTensor.newWithSize(size.ref(), ref.NULL).deref();
-  // console.log("ref size:1 ", THTensor.nElement(tensor.ref()))
   this.data = tensor;
   this.ref = this.data.ref()
   this.type = THType;
@@ -143,18 +136,7 @@ Tensor.prototype.view = function(dims) {
 }
 
 Tensor.prototype.fill = function(val) {
-    // for (var i=0; i < 2; ++i) {
-    //   for (var j=0; j < 2; ++j) {
-    //   console.log("avant", TH.THFloatTensor_get2d(this.data.ref(), i, j));
-    //   }
-    // }
     TH.THFloatTensor_fill(this.ref, val);
-    // for (var i=0; i < 2; ++i) {
-    //   for (var j=0; j < 2; ++j) {
-    //   console.log("apres", TH.THFloatTensor_get2d(this.data.ref(), i, j));
-    //   }
-    // }
-    // console.log("this", this.data)
     return this;
 };
 
@@ -167,7 +149,13 @@ Tensor.prototype.zero = function() {
 Tensor.prototype.fillRandom = function() {
     var scale = 1/this.length;
     var n = this.length;
-    while (n--) this.data[n] = utils.gaussianSample(0, scale);
+    while (n--){
+       this.data[n] = utils.gaussianSample(0, scale);
+       if (n%10000==0){
+          console.log("GC NOW", n)
+          global.gc()
+       }
+    }
     return this;
 }
 
@@ -199,8 +187,7 @@ Tensor.prototype.refClone = function() {
     return t.refCopy(this);
 };
 
-Tensor.is_equal = function(a,b)
-{
+Tensor.is_equal = function(a,b) {
   if(a.length != b.length)
     return false
   for(var i=0; i < a.length; i++)
@@ -210,8 +197,7 @@ Tensor.is_equal = function(a,b)
   return true
 }
 
-Tensor.prototype.assert_size_equal = function(other, assert_msg)
-{
+Tensor.prototype.assert_size_equal = function(other, assert_msg) {
   if(typeof(other) == "number")
     return true
   else{
@@ -221,17 +207,103 @@ Tensor.prototype.assert_size_equal = function(other, assert_msg)
   }
 }
 
+Tensor.get_set = function(js_tensor, coords, val_or_tensor) {
+  var ndims = js_tensor.rank;
+  var dfinal = ndims
+  var cdim = 0;
+
+  var o_tensor = js_tensor.data
+  var tensor = TH.THFloatTensor_newWithTensor(o_tensor.ref()).deref()
+
+  for(var dim = 0; dim < dfinal; dim++) {
+    var pix = coords[dim]
+    if(!Array.isArray(pix)) {
+      pix = Math.floor(pix);
+      if (pix < 0)
+        pix = tensor.size[cdim] + pix + 1;
+      if(!((pix >= 0) && (pix < tensor.size[cdim])))
+        throw new Error("Index out of bounds.");
+      if(ndims == 1){
+        // Setting element
+        if (val_or_tensor != undefined){
+          if (typeof(val_or_tensor) != "number")
+            throw new Error("Value being set needs to be number.");
+          TH.THStorage_set(tensor.storage, tensor.storageOffset+pix*tensor.stride[0], val_or_tensor);
+          return;
+        }
+        else{
+          var rval = TH.THFloatStorage_get(tensor.storage, tensor.storageOffset+pix*tensor.stride[0]);
+          return rval;
+        }
+      }
+      else {
+        TH.THFloatTensor_select(tensor.ref(), ref.NULL, cdim, pix);
+        ndims = TH.THFloatTensor_nDimension(tensor.ref());
+      }
+    }
+    else if(typeof(pix) != "number") {
+      // SAfety check
+      tensor = null;
+      throw new Error("Tensor index must be an int or an Array of ints.");
+    }
+    else {
+      //Array
+      var ixarray = pix;
+      var start = 0;
+      var end = tensor.size[cdim]-1;
+      if(ixarray.length > 0) {
+        start = ixarray[0];
+        end = start;
+      }
+
+      if(start < 0)
+        start = tensor.size[cdim] + start + 1;
+      if(!((start >= 0) && (start < tensor.size[cdim])))
+        throw new Error("Index out of bounds");
+      if(ixarray.length > 1)
+        end = ixarray[1];
+      if(end < 0)
+        end = tensor.size[cdim] + end + 1;
+      if(!((end >= 0) && (end < tensor.size[cdim])))
+        throw new Error("Index out of bounds");
+      if(end < start)
+        throw new Error("Starting index cannot be after End.");
+      TH.THFloatTensor_narrow(tensor.ref(), ref.NULL, cdim++, start, end-start+1);
+      // now how many dimensions are we?
+      ndims = TH.THFloatTensor_nDimension(tensor.ref());
+    }
+  }
+
+  // copy from the tensor value
+  if(val_or_tensor) {
+    THFloatTensor['copy' + val_or_tensor.type](tensor.ref(), val_or_tensor.data.ref())
+  }
+  return tensor
+}
 
 // These are slow; don't use them inside any hot loops (i.e. they're good for
 //    debgugging/translating data to/from other formats, and not much else)
 Tensor.prototype.get = function(coords) {
-    var idx = 0;
-    var n = this.dims.length;
-    for (var i = 0; i < n; i++) {
-        idx = idx * this.dims[i] + coords[i];
-    }
-    return this.data[idx];
+  if(coords.length > this.dims.length)
+    throw new Error("Dimensions exceeded rank")
+  var tensor = Tensor.get_set(this, coords)
+
+  if(tensor == undefined || typeof(tensor) == "number")
+    return tensor
+  else {
+    var tt_ref = this.refClone()
+    tt_ref.override(tensor)
+    return tt_ref
+  }
 };
+// Tensor.prototype.get = function(coords) {
+//     var idx = 0;
+//     var n = this.dims.length;
+//     for (var i = 0; i < n; i++) {
+//         idx = idx * this.dims[i] + coords[i];
+//     }
+//     return this.data[idx];
+// };
 Tensor.prototype.set = function(coords, val) {
     var idx = 0;
     var n = this.dims.length;
@@ -335,7 +407,7 @@ function toArrayRec(tensor, coords) {
     } else {
         var dim = coords.length;
         var arr = [];
-        for (var i = 0; i < tensor.dims; i++) {
+        for (var i = 0; i < tensor.dims[dim]; i++) {
             arr.push(toArrayRec(tensor, coords.concat([i])));
         }
         return arr;
@@ -343,15 +415,26 @@ function toArrayRec(tensor, coords) {
 }
 
 Tensor.prototype.toFlatArray = function () {
-  var arr = [];
-  for (var i = 0; i < this.length; i++){
-    arr.push(this.data[i]);
-  }
-  return arr;
+    var arr = [];
+    if (this.rank === 1) {
+      for (var i=0; i < this.dims[0]; ++i) {
+        arr.push(TH.THFloatTensor_get1d(this.data.ref(), i));
+      }
+      return arr;
+    }
+    else if (this.rank === 2) {
+      for (var i=0; i < this.dims[0]; ++i) {
+        for (var j=0; j < this.dims[1]; ++j) {
+          arr.push(TH.THFloatTensor_get2d(this.data.ref(), i, j));
+        }
+      }
+      return arr;
+    }
+    throw new Error('Tensors must have rank = 1 or 2');
 }
 
 Tensor.prototype.toArray = function() {
-    return toArrayRec(this.data, []);
+    return toArrayRec(this, []);
 };
 
 function fromArrayRec(tensor, coords, x) {

@@ -16,17 +16,25 @@ t_1.fromArray([[0,3],[4,8]])
 //var t_1 = new Tensor([2]);
 //var dat = t_1.fromArray([10,13]);
 
-var N = 1000;
-var mat = new Tensor([N,N]).fillRandom();
-var mat_1 = new Tensor([N,N]).fillRandom();
+var N = 2;
+//var mat = new Tensor([N,N]).fillRandom();
+var mat = new Tensor([N,N]).fill(3.0)
+console.log(mat.toArray());
+//console.log("filled", mat.fill(3.0).data);
+//console.log(mat.ls_to_array(mat.size));
+console.log(mat.toFlatArray());
+console.log(mat.sum());
+//var mat_1 = new Tensor([N,N]).fillRandom();
+var mat_1 = new Tensor([N,N]).fill(2);
+console.log('starting dot')
 console.time('tensor');
 //var res = data.min();
+//remap  :r !pbpaste
+//
+//
 //var res = mat.mul(mat_1);
-//console.log("testbefore", mat.toFlatArray());
-//res = mat.fill(12);
-//console.log("testafter", mat.toFlatArray());
 var res = mat.dot(mat_1);
-//console.log(res.toArray());
+//console.log(res.toFlatArray());
 
 // Train
 //var trainFunc = nn.linear(5, 5);

@@ -69,7 +69,13 @@ Tensor.prototype.zero = function() {
 Tensor.prototype.fillRandom = function() {
 	var scale = 1/this.length;
 	var n = this.length;
-	while (n--) this.data[n] = utils.gaussianSample(0, scale);
+	while (n--){
+    this.data[n] = utils.gaussianSample(0, scale);
+    // if (n%10000==0){
+    //       console.log("GC NOW", n)
+    //       global.gc()
+    // }
+  }
 	return this;
 }
 
