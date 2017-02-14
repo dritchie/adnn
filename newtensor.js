@@ -98,7 +98,6 @@ function Tensor(dims) {
   this.ref = this.data.ref()
   this.type = THType;
   return this;
-  this._tensor_object = TH.THFloatTensor;
 }
 
 
@@ -157,7 +156,20 @@ Tensor.prototype.fillRandom = function() {
 
 Tensor.prototype.copy = function(other, offset) {
     offset = offset || 0;
-    BackingStore.set(this.data, other.data, offset);
+    var tensor_to_copy = other.data
+    var ttype = other.type
+
+    if(offset != 0)
+      throw new Error("Offset copying not yet supported")
+
+    // TODO: erroring wrong size
+    //TH.THFloatTensor['copy' + ttype](this.data.ref(), other.data.ref())
+    TH.THFloatTensor_copyFloat(this.data.ref(), other.data.ref());
+    return this;
+};
+
+Tensor.prototype.slowCopy = function(other) {
+    this.fromArray(other.toArray());
     return this;
 };
 
@@ -454,7 +466,7 @@ function fromArrayRec(tensor, coords, x) {
     }
 }
 Tensor.prototype.fromArray = function(arr) {
-    if (arr.length != this.dims.length)
+    if (arr.length != this.dims[0])
       throw new Error('Array length must match with tensor length');
     fromArrayRec(this, [], arr);
     return this;
@@ -739,67 +751,29 @@ Tensor.prototype.inverse = function() {
   return ccTensor
 };
 
-// Determinant - cannot port from TH
+// Torch does not support determinants, so we compute product of real eigenvalues
 Tensor.prototype.determinant = function() {
   assert.ok(this.rank === 2);
   assert.ok(this.dims[0] === this.dims[1]);
-  var n = this.dims[0];
-  var ret = 1;
 
-  var i, j, k;
-  var Aj, Ai, alpha, temp, k1, k2, k3;
+  var etensor = Tensor.create_empty_of_size(this.data.ref())
+  TH.THFloatTensor_geev(etensor.ref(), ref.NULL, this.ref, 'N');
 
-  var A = [];
-  for (i = 0; i < n; i++) {
-    Ai = new Float64Array(n);
-    A.push(Ai);
-    for (j = 0; j < n; j++) {
-      Ai[j] = this.data[i * n + j];
-    }
-  }
-
-  for (j = 0; j < n - 1; j++) {
-    k = j;
-    for (i = j + 1; i < n; i++) {
-      if (Math.abs(A[i][j]) > Math.abs(A[k][j])) {
-        k = i;
-      }
-    }
-    if (k !== j) {
-      temp = A[k];
-      A[k] = A[j];
-      A[j] = temp;
-      ret *= -1;
-    }
-    Aj = A[j];
-    for (i = j + 1; i < n; i++) {
-      Ai = A[i];
-      alpha = Ai[j] / Aj[j];
-      for (k = j + 1; k < n - 1; k += 2) {
-        k1 = k + 1;
-        Ai[k] -= Aj[k] * alpha;
-        Ai[k1] -= Aj[k1] * alpha;
-      }
-      if (k !== n) {
-        Ai[k] -= Aj[k] * alpha;
-      }
-    }
-    if (Aj[j] === 0) {
-      return 0;
-    }
-    ret *= Aj[j];
-  }
-  return ret * A[j][j];
+  var evals = new Tensor([this.dims[0]]);
+  TH.THFloatTensor_narrow(evals.ref, etensor.ref(), 0, 0, this.dims[0]);
+  //x = evals.clone();
+  var ev = new Tensor([evals.dims[0]]);
+  ev.slowCopy(evals);
+  var det = TH.THFloatTensor_prodall(ev.ref);
+  return det;
 };
 
 Tensor.prototype.dot = function(t) {
   var a = this, b = t;
-  if (a.rank !== 2 || b.rank !== 2) {
+  if (a.rank !== 2 || b.rank !== 2)
     throw new Error('Inputs to dot should have rank = 2.');
-  }
-  if (a.dims[1] !== b.dims[0]) {
+  if (a.dims[1] !== b.dims[0])
     throw new Error('Dimension mismatch in dot. Inputs have dimension ' + a.dims + ' and ' + b.dims + '.');
-  }
   var t_for_mul = TH.THFloatTensor_new().deref();
   TH.THFloatTensor_resize2d(t_for_mul.ref(), a.dims[0], b.dims[1]);
   var beta = 0, alpha = 1;

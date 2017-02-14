@@ -10,10 +10,18 @@ var opt = require('../opt');
 //t.fromArray([[1,2],[4,5]]);
 //var t_1 = new Tensor([2,2]);
 //t_1.fromArray([[0,3],[4,8]])
-//var z = new Tensor([2,2]).zero;
-var t_1 = new Tensor([2,3]);
-var dat = t_1.fromArray([[10,13,2],[15,2,1]])
+var z = new Tensor([2,2]);
+var x = z.fromArray([[1,2],[3,4]]);
 
+function matrixOps(m1){
+  x.inverse();
+  x.determinant();
+  return 0;
+}
+var t_1 = new Tensor([3,3]);
+var dat = t_1.fromArray([[4.5,1.4,2.1],[-3,2,1],[-2,0.3,9.2]])
+console.log(dat.determinant());
+return;
 var N = 2;
 //var mat = new Tensor([N,N]).fillRandom();
 var mat = new Tensor([N,N]).fill(3.0)
@@ -52,3 +60,25 @@ var res = mat.dot(mat_1);
 //	verbose: false
 //});
 console.timeEnd('tensor');
+
+
+function benchmark(txt, func, endfunc)   {
+   console.log('--------------------------------------------')   
+   console.log(txt + ' input size: ' + SZ1 + ' iterations: ' + N + ' ')
+   console.time(txt)
+   for(i=1; i<N; i++) {
+      func();
+  }
+   console.timeEnd(txt)
+   endfunc();
+}
+
+benchmark(
+   'torch7 sumall',   
+   function() {
+      sum = TH.THFloatTensor_sumall(x)
+   },
+   function() {
+      console.log('sum: ' + sum)
+   }
+)
