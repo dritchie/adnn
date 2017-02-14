@@ -454,6 +454,8 @@ function fromArrayRec(tensor, coords, x) {
     }
 }
 Tensor.prototype.fromArray = function(arr) {
+    if (arr.length != this.dims.length)
+      throw new Error('Array length must match with tensor length');
     fromArrayRec(this, [], arr);
     return this;
 };

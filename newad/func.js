@@ -3,7 +3,7 @@
 var assert = require('assert');
 var graph = require('./graph.js');
 var Node = graph.Node;
-var Tensor = require('../tensor.js');
+var Tensor = require('../newtensor.js');
 
 
 function checkOutputType(OutputType) {

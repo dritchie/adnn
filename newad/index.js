@@ -2,7 +2,7 @@
 
 var utils = require('../utils.js');
 var graph = require('./graph.js');
-var Tensor = require('../tensor.js');
+var Tensor = require('../newtensor.js');
 
 var Node = graph.Node;
 var ScalarNode = graph.ScalarNode;
@@ -36,7 +36,8 @@ ad = utils.mergeObjects(ad, func, functions);
 
 // The macro-transform code only works via node
 if (typeof window === "undefined") {
-	//ad = utils.mergeObjects(ad, require('./transform.js'));
+    //console.log("transforming");
+	ad = utils.mergeObjects(ad, require('./transform.js'));
 }
 
 module.exports = ad;

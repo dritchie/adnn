@@ -4,7 +4,7 @@ var sweet = require('sweet.js');
 var fs = require('fs');
 var cp = require('child_process');
 
-var adRequireStr = "var ad = require('adnn/ad');\n";
+var adRequireStr = "var ad = require('adnn/newad');\n";
 var macros = undefined;
 function getMacros() {
 	if (macros === undefined) {

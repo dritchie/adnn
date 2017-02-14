@@ -1,6 +1,6 @@
 'use strict';
 
-var Tensor = require('../tensor.js');
+var Tensor = require('../newtensor.js');
 var graph = require('./graph.js');
 var Node = graph.Node;
 var func = require('./func.js');

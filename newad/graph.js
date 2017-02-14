@@ -1,6 +1,6 @@
 'use strict';
 
-var Tensor = require('../tensor.js');
+var Tensor = require('../newtensor.js');
 
 // Base class for all compute graph nodes
 function Node(x, parents, inputs, backward, name) {
