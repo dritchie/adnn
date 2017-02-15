@@ -1,0 +1,130 @@
+// Simple Character RNN
+
+
+// --------------------------------------------------------------------
+// Helper functions
+
+var observe = function(dist, val) {
+  if (val !== undefined) {
+    factor(dist.score(val));
+    return val;
+  } else {
+    return sample(dist, {
+      guide() {
+        return dist; // prevent auto-guide in Forward; always use model dist
+      }
+    });
+  }
+};
+
+
+_.defaults(global, { webpplCache: {} });
+
+var globalCache = global.webpplCache;
+
+var cached = function(fn) {
+  return function(x) {
+    if (_.has(globalCache, x)) {
+      return globalCache[x];
+    } else {
+      var value = fn(x);
+      _.assign(globalCache, _.zipObject([x], [value]));
+      return value;
+    }
+  }
+}
+
+
+// --------------------------------------------------------------------
+// Data and model
+
+var text = "This is my sample text. This is the second sentence. Let's see if the RNN can memorize it.";
+
+// var text = "101100111000111100001111100000111111000000111111100000001111111100000000111111111000000000"
+// 
+// ^ This text requires a larger latent state size (say 100), probably because fewer bits can be stored in
+//   the emission probabilities.
+
+var alphabet = _.sortBy(_.uniq('^' + text));
+
+var alphabetDim = alphabet.length;
+
+var latentDim = 10;
+
+var onehotAlphabet = cached(function(letter) {
+  var i = _.indexOf(alphabet, letter);
+  assert.ok(i != -1, "onehot expected to find letter in alphabet, didn't find " + letter + " in " + alphabet);
+  var n = alphabet.length;
+  return oneHot(i, n);
+});
+
+var makeModelParam = modelParamL2(10000);
+
+var makeRNN = function() {
+  var h_net = stack([tanh, affine(latentDim, 'rnn-h', makeModelParam), concat]);
+  var out_net = stack([softmax, affine(alphabetDim, 'rnn-out', makeModelParam)]);
+  return function(h_prev, x_prev) {
+    assert.ok(dims(h_prev)[0] === latentDim, 'Previous hidden vector has unexpected dimension');
+    var h = h_net([h_prev, onehotAlphabet(x_prev)]);
+    var ps = out_net(h);
+    return { h, ps };
+  };
+};
+
+var rnn = makeRNN();
+
+var model = function(opts) {
+
+  var h = opts.h || makeModelParam({ name: 'rnn-h-init', dims: [latentDim, 1] });
+  var targetLength = opts.targetLength || text.length;
+  var generatedChars = opts.generatedChars || ['^'];
+  var remainingChars = opts.remainingChars;
+  
+  if (generatedChars.length === targetLength+1) {
+    return generatedChars.slice(1).join('');
+  } else {
+    var prevChar = _.last(generatedChars);
+    var state = rnn(h, prevChar);
+    var h = state.h;
+    var ps = state.ps;
+    var observedChar = remainingChars ? remainingChars[0] : undefined;
+    var generatedChar = observe(Categorical({ ps, vs: alphabet }), observedChar);
+    return model({
+      h,
+      targetLength,
+      generatedChars: generatedChars.concat([generatedChar]),
+      remainingChars: remainingChars ? remainingChars.slice(1) : null
+    });
+  }
+}
+
+console.time('opt');
+Optimize({
+  model() { 
+    return model({ remainingChars: text });
+  },
+  steps: 2000,
+  optMethod: { adam: { stepSize: .01 }}
+});
+console.timeEnd('opt');
+
+console.time('infer');
+Infer({
+  samples: 50,
+  method: 'forward',
+  guide: true,
+  model() {
+    return model({ remainingChars: null });
+  }
+});
+console.timeEnd('infer');
+
+// Output:
+// 
+// Marginal:
+//     "This is my sample text. This is the second sentence. Let's see if the RNN can memorize it." : 0.78
+//     "This is my sample text. This is the secondecit. This sample thd ie the RNN cam ifecan memo" : 0.02
+//     "This is my samThs is the second sentence. Let's see if the RNN can memorize it. Let's is t" : 0.02
+//     "This is my sample text. This is t.xThis my sententencen en mee Let thns sentence. Let's se" : 0.02
+//     "This is my sample text. This is the second sentence. Let's see if the second sentence. Let" : 0.02
+//     ...

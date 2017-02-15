@@ -1,0 +1,63 @@
+// Variational Autoencoder
+// https://arxiv.org/abs/1312.6114
+
+var zDim = 2;
+var hDecodeDim = 500;
+var hEncodeDim = 500;
+var xDim = 784;
+
+// Requires the mnist data set to be downloaded and unpacked. See
+// examples/data/mnist.js.
+
+// Requires https://github.com/null-a/webppl-fs
+// Requires https://github.com/null-a/webppl-nn
+
+// Run with:
+// webppl --require . --require webppl-fs examples/vae.wppl
+
+var images = map(Vector, JSON.parse(fs.read('data/mnist_images.json')));
+
+// Recognition network.
+// Maps from an input image to the parameters of the guide
+// distribution.
+var encH = compose(tanh, affine(hEncodeDim, 'encH'));
+var encM = affine(zDim, 'encM');
+var encS = affine(zDim, 'encS');
+
+var encode = function(x) {
+  var h = encH(x);
+  var mu = encM(h);
+  var sigma = T.exp(encS(h));
+  return {mu, sigma};
+};
+
+// Generative network.
+// Maps from the latent space to pixels.
+var decode = stack([
+  sigmoid,
+  affine(xDim, 'dec1', modelParam),
+  tanh,
+  affine(hDecodeDim, 'dec0', modelParam)
+]);
+
+var zPrior = TensorGaussian({mu: 0, sigma: 1, dims: [zDim, 1]});
+
+console.time('obs');
+var model = function() {
+  mapData({data: images, batchSize: 100}, function(image) {
+    var z = sample(zPrior, {guide() {
+      return DiagCovGaussian(encode(image));
+    }});
+    observe(MultivariateBernoulli({ps: decode(z)}), image);
+  });
+};
+console.timeEnd('obs');
+
+console.time('opt');
+Optimize({
+  model,
+  steps: 500,
+  estimator: {ELBO: {samples: 1}},
+  optMethod: {adam: {stepSize: 0.001}}
+});
+console.timeEnd('opt');
