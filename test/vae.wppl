@@ -1,19 +1,18 @@
 // Variational Autoencoder
 // https://arxiv.org/abs/1312.6114
 
-var zDim = 2;
-var hDecodeDim = 500;
-var hEncodeDim = 500;
+var zDim = 20;
+var hDecodeDim = 400;
+var hEncodeDim = 400;
 var xDim = 784;
 
-// Requires the mnist data set to be downloaded and unpacked. See
-// examples/data/mnist.js.
-
+// Requires the mnist data set to be downloaded and unpacked in data/.
 // Requires https://github.com/null-a/webppl-fs
 // Requires https://github.com/null-a/webppl-nn
 
+//Direct webppl to use this directory for adnn
 // Run with:
-// webppl --require . --require webppl-fs examples/vae.wppl
+// webppl --require webppl-nn  --require webppl-fs test/vae.wppl
 
 var images = map(Vector, JSON.parse(fs.read('data/mnist_images.json')));
 
@@ -56,7 +55,7 @@ console.timeEnd('obs');
 console.time('opt');
 Optimize({
   model,
-  steps: 500,
+  steps: 1000,
   estimator: {ELBO: {samples: 1}},
   optMethod: {adam: {stepSize: 0.001}}
 });

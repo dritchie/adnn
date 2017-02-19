@@ -1,8 +1,7 @@
 var Tensor = require('../newtensor');
-//var Tensor = require('../tensor');
+var oldTensor = require('../tensor');
 var ad = require('../ad');
 var nn = require('../nn');
-var opt = require('../opt');
 
 // Tensor multiplication 
 
@@ -12,7 +11,7 @@ var opt = require('../opt');
 //t_1.fromArray([[0,3],[4,8]])
 var z = new Tensor([2,2]);
 var x = z.fromArray([[1,2],[3,4]]);
-
+console.log(x.);
 function matrixOps(m1){
   x.inverse();
   x.determinant();

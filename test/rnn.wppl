@@ -1,6 +1,10 @@
 // Simple Character RNN
 
-
+// Modeled from /stuhmuller/neural-nets/master/models/char-rnn.wppl
+//
+// Point webppl to use this adnn directory
+// Requires: webppl, webppl-nn, webppl-fs
+// webppl test/rnn.wppl --require webppl-fs --require /path/to/webppl-nn
 // --------------------------------------------------------------------
 // Helper functions
 
@@ -38,7 +42,8 @@ var cached = function(fn) {
 // --------------------------------------------------------------------
 // Data and model
 
-var text = "This is my sample text. This is the second sentence. Let's see if the RNN can memorize it.";
+var text = "This is some text. These are more words. Let's see if the RNN can memorize it.";
+//var text = "asd asdasd asdasdasd asd asdasd asdasdasd"
 
 // var text = "101100111000111100001111100000111111000000111111100000001111111100000000111111111000000000"
 // 
