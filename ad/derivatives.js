@@ -128,12 +128,12 @@ d.asinh = makeUnaryDerivatives('1 / Math.sqrt(x*x + 1)');
 d.acosh = makeUnaryDerivatives('1 / Math.sqrt(x*x - 1)');
 d.atanh = makeUnaryDerivatives('1 / (1 - x*x)');
 d.sigmoid = makeUnaryDerivatives('out * (1 - out)');
+d.abs = makeUnaryDerivatives('x >= 0 ? 1 : -1');
 
 // Functions with no derivative
 d.floor = makeUnaryDerivatives();
 d.ceil = makeUnaryDerivatives();
 d.round = makeUnaryDerivatives();
-d.abs = makeUnaryDerivatives();
 d.min = makeBinaryDerivatives();
 d.max = makeBinaryDerivatives();
 
