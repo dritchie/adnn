@@ -2,7 +2,7 @@
 
 var utils = require('../utils.js');
 var graph = require('./graph.js');
-var Tensor = require('../newtensor.js');
+var Tensor = require('../THTensor.js');
 
 var Node = graph.Node;
 var ScalarNode = graph.ScalarNode;

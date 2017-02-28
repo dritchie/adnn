@@ -24,8 +24,8 @@ function makeUnaryDerivatives(key, code, arr_args) {
 				'_x.dx += (' + code + ') * this.dx;'
 			].join('\n')),
 			tensor: new Function('_x', [
-				'var THTensor = _x.x._tensor_object',
-				'THTensor_' + fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (arr_args.length > 0 ? ", " + arr_args.join(",") : "") + ')',
+				//'var THTensor = _x.x._tensor_object',
+				'THFloatTensor_' + fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (arr_args.length > 0 ? ", " + arr_args.join(",") : "") + ')',
 				// 'var n = _x.x.length;',
 				// 'while (n--) {',
 				// '	var x = _x.x.data[n];',
@@ -106,8 +106,8 @@ function makeBinaryDerivatives(key, code1, code2) {
 					'var n = _xx.length;',
 					// y is a scalar
 					'if (typeof _yx === "number") {',
-						'var THTensor = _x.x._tensor_object',
-						'THTensor_' + t1_const_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_const_args.length > 0 ? ", " + t1_const_args.join(",") : "") + ')',
+						//'var THTensor = _x.x._tensor_object',
+						'THFloatTensor_' + t1_const_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_const_args.length > 0 ? ", " + t1_const_args.join(",") : "") + ')',
 					// '	while (n--) {',
 					// '		var x = _xx.data[n];',
 					// '		var y = _yx;',
@@ -116,8 +116,8 @@ function makeBinaryDerivatives(key, code1, code2) {
 					// '	}',
 					// y is a tensor 
 					'} else {',
-					'var THTensor = _x.x._tensor_object',
-					'THTensor_' + t1_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_full_args.length > 0 ? ", " + t1_full_args.join(",") : "") + ')',
+					//'var THTensor = _x.x._tensor_object',
+					'THFloatTensor_' + t1_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_full_args.length > 0 ? ", " + t1_full_args.join(",") : "") + ')',
 					// '	while (n--) {',
 					// '		var x = _xx.data[n];',
 					// '		var y = _yx.data[n];',
@@ -133,8 +133,8 @@ function makeBinaryDerivatives(key, code1, code2) {
 					'var n = _xx.length;',
 					// y is a scalar
 					'if (typeof _yx === "number") {',
-						'var THTensor = _x.x._tensor_object',
-						'_y.dx += THTensor_' + t2_acc_fct_name + '(this.dx.data.ref()' + (t2_acc_args.length > 0 ? ", " + t2_acc_args.join(",") : "") + ')',
+						// 'var THTensor = _x.x._tensor_object',
+						'_y.dx += THFloatTensor_' + t2_acc_fct_name + '(this.dx.data.ref()' + (t2_acc_args.length > 0 ? ", " + t2_acc_args.join(",") : "") + ')',
 					// '	while (n--) {',
 					// '		var x = _xx.data[n];',
 					// '		var y = _yx;',
@@ -143,8 +143,8 @@ function makeBinaryDerivatives(key, code1, code2) {
 					// '	}',
 					// y is a tensor
 					'} else {',
-						'var THTensor = _x.x._tensor_object',
-						'THTensor_' + t2_fct_name + '(_y.dx.data.ref(), this.dx.data.ref()' + (t2_full_args.length > 0 ? ", " + t2_full_args.join(",") : "") + ')',
+						// 'var THTensor = _x.x._tensor_object',
+						'THFloatTensor_' + t2_fct_name + '(_y.dx.data.ref(), this.dx.data.ref()' + (t2_full_args.length > 0 ? ", " + t2_full_args.join(",") : "") + ')',
 
 					// '	while (n--) {',
 					// '		var x = _xx.data[n];',

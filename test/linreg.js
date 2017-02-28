@@ -20,7 +20,8 @@ ad.value(trueFunc.biases).fromArray([5, 4, 3, 2, 1]);
 var data = [];
 var N = 10000;
 for (var i = 0; i < N; i++) {
-	var x = new Tensor([5]).fillRandom();
+	//var x = new Tensor([5]).fillRandom();
+	var x = new Tensor([5]).fill(1);
 	var y = trueFunc.eval(x);
 	data.push({
 		input: x,

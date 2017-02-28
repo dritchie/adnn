@@ -11,15 +11,25 @@ var nn = require('../nn');
 //t_1.fromArray([[0,3],[4,8]])
 var z = new Tensor([2,2]);
 var x = z.fromArray([[1,2],[3,4]]);
-console.log(x.);
+
+function init(){
+
+}
+
 function matrixOps(m1){
   x.inverse();
   x.determinant();
+  x.transpose();
+  x.diagonal();
+  return 0;
+}
+
+function mathOps(m1,m2){
   return 0;
 }
 var t_1 = new Tensor([3,3]);
 var dat = t_1.fromArray([[4.5,1.4,2.1],[-3,2,1],[-2,0.3,9.2]])
-console.log(dat.determinant());
+console.log(x.toArray());
 return;
 var N = 2;
 //var mat = new Tensor([N,N]).fillRandom();

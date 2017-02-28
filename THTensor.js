@@ -175,6 +175,8 @@ Tensor.prototype.slowCopy = function(other) {
 
 Tensor.prototype.clone = function() {
     var copy = new Tensor(this.dims);
+    //TEMP
+    return this.slowCopy(this);
     return copy.copy(this);
 };
 
@@ -728,7 +730,7 @@ Tensor.prototype.T = Tensor.prototype.transpose
 
 Tensor.prototype.diagonal = function() {
   assert.ok(this.rank === 2);
-  assert.ok(this.dims[1] === 1);
+  //assert.ok(this.dims[1] === 1);
   
   var etensor = Tensor.create_empty_of_size(this.data.ref())
   TH.THFloatTensor_diag(etensor.ref(),this.data.ref(),0)
