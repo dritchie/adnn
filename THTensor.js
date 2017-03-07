@@ -3,7 +3,7 @@
 var assert = require('assert');
 var utils = require('./utils.js');
 
-//var ffi = require('ffi')
+var ffi = require('ffi')
 var ref =  require('ref')
 //var THTensor = torch.THFloatTensor
 //var THStorage = torch.THFloatStorage
@@ -17,14 +17,7 @@ var arr_to_ls = function(dims){
   var size = TH.THLongStorage_newWithSize(dims.length).deref();
   TH.THLongStorage_fill(size.ref(), 0)
   for(var i=0; i < dims.length; i++) {
-    TH.THLongStorage_set(size.ref(), i, dims[i])
-    // size.data[dimension] = dims[i];
-    // dimension++;
-
-    // console.log("s1:", size.data[i])
-    // if (i%1000==0){
-    //   global.gc()
-    // }
+    TH.THLongStorage_set(size.ref(), i, dims[i]);
   }
   return size;
 }
@@ -49,14 +42,14 @@ var f_arr_prod = function(dims) {
 }
 
 // Can swap out different backing stores
-function TypedArrayBackingStore(ArrayType) {
-    return {
-        new: function(n) { return new ArrayType(n); },
-        set: function(tgt, src, offset) {
-            tgt.set(src, offset);
-        }
-    }
-}
+// function TypedArrayBackingStore(ArrayType) {
+//     return {
+//         new: function(n) { return new ArrayType(n); },
+//         set: function(tgt, src, offset) {
+//             tgt.set(src, offset);
+//         }
+//     }
+// }
 
 Tensor.prototype.override = function(t_data, dims) {
   this.dims = dims || Tensor.ls_to_array(TH.THFloatTensor_newSizeOf(t_data.ref()).deref())
@@ -81,7 +74,7 @@ var ArrayBackingStore = {
 
 
 // The actual backing store we're using
-var BackingStore = TypedArrayBackingStore(Float64Array);
+// var BackingStore = TypedArrayBackingStore(Float64Array);
 
 function Tensor(dims) {
   if(!Array.isArray(dims))
@@ -121,8 +114,8 @@ Tensor.prototype.reshape = function(dims) {
   var size = f_arr_prod(dims)
   assert(size === this.length, 'Tensor reshape invalid size');
   this.dims = dims;
-  this.data = this.view(dims)
-  this.ref = this.data.ref()
+  this.data = this.view(dims);
+  this.ref = this.data.ref();
   return this
 }
 
@@ -130,7 +123,7 @@ Tensor.prototype.view = function(dims) {
   var rsize = arr_to_ls(dims);
   var nt = TH.THFloatTensor_new().deref()
   // console.log("orig", orig)
-  TH.THFloatTensor_set(nt.ref(), orig.ref()) //orig.storage, orig.storageOffset, rsize.ref())
+  TH.THFloatTensor_set(nt.ref(), this.data.ref()) //orig.storage, orig.storageOffset, rsize.ref())
   return nt;
 }
 
@@ -147,11 +140,14 @@ Tensor.prototype.zero = function() {
 //    https://github.com/karpathy/convnetjs/blob/master/src/convnet_vol.js
 Tensor.prototype.fillRandom = function() {
     var scale = 1/this.length;
-    var n = this.length;
-    while (n--){
-       this.data[n] = utils.gaussianSample(0, scale);
-    }
-    return this;
+    return this.applyFn(function(val) {
+      return utils.gaussianSample(0, scale);
+ });
+    // var n = this.length;
+    // while (n--){
+    //    this.data[n] = utils.gaussianSample(0, scale);
+    // }
+    // return this;
 }
 
 Tensor.prototype.copy = function(other, offset) {
@@ -168,6 +164,7 @@ Tensor.prototype.copy = function(other, offset) {
     return this;
 };
 
+// Slow Copy of array 
 Tensor.prototype.slowCopy = function(other) {
     this.fromArray(other.toArray());
     return this;
@@ -176,7 +173,7 @@ Tensor.prototype.slowCopy = function(other) {
 Tensor.prototype.clone = function() {
     var copy = new Tensor(this.dims);
     //TEMP
-    return this.slowCopy(this);
+    return copy.slowCopy(this);
     return copy.copy(this);
 };
 
@@ -185,7 +182,7 @@ Tensor.prototype.refCopy = function(other) {
     this.dims = other.dims;
     this.length = other.length;
     this.data = other.data;
-    this.ref = this.data.ref()
+    this.ref = this.data.ref();
     this.type = other.type;
     return this;
 }
@@ -197,7 +194,7 @@ Tensor.prototype.refClone = function() {
     return t.refCopy(this);
 };
 
-Tensor.is_equal = function(a,b) {
+Tensor.arr_is_equal = function(a,b) {
   if(a.length != b.length)
     return false
   for(var i=0; i < a.length; i++)
@@ -211,7 +208,7 @@ Tensor.prototype.assert_size_equal = function(other, assert_msg) {
   if(typeof(other) == "number")
     return true
   else{
-    var are_equal = Tensor.is_equal(other.dims, this.dims)
+    var are_equal = Tensor.arr_is_equal(other.dims, this.dims)
     assert.ok(are_equal, assert_msg)
     return are_equal
   }
@@ -287,7 +284,7 @@ Tensor.get_set = function(js_tensor, coords, val_or_tensor) {
     //THFloatTensor['copy' + val_or_tensor.type](tensor.ref(), val_or_tensor.data.ref())
     TH.THLongStorage_copyFloat(tensor.ref(), val_or_tensor.data.ref());
   }
-  return tensor
+  return tensor;
 }
 
 // These are slow; don't use them inside any hot loops (i.e. they're good for
@@ -308,13 +305,13 @@ Tensor.prototype.get = function(coords) {
 
 Tensor.prototype.set = function(coords, val) {
   // val is a scalar or a tensor
-  var tensor = Tensor.get_set(this, coords, val)
+  var tensor = Tensor.get_set(this, coords, val);
   if(tensor == undefined)
-    return tensor
+    return tensor;
   // create a reference to tensor
-  var tt_ref = this.refClone()
-  tt_ref.override(tensor)
-  return tt_ref
+  var tt_ref = this.refClone();
+  tt_ref.override(tensor);
+  return tt_ref;
 };
 
 // Tensor.prototype.get = function(coords) {
@@ -372,6 +369,29 @@ Tensor.byte_nonzero = function(ts, ttype) {
   return bbtensor.sumall(bempty.ref())
 }
 
+Tensor.byte_comparison = function(byte_comp_fct) {
+  return function(adata, bdata, not_in_place, mval){
+    assert.ok(not_in_place, "Cannot compare in-place equality");
+    var sz = Tensor.get_size(adata.data.ref());
+    var tcompare;
+    if (typeof(bdata) === "number") {
+      tcompare = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
+      TH.THFloatTensor_fill(tcompare.ref(), bdata);
+    }
+    else {
+      assert.ok(adata.type === bdata.type, "Checking tensor equal must be of same tensor type");
+    }
+
+    var bempty, bbtensor = Tensor.byte_sizeof(sz, ttype);
+    THFloatTensor[byte_comp_fct](bempty.ref(), adata.data.ref(), tcompare.ref());
+
+    var bb = adata.refClone();
+    bb.override(bb, adata.dims.slice(0));
+    bb.type = "Byte";
+    return bb;
+  }
+}
+
 Tensor.prototype.sum = function(ix) {
   if(ix == undefined || ix == null)
     return TH.THFloatTensor_sumall(this.ref);
@@ -401,9 +421,11 @@ Tensor.prototype.any = function() {
 }
 Tensor.prototype.anyreduce = Tensor.prototype.any;
 
+Tensor.prototype.mod = function() {
+  throw new Error("Mod not supported in torch, ergo no support yet.")
+}
 
-Tensor.atan2 = function(adata, bdata, not_in_place, mval)
-{
+Tensor.atan2 = function(adata, bdata, not_in_place, mval) {
   mval = mval || 1;
   var end_ref = adata.data;
 
@@ -484,6 +506,13 @@ Tensor.prototype.toString = function() {
 Tensor.prototype.fromFlatArray = function(arr) {
     BackingStore.set(this.data, arr, 0);
     return this;
+}
+
+Tensor.prototype.applyFn = function (cb) {
+  //eventually take any tensor type passed in
+  var callback = ffi.Callback('float', ['float'], cb);
+  THFloatTensor_fctapply(this.data.ref(), callback);
+  return this;
 }
 
 function addUnaryMethod(name) {
@@ -661,7 +690,7 @@ createPrototype('atanh', true);
 
 //TODO: impl
 createPrototype('isFinite', true);
-createPrototype('isNaN', true);
+//createPrototype('isNaN', true);
 createPrototype('invert', true);
 createPrototype('pseudoinvert', true);
 
@@ -680,29 +709,132 @@ createPrototype('ge', false);
 createPrototype('lt', false);
 createPrototype('le', false);
 
+/*
+ * The below functions are not supported by Torch
+ */
 
-//TODO: implement
+// acosh
+Tensor.prototype.acosheq = function() {
+  //return Math.log(x + Math.sqrt(x * x - 1));
+  var xx = this.clone().muleq(this).addeq(-1);
+  return this.addeq(xx).logeq();
+}
+
+Tensor.prototype.acosh = function() {
+  var cc = this.clone();
+  cc.acosheq();
+  return cc;
+}
+
+// asinh
+Tensor.prototype.asinheq = function() {
+  //return Math.log(x + Math.sqrt(x * x + 1));
+  var xx = this.clone().muleq(this).addeq(1);
+  return this.addeq(xx).logeq();
+}
+
+Tensor.prototype.asinh = function() {
+  var cc = this.clone();
+  cc.asinheq();
+  return cc;
+}
+
+// atanh
+Tensor.prototype.atanheq = function() {
+  //Math.log((1+x)/(1-x)) / 2;
+  var negxone = this.neg().addeq(1)
+  return this.addeq(1).diveq(negxone).logeq().diveq(2)
+}
+
+Tensor.prototype.atanh = function() {
+  var cc = this.clone();
+  cc.atanheq();
+  return cc;
+}
+
+Tensor.prototype.inverteq = function() {
+  // '1 / x' 
+  var cc = Tensor.create_empty_of_size(this.data.ref());
+  THFloatTensor.fill(cc.ref(), 1);
+  var ccTensor = this.refClone();
+  ccTensor.override(cc, this.dims);
+  ccTensor.diveq(this);
+  this.copy(ccTensor);
+  return this;
+}
+
+Tensor.prototype.invert = function() {
+  var cc = this.clone();
+  cc.inverteq();
+  return cc;
+}
+
+Tensor.prototype.sigmoideq = function() {
+  // 1 / (1 + Math.exp(-x)))
+  return this.negeq().expeq().addeq(1).inverteq()
+}
+
+Tensor.prototype.sigmoid = function() {
+  var cc = this.clone();
+  cc.sigmoideq();
+  return cc;
+}
+
+Tensor.prototype.isFiniteeq = function() {
+  return this.apply_function(function(val) {
+    return isFinite(val) ? 1.0 : 0.0;
+  })
+}
+
+Tensor.prototype.isFinite = function() {
+  var cc = this.clone();
+  cc.isFiniteeq();
+  return cc;
+}
+
+Tensor.prototype.isNaNeq = function() {
+  return this.apply_function(function(val) {
+    return isNaN(val) ? 1.0 : 0.0;
+  });
+}
+
+Tensor.prototype.isNaN = function() {
+  var cc = this.clone();
+  cc.isNaNeq();
+  return cc;
+}
+
+Tensor.prototype.pseudoinverteq = function() {
+  return this.apply_function(function(val) {
+    return val == 0 ? 0 : 1/val;
+  });
+}
+
+Tensor.prototype.pseudoinvert = function() {
+  var cc = this.clone();
+  cc.pseudoinverteq();
+  return cc;
+}
+
+// In-place softmax
+Tensor.prototype.softmaxeq = function() {
+  var max = this.max()
+  // Don't clone
+  var cc = this.addeq(-max).expeq()
+  var sum = cc.sum()
+  cc.diveq(sum)
+  return this
+};
+
 Tensor.prototype.softmax = function() {
-    // Find max elem
-    var max = -Infinity;
-    var n = this.data.length;
-    while (n--) {
-        max = Math.max(max, this.data[n]);
-    }
-    var t = new Tensor(this.dims);
-    // Exponentiate, guard against overflow
-    n = this.data.length;
-    var sum = 0;
-    while (n--) {
-        t.data[n] = Math.exp(this.data[n] - max);
-        sum += t.data[n];
-    }
-    // Normalize
-    n = this.data.length;
-    while (n--) {
-        t.data[n] /= sum;
-    }
-    return t;
+  // Find max elem
+  var max = this.max()
+  // clone it, subtract the max, then exponentiate
+  var cc = this.clone().addeq(-max).expeq()
+  var sum = cc.sum()
+  // normalize
+  cc.diveq(sum)
+  return cc
 };
 
 Tensor.prototype.transpose = function(ix, ix2) {
@@ -764,8 +896,9 @@ Tensor.prototype.determinant = function() {
   var evals = new Tensor([this.dims[0]]);
   TH.THFloatTensor_narrow(evals.ref, etensor.ref(), 0, 0, this.dims[0]);
   //x = evals.clone();
-  var ev = new Tensor([evals.dims[0]]);
-  ev.slowCopy(evals);
+  //var ev = new Tensor([evals.dims[0]]);
+  //ev.slowCopy(evals);
+  var ev = evals.clone();
   var det = TH.THFloatTensor_prodall(ev.ref);
   return det;
 };

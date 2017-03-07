@@ -5,7 +5,7 @@
   "author": "dritchie",
   "license": "MIT",
   "dependencies": {
-   "ffi": ">= 0",
+    "ffi": "^2.2.0",
     "ffi-generate": ">= 0",
     "ref": ">= 0",
     "ref-array": ">= 0",
