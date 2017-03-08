@@ -1,6 +1,6 @@
 var Tensor = require('../THTensor');
 var oldTensor = require('../tensor');
-var ad = require('../ad');
+var ad = require('../ad/adjs');
 var nn = require('../nn');
 
 // Tensor multiplication 

@@ -1,6 +1,6 @@
 'use strict';
 
-var Tensor = require('../tensor.js');
+var Tensor = require('../../THTensor.js');
 var graph = require('./graph.js');
 var Node = graph.Node;
 var func = require('./func.js');
@@ -161,7 +161,7 @@ fns.scalar.leq = func.liftBinaryFunction(
 );
 
 
-// Linear Algebra  -----------------------------------------------------
+// Matrix operations  -----------------------------------------------------
 
 
 fns.tensor.transpose = func.newUnaryFunction({
@@ -307,9 +307,9 @@ fns.tensor.anyreduce = func.liftUnaryFunction(function(t) {
 
 
 // Select one entry out of a tensor (by linear indexing)
-fns.tensor.get = func.newFunction({
+fns.tensorEntry = func.newFunction({
 	OutputType: Scalar,
-	name: 'tensor.get',
+	name: 'tensorEntry',
 	forward: function(t, i) {
 		return t instanceof Node ? t.x.data[i] : t.data[i];
 	},
@@ -324,11 +324,11 @@ fns.tensor.get = func.newFunction({
 });
 
 // Split a tensor into an array of its scalar entries
-fns.tensor.toScalars = function(t) {
+fns.tensorToScalars = function(t) {
 	var n = t instanceof Node ? t.x.length : t.length;
 	var s = new Array(n);
 	while (n--) {
-		s[n] = fns.tensor.get(t, n);
+		s[n] = fns.tensorEntry(t, n);
 	}
 	return s;
 };
@@ -378,9 +378,9 @@ fns.tensor.split = function(t, lengths) {
 
 // Concatentate multiple scalars into a tensor
 // Can either take an array of scalars or a variable number of arguments
-fns.tensor.fromScalars = func.newFunction({
+fns.scalarsToTensor = func.newFunction({
 	OutputType: Tensor,
-	name: 'tensor.fromScalars',
+	name: 'scalarsToTensor',
 	forward: function() {
 		var args = arguments.length === 1 && arguments[0] instanceof Array ?
 			arguments[0] : arguments;
@@ -515,12 +515,13 @@ fns.tensor.softmax = func.newUnaryFunction({
 		// For each input entry, accumulate partial derivatives
 		//    for each output entry
 		var n = t.dx.data.length;
-		var s = 0;
-		for (var i = 0; i < n; i++) {
-			s += this.x.data[i] * this.dx.data[i];
-		}
 		for (var j = 0; j < n; j++) {
-			t.dx.data[j] += this.x.data[j] * (this.dx.data[j] - s);
+			var out_j = this.x.data[j];
+			for (var i = 0; i < n; i++) {
+				var out_i = this.x.data[i];
+				var d = out_i * ((i === j) - out_j);
+				t.dx.data[j] += d * this.dx.data[i];
+			}
 		}
 	}
 });

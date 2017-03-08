@@ -511,7 +511,7 @@ Tensor.prototype.fromFlatArray = function(arr) {
 Tensor.prototype.applyFn = function (cb) {
   //eventually take any tensor type passed in
   var callback = ffi.Callback('float', ['float'], cb);
-  THFloatTensor_fctapply(this.data.ref(), callback);
+  //THFloatTensor_fctapply(this.data.ref(), callback);
   return this;
 }
 
@@ -687,12 +687,6 @@ createPrototype('sigmoid', true);
 createPrototype('acosh', true);
 createPrototype('asinh',  true);
 createPrototype('atanh', true);
-
-//TODO: impl
-createPrototype('isFinite', true);
-//createPrototype('isNaN', true);
-createPrototype('invert', true);
-createPrototype('pseudoinvert', true);
 
 createPrototype('add', false, 'cadd');
 addBinaryMethod('sub', false, -1);

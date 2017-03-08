@@ -3,7 +3,7 @@
 var assert = require('assert');
 var graph = require('./graph.js');
 var Node = graph.Node;
-var Tensor = require('../THTensor.js');
+var Tensor = require('../../tensor.js');
 
 
 function checkOutputType(OutputType) {
@@ -119,7 +119,11 @@ function newFunction(opts) {
 	return function() {
 		var output = forward.apply(null, arguments);
 		var parents = getParents.apply(null, arguments);
-		var inputs = Array.prototype.slice.call(arguments);
+		// https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
+		var inputs = new Array(arguments.length);
+		for (var i = 0; i < inputs.length; ++i) {
+			inputs[i] = arguments[i];
+		}
 		var n = parents.length;
 		if (n === 0) {
 			return output;
