@@ -1,7 +1,7 @@
 var Tensor = require('../THTensor');
 var oldTensor = require('../tensor');
-var ad = require('../ad/adjs');
-var nn = require('../nn');
+// var ad = require('../ad/adjs');
+// var nn = require('../nn');
 
 // Tensor multiplication 
 
@@ -9,19 +9,26 @@ var nn = require('../nn');
 //t.fromArray([[1,2],[4,5]]);
 //var t_1 = new Tensor([2,2]);
 //t_1.fromArray([[0,3],[4,8]])
+var t_0, t_1
 var z = new Tensor([2,2]);
+var z_0 = new Tensor([2,2]);
 var x = z.fromArray([[1,2],[3,4]]);
-var y = z.fillRandom();
-console.log(y.toArray());
+var x_0 = z_0.fromArray([[3,5],[1,8]]);
+var y = x.ge(3);
+var y = x.add(x_0);
+// console.log(y.toArray());
 return
 
-function init(){
-
+function init(N){
+  var n = N;
+  t_0 = new Tensor([N,N]).fillRandom();
+  t_1 = new Tensor([N,N]).fillRandom();
 }
 
 function matrixOps(m1){
   m1.inverse();
   m1.determinant();
+  m1.cholesky();
   m1.transpose();
   m1.diagonal();
   return 0;

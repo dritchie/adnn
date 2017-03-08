@@ -1,10 +1,10 @@
 'use strict';
 
 var Tensor = require('../THTensor.js');
-var graph = require('./graph.js');
+var graph = require('./adjs/graph.js');
 var Node = graph.Node;
-var func = require('./func.js');
-var derivs = require('./derivatives.js');
+var func = require('./adjs/func.js');
+var derivs = require('./adjs/derivatives.js');
 
 
 var Scalar = Number;

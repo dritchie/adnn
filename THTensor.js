@@ -51,11 +51,15 @@ var f_arr_prod = function(dims) {
 //     }
 // }
 
-Tensor.prototype.override = function(t_data, dims) {
-  this.dims = dims || Tensor.ls_to_array(TH.THFloatTensor_newSizeOf(t_data.ref()).deref())
-  this.length = f_arr_prod(this.dims)
-  this.data = t_data
-  this.ref = this.data.ref()
+Tensor.prototype.override = function(t_data, dims, ttype) {
+  this.dims = dims || Tensor.ls_to_array(TH.THFloatTensor_newSizeOf(t_data.ref()).deref());
+  this.length = f_arr_prod(this.dims);
+  this.data = t_data;
+  if (ttype === "Byte")
+    this.ref = this.data.ref;
+  else {
+    this.ref = this.data.ref();
+  }
 }
 
 var ArrayBackingStore = {
@@ -206,11 +210,11 @@ Tensor.arr_is_equal = function(a,b) {
 
 Tensor.prototype.assert_size_equal = function(other, assert_msg) {
   if(typeof(other) == "number")
-    return true
-  else{
-    var are_equal = Tensor.arr_is_equal(other.dims, this.dims)
-    assert.ok(are_equal, assert_msg)
-    return are_equal
+    return true;
+  else {
+    var are_equal = Tensor.arr_is_equal(other.dims, this.dims);
+    assert.ok(are_equal, assert_msg);
+    return are_equal;
   }
 }
 
@@ -351,43 +355,40 @@ Tensor.prototype.size = function(ix) {
 };
 
 Tensor.byte_sizeof = function(sz, ttype) {
-  var bempty = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
+  var bempty = TH.THByteTensor_newWithSize(sz.ref(), ref.NULL).deref();
   // console.log("empty in habitat: ", bempty)
-  return {empty: bempty, byte_tensor: bbtensor};
+  return bempty;
+  //return {empty: bempty};
 }
 
 Tensor.byte_nonzero = function(ts, ttype) {
   var sz = Tensor.getSize(ts.ref());
   var tempty = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
   TH.THFloatTensor_zero(tempty.ref());
-  var b_obj = Tensor.byte_sizeof(sz, ttype);
-  var bempty = b_obj.empty;
-  var bbtensor = b_obj.byte_tensor;
+  var bempty = Tensor.byte_sizeof(sz, ttype);
 
   // fill byte tensor with not equals
   TH.THFloatTensor_neTensor(bempty.ref(), tempty.ref(), ts.ref())
-  return bbtensor.sumall(bempty.ref())
+  return TH.THByteTensor_sumall(bempty.ref())
 }
 
 Tensor.byte_comparison = function(byte_comp_fct) {
   return function(adata, bdata, not_in_place, mval){
     assert.ok(not_in_place, "Cannot compare in-place equality");
-    var sz = Tensor.get_size(adata.data.ref());
-    var tcompare;
-    if (typeof(bdata) === "number") {
-      tcompare = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
-      TH.THFloatTensor_fill(tcompare.ref(), bdata);
-    }
-    else {
+    var sz = Tensor.getSize(adata.data.ref());
+    var tcompare = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();;
+    var method = "THByteTensor_" + byte_comp_fct;
+    TH.THFloatTensor_fill(tcompare.ref(), bdata);
+    if (typeof(bdata) != "number") {
       assert.ok(adata.type === bdata.type, "Checking tensor equal must be of same tensor type");
     }
 
-    var bempty, bbtensor = Tensor.byte_sizeof(sz, ttype);
-    THFloatTensor[byte_comp_fct](bempty.ref(), adata.data.ref(), tcompare.ref());
+    var bempty = Tensor.byte_sizeof(sz, adata.type);
+    TH[method](bempty.ref(), adata.data.ref(), tcompare.ref());
 
     var bb = adata.refClone();
-    bb.override(bb, adata.dims.slice(0));
     bb.type = "Byte";
+    bb.override(bb, adata.dims.slice(0), bb.type);
     return bb;
   }
 }
@@ -422,7 +423,11 @@ Tensor.prototype.any = function() {
 Tensor.prototype.anyreduce = Tensor.prototype.any;
 
 Tensor.prototype.mod = function() {
-  throw new Error("Mod not supported in torch, ergo no support yet.")
+  throw new Error("Mod not supported in torch, ergo no support yet.");
+}
+
+Tensor.prototype.modeq = function() {
+  throw new Error("Mod not supported in torch, ergo no support yet.");
 }
 
 Tensor.atan2 = function(adata, bdata, not_in_place, mval) {
@@ -518,14 +523,14 @@ Tensor.prototype.applyFn = function (cb) {
 function addUnaryMethod(name) {
     //need to differentiate between in-place and non in-place operations
     Tensor[name] = new Function('TH', 'Tensor', [
-    'return function(adata, inplace){',
+    'return function(adata, notinplace) {',
     'var end_ref = adata.data',
-    'if(!inplace) {',
+    'if (notinplace) {',
       'end_ref = Tensor.create_empty_of_size(adata.data.ref())',
     '}',
     // operation in place please
     'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref())',
-    'return end_ref}'
+    'return end_ref; }'
   ].join('\n'))(TH, Tensor);
     // var fneq = new Function([
     //     'var n = this.data.length;',
@@ -546,16 +551,16 @@ function addUnaryPrototype(name){
   // Use method generated in addUnaryMethod()
   var fn_inplace = new Function('Tensor', [
       'return function(){',
-      'Tensor.' + name + '(this, true)',
-      'return this}'
+      'Tensor.' + name + '(this, false)',
+      'return this; }'
   ].join('\n'))(Tensor);
   //clone if not in-place
   var fn_notinplace = new Function('Tensor', [
-      'return function(){',
-      'var atensor = Tensor.' + name + '(this, false)',
+      'return function() {',
+      'var atensor = Tensor.' + name + '(this, true)',
       'var cc = this.refClone()',
       'cc.override(atensor, this.dims.slice(0))',
-      'return cc}'
+      'return cc }'
   ].join('\n'))(Tensor);
 
   Tensor.prototype[name + 'eq'] = fn_inplace;
@@ -564,32 +569,31 @@ function addUnaryPrototype(name){
 
 function addOperationOrComponentOpMethod(name, comp_method, no_mval) {
   Tensor[name] = new Function('TH', 'Tensor', [
-    'return function(adata, bdata, not_in_place, mval){',
-    'mval = mval || 1',
-    'var end_ref = adata.data',
+    'return function(adata, bdata, not_in_place, mval) {',
+    'mval = mval || 1;',
+    'var end_ref = adata.data;',
 
     // if not in place, we have to add
-    'if(not_in_place)',
-    '{',
-      'end_ref = Tensor.create_empty_of_size(adata.data.ref())',
+    'if (not_in_place) {',
+      'end_ref = Tensor.create_empty_of_size(adata.data.ref());',
     '}',
 
-    'if(typeof(bdata) == "number")',
-      'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref(), mval*bdata)',
+    'if (typeof(bdata) == "number")',
+      'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref(), mval * bdata)',
     'else',
-      'TH.THFloatTensor_' + comp_method + '(end_ref.ref(), adata.data.ref(), ' + (no_mval ? '' : 'mval, ') + 'bdata.data.ref())',
-    'return end_ref}'
+      'TH.THFloatTensor_' + comp_method + '(end_ref.ref(), adata.data.ref(), ' + (no_mval ? '' : 'mval, ') + 'bdata.data.ref());',
+    'return end_ref; }'
   ].join('\n'))(TH, Tensor);
 }
 
-function addBinaryMethod(name, mulval) {
+function addBinaryMethod(name, mulval, isbyte) {
   mulval = mulval || 1
 
   var fn_inplace = new Function('Tensor', [
       'return function(c_or_tensor){',
       'this.assert_size_equal(c_or_tensor, "C' + name + ' must be equal sizes")',
       'Tensor.' + name + '(this, c_or_tensor, false, ' + mulval + ')',
-      'return this}'
+      'return this; }'
   ].join('\n'))(Tensor);
 
  var fn_notinplace = new Function('Tensor', [
@@ -597,8 +601,8 @@ function addBinaryMethod(name, mulval) {
       'this.assert_size_equal(c_or_tensor, "C' + name + ' must be equal sizes")',
       'var atensor = Tensor.' + name + '(this, c_or_tensor, true, ' + mulval + ')',
       'var cc = this.refClone()',
-      ' cc.override(atensor, this.dims.slice(0))',
-      'return cc}'
+      ' cc.override(atensor, this.dims.slice(0), "'+ isbyte +'")',
+      'return cc; }'
   ].join('\n'))(Tensor);
 
   Tensor.prototype[name + 'eq'] = fn_inplace;
@@ -609,7 +613,7 @@ function addBinaryMethod(name, mulval) {
 //         'var n = this.data.length;',
 //         'var b = s;',
 //         'while (n--) {',
-//         '   var a = this.data[n];',
+//         ' --  var a = this.data[n];',
 //         '   this.data[n] = ' + name + ';',
 //         '}',
 //         'return this;'
@@ -649,21 +653,22 @@ function addBinaryMethod(name, mulval) {
 //     ].join('\n'));
 // }
 
-//sub not needed since it is -1 of add
-var arith = ['add', 'mul', 'div', 'pow'];
+// Adding sub because method name not overloaded in addbinarymethod
+var arith = ['add', 'sub', 'mul', 'div', 'pow'];
 
-function createPrototype(name, isUnary, comp_meth, no_mval) {
+function createPrototype(name, isUnary, comp_meth, no_mval, isbyte) {
     if (isUnary) {
         addUnaryMethod(name);
         addUnaryPrototype(name);
     } else {
-        if (arith.indexOf(name) > -1){
+        if (arith.indexOf(name) > -1) {
           addOperationOrComponentOpMethod(name, comp_meth, no_mval);
         }
-        addBinaryMethod(name);
+        addBinaryMethod(name, no_mval, isbyte);
     }
 }
 
+// Unary prototypes
 createPrototype('neg', true);
 createPrototype('round', true);
 createPrototype('log', true);
@@ -681,27 +686,36 @@ createPrototype('atan', true);
 createPrototype('cosh', true);
 createPrototype('sinh', true);
 createPrototype('tanh', true);
-createPrototype('sigmoid', true);
 
 // Warning: These do not exist in THm impl
 createPrototype('acosh', true);
 createPrototype('asinh',  true);
 createPrototype('atanh', true);
 
+// Binary Prototypes
 createPrototype('add', false, 'cadd');
-addBinaryMethod('sub', false, -1);
+//addBinaryMethod('sub', false, -1);
+createPrototype('sub', false, 'csub');
 createPrototype('mul', false, "cmul", true);
 createPrototype('div', false, "cdiv", true);
 createPrototype('fmod', false);
 createPrototype('pow', false, "cpow", true);
 createPrototype('atan2', false);
+
 //TODO: torch method name
-createPrototype('eq', false);
-createPrototype('ne', false);
-createPrototype('gt', false);
-createPrototype('ge', false);
-createPrototype('lt', false);
-createPrototype('le', false);
+createPrototype('eq', false, null, null, "Byte");
+createPrototype('ne', false, null, null, "Byte");
+createPrototype('gt', false, null, null, "Byte");
+createPrototype('ge', false, null, null, "Byte");
+createPrototype('lt', false, null, null, "Byte");
+createPrototype('le', false, null, null, "Byte");
+
+Tensor.eq = Tensor.byte_comparison("eqTensor")
+Tensor.ne = Tensor.byte_comparison("neTensor")
+Tensor.gt = Tensor.byte_comparison("gtTensor")
+Tensor.ge = Tensor.byte_comparison("geTensor")
+Tensor.lt = Tensor.byte_comparison("ltTensor")
+Tensor.le = Tensor.byte_comparison("leTensor")
 
 /*
  * The below functions are not supported by Torch
