@@ -2,7 +2,7 @@
 
 
 var assert = require('assert');
-var ad = require('../ad');
+var ad = require('../ad/adjs');
 var utils = require('../utils.js');
 var methods = require('./methods.js');
 var tstruct = require('./tensorStruct.js');

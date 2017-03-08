@@ -4,7 +4,7 @@
 var assert = require('assert');
 var utils = require('../utils.js');
 var Tensor = require('../tensor.js');
-var ad = require('../ad');
+var ad = require('../ad/adjs');
 
 
 // Code for handling arbitrary nesting of list/object structures

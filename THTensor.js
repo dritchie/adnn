@@ -5,8 +5,6 @@ var utils = require('./utils.js');
 
 var ffi = require('ffi')
 var ref =  require('ref')
-//var THTensor = torch.THFloatTensor
-//var THStorage = torch.THFloatStorage
 var THType = "Float"
 
 var ffith = require('/Users/jpchen/jstorch/torch.js/TH.js')

@@ -1,7 +1,7 @@
 'use strict';
 
 var Tensor = require('../../tensor.js');
-var ad = require('../../ad');
+var ad = require('../../ad/adjs');
 var Network = require('../network.js');
 var assert = require('assert');
 

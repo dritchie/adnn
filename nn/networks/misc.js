@@ -1,6 +1,6 @@
 'use strict';
 
-var ad = require('../../ad');
+var ad = require('../../ad/adjs');
 var Network = require('../network.js');
 
 

@@ -2,7 +2,7 @@
 
 
 var assert = require('assert');
-var ad = require('../ad');
+var ad = require('../ad/adjs');
 
 
 function classificationLoss(outputProbs, trueClassIndex) {
