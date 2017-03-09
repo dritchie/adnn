@@ -17,7 +17,6 @@ var x_0 = z_0.fromArray([[3,5],[1,8]]);
 var y = x.ge(3);
 var y = x.add(x_0);
 // console.log(y.toArray());
-return
 
 function init(N){
   var n = N;
@@ -38,29 +37,27 @@ function mathOps(m1,m2){
   m1.sum()
   return 0;
 }
-var t_1 = new Tensor([3,3]);
-var dat = t_1.fromArray([[4.5,1.4,2.1],[-3,2,1],[-2,0.3,9.2]])
-console.log(x.determinant());
-return;
-var N = 2;
+// var t_1 = new Tensor([3,3]);
+// var dat = t_1.fromArray([[4.5,1.4,2.1],[-3,2,1],[-2,0.3,9.2]])
+// console.log(x.determinant());
+// return;
+var N = 10000;
 //var mat = new Tensor([N,N]).fillRandom();
-var mat = new Tensor([N,N]).fill(3.0)
+var mat = new oldTensor([N,N]).fill(3.0)
 //console.log(mat.toArray());
-var ind = new Tensor([N,N]).fill(0);
-ind.fromArray([[0,1],[2,3]]);
+//var ind = new Tensor([N,N]).fill(2.8);
+//ind.fromArray([[0,1],[2,3]]);
 //ind.set([0,0], 0.666);
-console.log("ind", ind.toArray());
-return;
+//console.log("ind", ind.toArray());
 //console.log("filled", mat.fill(3.0).data);
 //console.log(mat.ls_to_array(mat.size));
-console.log(mat.toFlatArray());
-console.log(mat.sum());
+// console.log(mat.toFlatArray());
+// console.log(mat.sum());
 //var mat_1 = new Tensor([N,N]).fillRandom();
-var mat_1 = new Tensor([N,N]).fill(2);
+var mat_1 = new oldTensor([N,N]).fill(2.2);
 console.log('starting dot')
 console.time('tensor');
 //var res = data.min();
-//remap  :r !pbpaste
 //
 //
 //var res = mat.mul(mat_1);
@@ -80,7 +77,7 @@ var res = mat.dot(mat_1);
 //	verbose: false
 //});
 console.timeEnd('tensor');
-
+return
 
 function benchmark(txt, func, endfunc)   {
    console.log('--------------------------------------------')   

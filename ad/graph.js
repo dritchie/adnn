@@ -1,6 +1,7 @@
 'use strict';
 
-var Tensor = require('../../THTensor.js');
+var Tensor = require('../tensor.js');
+var THTensor = require('../THTensor.js');
 
 // Base class for all compute graph nodes
 function Node(x, parents, inputs, backward, name) {
@@ -83,44 +84,72 @@ ScalarNode.prototype.zeroDerivativesImpl = function() {
 // Base class for all nodes with tensor output
 function TensorNode(x, parents, inputs, backward, name) {
 	Node.call(this, x, parents, inputs, backward, name || 'tensorNode');
-	this.dx = new Tensor(x.dims);
+	this.dx = new THTensor(x.dims);
 }
 TensorNode.prototype = Object.create(Node.prototype);
+
+function THTensorNode(x, parents, inputs, backward, name) {
+	Node.call(this, x, parents, inputs, backward, name || 'tensorNode');
+	this.dx = new Tensor(x.dims);
+}
+THTensorNode.prototype = Object.create(Node.prototype);
+
 TensorNode.prototype.copy = function(other) {
 	Node.prototype.copy.call(this, other);
 	this.x = other.x.clone();
 	this.dx = other.dx.clone();
 };
+THTensorNode.prototype.copy = TensorNode.prototype.copy;
+
 TensorNode.prototype.clone = function() {
 	var node = Object.create(Tensor.prototype);
 	node.copy(this);
 	return node;
 };
+
+THTensorNode.prototype.clone = function() {
+	var node = Object.create(THTensor.prototype);
+	node.copy(this);
+	return node;
+};
+
 TensorNode.prototype.refCopy = function(other) {
 	Node.prototype.copy.call(this, other);
 	this.x = other.x.refClone();
 	this.dx = other.dx.refClone();
 };
+THTensorNode.prototype.refCopy = TensorNode.prototype.refCopy;
+
 TensorNode.prototype.refClone = function() {
 	var node = Object.create(TensorNode.prototype);
 	node.refCopy(this);
 	return node;
 };
+THTensorNode.prototype.refClone = function() {
+	var node = Object.create(THTensorNode.prototype);
+	node.refCopy(this);
+	return node;
+};
+
 TensorNode.prototype.backprop = function() {
 	this.dx.fill(1);
 	this.computeOutDegree();
 	this.backpropRec();
 };
+THTensorNode.prototype.backprop = TensorNode.prototype.backprop;
+
 TensorNode.prototype.zeroDerivativesImpl = function() {
 	this.dx.zero();
 };
+THTensorNode.prototype.zeroDerivativesImpl = TensorNode.prototype.zeroDerivativesImpl;
 
 
 
 module.exports = {
 	Node: Node,
 	ScalarNode: ScalarNode,
-	TensorNode: TensorNode
+	TensorNode: TensorNode,
+	THTensorNode: THTensorNode
 };
 
 

@@ -8,6 +8,7 @@ var derivs = require('./adjs/derivatives.js');
 
 
 var Scalar = Number;
+var fns = {};
 
 Math.sigmoid = function(x) { return 1 / (1 + Math.exp(-x)); };
 
@@ -41,3 +42,5 @@ fns.scalar.sum = func.newFunction({
     },
     getParents: func.naryGetParents
 });
+
+module.exports = fns;

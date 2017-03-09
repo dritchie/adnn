@@ -707,6 +707,9 @@ createPrototype('gt', false, null, null, "Byte");
 createPrototype('ge', false, null, null, "Byte");
 createPrototype('lt', false, null, null, "Byte");
 createPrototype('le', false, null, null, "Byte");
+//use float tensors instead of bytes
+createPrototype('geValueT', false, null, null, "Byte");
+Tensor.ge = Tensor.prototype.geValueT;
 
 Tensor.eq = Tensor.byte_comparison("eqTensor")
 Tensor.ne = Tensor.byte_comparison("neTensor")

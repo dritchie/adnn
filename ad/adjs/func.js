@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert');
-var graph = require('./graph.js');
+var graph = require('../graph.js');
 var Node = graph.Node;
 var Tensor = require('../../tensor.js');
 

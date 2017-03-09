@@ -1,7 +1,7 @@
 'use strict';
 
 var Tensor = require('../../tensor.js');
-var graph = require('./graph.js');
+var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('./func.js');
 var derivs = require('./derivatives.js');
@@ -9,9 +9,6 @@ var scal = require('../scalar.js')
 
 
 var Scalar = Number;
-
-// Additional scalar functions 'missing' from Math
-Math.sigmoid = function(x) { return 1 / (1 + Math.exp(-x)); };
 
 
 // Scalar & tensor operators and math functions -------------------------------

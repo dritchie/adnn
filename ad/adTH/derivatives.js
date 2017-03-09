@@ -4,6 +4,7 @@ var nop = function() {};
 
 // Make backwards pass derivative functions for both scalar and tensor
 //    operations using the same source code.
+// TH C functions added in C
 var d = {};
 
 function makeUnaryDerivatives(key, code, arr_args) {
@@ -25,7 +26,7 @@ function makeUnaryDerivatives(key, code, arr_args) {
 			].join('\n')),
 			tensor: new Function('_x', [
 				//'var THTensor = _x.x._tensor_object',
-				'THFloatTensor_' + fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (arr_args.length > 0 ? ", " + arr_args.join(",") : "") + ')',
+				'TH.THFloatTensor_' + fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (arr_args.length > 0 ? ", " + arr_args.join(",") : "") + ')',
 				// 'var n = _x.x.length;',
 				// 'while (n--) {',
 				// '	var x = _x.x.data[n];',

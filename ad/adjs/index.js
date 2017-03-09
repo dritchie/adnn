@@ -1,7 +1,7 @@
 'use strict';
 
 var utils = require('../../utils.js');
-var graph = require('./graph.js');
+var graph = require('../graph.js');
 var Tensor = require('../../tensor.js');
 
 var Node = graph.Node;
