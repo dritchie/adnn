@@ -105,34 +105,3 @@ var nan = ad.liftUnaryFunction(isNaN);
 var eq = ad.liftBinaryFunction(function(x, y) { return x == y; });
 ```
 For more information, see [func.js](func.js).
-
-### Macro transforms for scalar code
-
-Code which uses scalar math functions can be automatically converted to use scalar AD functions via a [Sweet.js](http://sweetjs.org/) macro transform (see [macros.sjs](macros.sjs)). There are several different ways to accomplish this:
-
-#### Using node via command line / REPL
-In this setting, the simplest way to use the macro transform is via the `ad.macroRequire` function:
-```javascript
-// In a file called 'dist.js':
-function dist(x1, y1, x2, y2) {
-  var xdiff = x1 - x2;
-  var ydiff = y1 - y2;
-  return Math.sqrt(xdiff*xdiff + ydiff*ydiff);
-}
-module.exports = dist;
-
-// -------------------------------------
-
-// In a separate file:
-var ad = require('adnn/ad');
-var dist = ad.macroRequire('./dist.js'); // 'dist' is now an AD function
-```
-See [transform.js](transform.js) to learn more about this function.
-
-#### Transforming code in the browser
-
-Currently, `ad.macroRequire` is not available in the browser, as attempting to load a [browserified](http://browserify.org/) script which includes Sweet.js will throw an error. For the time being, one workaround is to directly use Sweet.js to macro-transform your code (see their FAQ section on [How to run Sweet.js in the browser](http://sweetjs.org/doc/main/sweet.html#how-do-i-run-sweet.js-in-the-browser)).
-
-#### Pre-compiling macro code for the browser
-
-If you wish to include macro transformation as part of a compile / package / minify pipeline for creating a browser script, then check out the [sweetify](https://github.com/andreypopp/sweetify) transform plugin for browserify.
