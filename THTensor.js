@@ -5,7 +5,7 @@ var utils = require('./utils.js');
 
 var ffi = require('ffi')
 var ref =  require('ref')
-var THType = "Float"
+var THType = "Float" // supports Floats by default
 
 var ffith = require('/Users/jpchen/jstorch/torch.js/TH.js')
 var TH = ffith.TH
@@ -73,7 +73,6 @@ var ArrayBackingStore = {
         }
    o }
 };
-
 
 // The actual backing store we're using
 // var BackingStore = TypedArrayBackingStore(Float64Array);
@@ -316,23 +315,6 @@ Tensor.prototype.set = function(coords, val) {
   return tt_ref;
 };
 
-// Tensor.prototype.get = function(coords) {
-//     var idx = 0;
-//     var n = this.dims.length;
-//     for (var i = 0; i < n; i++) {
-//         idx = idx * this.dims[i] + coords[i];
-//     }
-//     return this.data[idx];
-// };
-// Tensor.prototype.set = function(coords, val) {
-//     var idx = 0;
-//     var n = this.dims.length;
-//     for (var i = 0; i < n; i++) {
-//         idx = idx * this.dims[i] + coords[i];
-//     }
-//     this.data[idx] = val;
-// };
-
 Tensor.create_empty_of_size = function(ts, TensorType) {
   //Supporting floats for now.
   //TensorType = TensorType || THFloatTensor
@@ -374,8 +356,8 @@ Tensor.byte_comparison = function(byte_comp_fct) {
   return function(adata, bdata, not_in_place, mval){
     assert.ok(not_in_place, "Cannot compare in-place equality");
     var sz = Tensor.getSize(adata.data.ref());
+    var method = "THFloatTensor_" + byte_comp_fct;
     var tcompare = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();;
-    var method = "THByteTensor_" + byte_comp_fct;
     TH.THFloatTensor_fill(tcompare.ref(), bdata);
     if (typeof(bdata) != "number") {
       assert.ok(adata.type === bdata.type, "Checking tensor equal must be of same tensor type");
@@ -514,7 +496,7 @@ Tensor.prototype.fromFlatArray = function(arr) {
 Tensor.prototype.applyFn = function (cb) {
   //eventually take any tensor type passed in
   var callback = ffi.Callback('float', ['float'], cb);
-  //THFloatTensor_fctapply(this.data.ref(), callback);
+  TH.THFloatTensor_fctapply(this.data.ref(), callback);
   return this;
 }
 
@@ -599,7 +581,7 @@ function addBinaryMethod(name, mulval, isbyte) {
       'this.assert_size_equal(c_or_tensor, "C' + name + ' must be equal sizes")',
       'var atensor = Tensor.' + name + '(this, c_or_tensor, true, ' + mulval + ')',
       'var cc = this.refClone()',
-      ' cc.override(atensor, this.dims.slice(0), "'+ isbyte +'")',
+      ' cc.override(atensor, this.dims.slice(0))',//, "'+ isbyte +'")',
       'return cc; }'
   ].join('\n'))(Tensor);
 
@@ -707,9 +689,6 @@ createPrototype('gt', false, null, null, "Byte");
 createPrototype('ge', false, null, null, "Byte");
 createPrototype('lt', false, null, null, "Byte");
 createPrototype('le', false, null, null, "Byte");
-//use float tensors instead of bytes
-createPrototype('geValueT', false, null, null, "Byte");
-Tensor.ge = Tensor.prototype.geValueT;
 
 Tensor.eq = Tensor.byte_comparison("eqTensor")
 Tensor.ne = Tensor.byte_comparison("neTensor")
@@ -790,7 +769,7 @@ Tensor.prototype.sigmoid = function() {
 }
 
 Tensor.prototype.isFiniteeq = function() {
-  return this.apply_function(function(val) {
+  return this.applyFn(function(val) {
     return isFinite(val) ? 1.0 : 0.0;
   })
 }
@@ -802,7 +781,7 @@ Tensor.prototype.isFinite = function() {
 }
 
 Tensor.prototype.isNaNeq = function() {
-  return this.apply_function(function(val) {
+  return this.applyFn(function(val) {
     return isNaN(val) ? 1.0 : 0.0;
   });
 }
@@ -814,7 +793,7 @@ Tensor.prototype.isNaN = function() {
 }
 
 Tensor.prototype.pseudoinverteq = function() {
-  return this.apply_function(function(val) {
+  return this.applyFn(function(val) {
     return val == 0 ? 0 : 1/val;
   });
 }
@@ -855,19 +834,6 @@ Tensor.prototype.transpose = function(ix, ix2) {
   return ccTensor
 }
 Tensor.prototype.T = Tensor.prototype.transpose
-// Do the conservative thing, and return a copy for now.
-// Tensor.prototype.transpose = function() {
-//   assert.ok(this.rank === 2);
-//   var h = this.dims[0];
-//   var w = this.dims[1];
-//   var y = new Tensor([w, h]);
-//   for (var i = 0; i < h; i++) {
-//     for (var j = 0; j < w; j++) {
-//       y.data[j * h + i] = this.data[i * w + j];
-//     }
-//   }
-//   return y;
-// };
 
 Tensor.prototype.diagonal = function() {
   assert.ok(this.rank === 2);

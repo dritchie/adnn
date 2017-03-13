@@ -1,14 +1,14 @@
 'use strict';
 
 var Tensor = require('../THTensor.js');
-var graph = require('./adjs/graph.js');
+var graph = require('./graph.js');
 var Node = graph.Node;
-var func = require('./adjs/func.js');
+var func = require('./func.js');
 var derivs = require('./adjs/derivatives.js');
-
+var fn = require('./functions.js')
+var fns = fn.fns;
 
 var Scalar = Number;
-var fns = {};
 
 Math.sigmoid = function(x) { return 1 / (1 + Math.exp(-x)); };
 
@@ -42,5 +42,38 @@ fns.scalar.sum = func.newFunction({
     },
     getParents: func.naryGetParents
 });
+
+
+fns.scalar.eq = func.liftBinaryFunction(
+    function(x, y) { return x == y; }
+);
+
+fns.scalar.neq = func.liftBinaryFunction(
+    function(x, y) { return x != y; }
+);
+
+fns.scalar.peq = func.liftBinaryFunction(
+    function(x, y) { return x === y; }
+);
+
+fns.scalar.pneq = func.liftBinaryFunction(
+    function(x, y) { return x !== y; }
+);
+
+fns.scalar.gt = func.liftBinaryFunction(
+    function(x, y) { return x > y; }
+);
+
+fns.scalar.lt = func.liftBinaryFunction(
+    function(x, y) { return x < y; }
+);
+
+fns.scalar.geq = func.liftBinaryFunction(
+    function(x, y) { return x >= y; }
+);
+
+fns.scalar.leq = func.liftBinaryFunction(
+    function(x, y) { return x <= y; }
+);
 
 module.exports = fns;

@@ -15,8 +15,8 @@ var z_0 = new Tensor([2,2]);
 var x = z.fromArray([[1,2],[3,4]]);
 var x_0 = z_0.fromArray([[3,5],[1,8]]);
 var y = x.ge(3);
-var y = x.add(x_0);
-// console.log(y.toArray());
+console.log(y.toArray());
+return
 
 function init(N){
   var n = N;
@@ -41,7 +41,7 @@ function mathOps(m1,m2){
 // var dat = t_1.fromArray([[4.5,1.4,2.1],[-3,2,1],[-2,0.3,9.2]])
 // console.log(x.determinant());
 // return;
-var N = 10000;
+var N = 1000;
 //var mat = new Tensor([N,N]).fillRandom();
 var mat = new oldTensor([N,N]).fill(3.0)
 //console.log(mat.toArray());
@@ -62,7 +62,7 @@ console.time('tensor');
 //
 //var res = mat.mul(mat_1);
 var res = mat.dot(mat_1);
-//console.log(res.toFlatArray());
+console.log(res.toFlatArray());
 
 // Train
 //var trainFunc = nn.linear(5, 5);

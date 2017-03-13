@@ -1,14 +1,14 @@
 'use strict';
 
 var assert = require('assert');
-var graph = require('../graph.js');
+var graph = require('./graph.js');
 var Node = graph.Node;
-var Tensor = require('../Tensor.js');
+var Tensor = require('../tensor.js');
 var THTensor = require('../THTensor.js');
 
 
 function checkOutputType(OutputType) {
-	assert(OutputType === THTensor || OutputType === Tensor || OutputType === Number,
+	assert(OutputType === Tensor || OutputType === THTensor || OutputType === Number,
 		"Attempting to create AD function with invalid output type '"
 		+ OutputType + "'; valid options are 'Number' and 'Tensor'");
 }
@@ -27,7 +27,7 @@ function newUnaryFunction(opts) {
 	var backward = opts.backward;
 	checkOutputType(OutputType);
 
-	var NodeType = OutputType === THTensor ? graph.THTensorNode : OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
+	var NodeType = OutputType === Tensor ? graph.TensorNode :  OutputType === THTensor ? graph.THTensorNode : graph.ScalarNode;
 
 	function bw() {
 		backward.call(this, this.inputs[0]);
@@ -62,7 +62,7 @@ function newBinaryFunction(opts) {
 	checkOutputType(OutputType);
 
 
-	var NodeType = OutputType === THTensor ? graph.THTensorNode : OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
+	var NodeType = OutputType === Tensor ? graph.TensorNode :  OutputType === THTensor ? graph.THTensorNode : graph.ScalarNode;
 
 	function backward11() {
 		backward1.call(this, this.inputs[0], this.inputs[1].x);
@@ -111,7 +111,7 @@ function newFunction(opts) {
 	checkOutputType(OutputType);
 
 
-	var NodeType = OutputType === THTensor ? graph.THTensorNode : OutputType === Tensor ? graph.TensorNode : graph.ScalarNode;
+	var NodeType = OutputType === Tensor ? graph.TensorNode :  OutputType === THTensor ? graph.THTensorNode : graph.ScalarNode;
 
 	function bw() {
 		backward.apply(this, this.inputs);
@@ -120,7 +120,11 @@ function newFunction(opts) {
 	return function() {
 		var output = forward.apply(null, arguments);
 		var parents = getParents.apply(null, arguments);
-		var inputs = Array.prototype.slice.call(arguments);
+		// https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
+		var inputs = new Array(arguments.length);
+		for (var i = 0; i < inputs.length; ++i) {
+			inputs[i] = arguments[i];
+		}
 		var n = parents.length;
 		if (n === 0) {
 			return output;
