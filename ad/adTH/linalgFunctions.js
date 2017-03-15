@@ -4,7 +4,6 @@ var Tensor = require('../../THTensor.js');
 var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('../func.js');
-var derivs = require('./derivatives.js');
 var tfunc = require('./tensorFunctions.js')
 var fns = tfunc.fns.tensor;
 
