@@ -4,7 +4,8 @@
 var assert = require('assert');
 var utils = require('../utils.js');
 var Tensor = require('../tensor.js');
-var ad = require('../ad/adjs');
+var THTensor = require('../THTensor.js');
+var ad = require('../ad');
 
 
 // Code for handling arbitrary nesting of list/object structures
@@ -18,6 +19,9 @@ function type(struct) {
 	if (struct instanceof Tensor ||
 		(ad.isLifted(struct) && ad.value(struct) instanceof Tensor) ) {
 		return 'tensor';
+	} else if (struct instanceof THTensor ||
+		(ad.isLifted(struct) && ad.value(struct) instanceof THTensor) ) {
+		return 'thtensor';
 	} else if (Array.isArray(struct)) {
 		return 'array';
 	} else if (typeof struct === 'object') {
@@ -31,6 +35,8 @@ function emptyLike(struct) {
 	var t = type(struct);
 	if (t === 'tensor') {
 		return new Tensor(struct.dims);	// Initializes to zero
+	} else if (t === 'thtensor') {
+		return new THTensor(struct.dims).zero();
 	} else if (t === 'array') {
 		return [];
 	} else if (t === 'object') {
@@ -40,7 +46,7 @@ function emptyLike(struct) {
 
 function map(struct, fn) {
 	var t = type(struct);
-	if (t === 'tensor') {
+	if (t === 'tensor' || t === 'thtensor') {
 		return fn(struct);
 	} else if (t === 'array') {
 		var ret = [];
@@ -69,7 +75,7 @@ function foreach(struct, coIteratees, fn) {
 	if (coIteratees.length === 0) {
 		_foreach = function(struct) {
 			var t = type(struct);
-			if (t === 'tensor') {
+			if (t === 'tensor' || t === 'thtensor') {
 				fn(struct);
 			} else if (t === 'array') {
 				for (var i = 0; i < struct.length; i++) {
@@ -90,7 +96,7 @@ function foreach(struct, coIteratees, fn) {
 		_foreach = function(struct, coStructs) {
 			var t = type(struct);
 			// TODO: assert that all the coIteratees have the same type?
-			if (t === 'tensor') {
+			if (t === 'tensor' || t === 'thtensor') {
 				fn.apply(null, [struct].concat(coStructs));
 			} else if (t === 'array') {
 				// Build coStruct lists for recursive calls
@@ -154,9 +160,15 @@ var ifMissing = {
 		throw new Error('impossible for this struct to have missing elements');
 	},
 	zeros: function(struct, coStructs) {
-		return map(struct, function(x) {
-			return new Tensor(x.dims);	// Initializes to zeros
-		});
+		if (struct instanceof Tensor) {
+		  return map(struct, function(x) {
+		    return new Tensor(x.dims);	// Initializes to zeros
+		  });
+	    } else {
+	      return map(struct, function(x) {
+		    return new THTensor(x.dims).zero();
+		  });
+	    }
 	},
 	copyFromStruct: function(struct, coStructs) {
 		return map(struct, function(x) {
