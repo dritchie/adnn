@@ -3,12 +3,12 @@
 var Tensor = require('../tensor.js');
 var THTensor = require('../THTensor.js');
 var lift = require('../nn/lifting.js').lift;
-
+var func = require('./func.js');
 
 // The 'lifted' module already defines sigmoid and tanh.
 
 
-var relu = lift(ad.newUnaryFunction({
+var relu = lift(func.newUnaryFunction({
 	OutputType: Tensor,
 	name: 'relu',
 	forward: function(x) {

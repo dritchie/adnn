@@ -2,6 +2,7 @@
 
 var Tensor = require('../tensor.js');
 var Network = require('../nn/network.js');
+var func = require('./func.js');
 
 
 // Images are represented as in convolution.js
@@ -42,7 +43,7 @@ Network.deserializers.maxpool = function(json) {
 // https://github.com/karpathy/convnetjs/blob/master/src/convnet_layers_pool.js
 // Store the indices of where the maxes came from, for more efficient backprop
 var maxIndices;
-var maxpoolingImpl = ad.newFunction({
+var maxpoolingImpl = func.newFunction({
 	OutputType: Tensor,
 	name: 'maxpooling',
 	forward: function(inImg, fW, fH, sX, sY, pX, pY) {
@@ -175,7 +176,7 @@ Network.deserializers.minpool = function(json) {
 
 
 var minIndices;
-var minpoolingImpl = ad.newFunction({
+var minpoolingImpl = func.newFunction({
 	OutputType: Tensor,
 	name: 'maxpooling',
 	forward: function(inImg, fW, fH, sX, sY, pX, pY) {
@@ -307,7 +308,7 @@ Network.deserializers.meanpool = function(json) {
 		json.strideX, json.strideY, json.padX, json.padY);
 };
 
-var meanpooling = ad.newFunction({
+var meanpooling = func.newFunction({
 	OutputType: Tensor,
 	name: 'meanpooling',
 	forward: function(inImg, fW, fH, sX, sY, pX, pY) {
