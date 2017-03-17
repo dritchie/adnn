@@ -1,21 +1,21 @@
 'use strict';
 
-var TH = require('../THTensor.js');
-var T = require('../tensor.js');
+var THTensor = require('../THTensor.js');
+var Tensor = require('../tensor.js');
 var func = require('./func.js');
 var derivs = require('./adjs/derivatives.js');
 var thderivs = require('./adTH/derivatives.js');
 
 var fns = {};
 
-function makeFunctions(OutputType) {
+function makeTensorFunctions(OutputType) {
 
     // Define which backwards derivatives we'll use for the given OutputType
     function backward(derivFns) {
-        return OutputType === Tensor ? derivFns.tensor : THTensor ? derivFns.thtensor : derivFns.scalar;
+        return OutputType === Tensor ? derivFns.tensor : derivFns.thtensor;
     }
 
-    var namePrefix = OutputType === Scalar ? 'scalar.' : OutputType === Tensor ? 'tensor.' : 'thtensor.';
+    var namePrefix = OutputType === Tensor ? 'tensor.' : 'thtensor.';
 
     // Lifted unary operators
     var unops = {
@@ -105,7 +105,7 @@ function makeFunctions(OutputType) {
 
 
 var fns = {
-    scalar: makeFunctions(Scalar),
+    // scalar: makeFunctions(Scalar),
     tensor: makeFunctions(Tensor),
     thtensor: makeFunctions(THTensor)
 };
