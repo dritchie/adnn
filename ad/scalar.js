@@ -4,7 +4,7 @@ var graph = require('./graph.js');
 var Node = graph.Node;
 var func = require('./func.js');
 var derivs = require('./adjs/derivatives.js');
-var fns = require('./functions.js')
+var fns = require('./functions.js').fns;
 
 var Scalar = Number;
 

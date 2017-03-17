@@ -1,15 +1,13 @@
 'use strict';
 
-var Tensor = require('../../THTensor.js');
+var THTensor = require('../../THTensor.js');
 var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('../func.js');
-var tfunc = require('./tensorFunctions.js')
-var fns = tfunc.fns.tensor;
+var fns = require('../functions.js').fns;
 
-
-fns.transpose = func.newUnaryFunction({
-  OutputType: Tensor,
+fns.thtensor.transpose = func.newUnaryFunction({
+  OutputType: THTensor,
   name: 'transpose',
   forward: function(a) {
     return a.transpose();
@@ -25,8 +23,8 @@ fns.transpose = func.newUnaryFunction({
   }
 });
 
-fns.diagonal = func.newUnaryFunction({
-  OutputType: Tensor,
+fns.thtensor.diagonal = func.newUnaryFunction({
+  OutputType: THTensor,
   name: 'diagonal',
   forward: function(a) {
     return a.diagonal();
@@ -39,19 +37,19 @@ fns.diagonal = func.newUnaryFunction({
   }
 });
 
-fns.inverse = func.newUnaryFunction({
-  OutputType: Tensor,
+fns.thtensor.inverse = func.newUnaryFunction({
+  OutputType: THTensor,
   name: 'inverse',
   forward: function(A) {
     return A.inverse();
   },
   backward: function(A) {
-    var xT = this.x.transpose();
+    var xT = this.x.T();
     A.dx = A.dx.add(xT.dot(this.dx).dot(xT).neg());
   }
 });
 
-fns.determinant = func.newUnaryFunction({
+fns.thtensor.determinant = func.newUnaryFunction({
   OutputType: Number,
   name: 'determinant',
   forward: function(A) {
@@ -61,7 +59,7 @@ fns.determinant = func.newUnaryFunction({
     // A is square matrix.
     // Assume A is invertable.
     var n = A.x.dims[0];
-    var invA = A.x.inverse();
+    var invA = A.x.inv();
     for (var i = 0; i < n; i++) {
       for (var j = 0; j < n; j++) {
         A.dx.data[i * n + j] += this.x * this.dx * invA.data[j * n + i];
@@ -70,8 +68,8 @@ fns.determinant = func.newUnaryFunction({
   }
 });
 
-fns.dot = func.newBinaryFunction({
-  OutputType: Tensor,
+fns.thtensor.dot = func.newBinaryFunction({
+  OutputType: THTensor,
   name: 'dot',
   forward: function(a, b) {
     return a.dot(b);
@@ -118,4 +116,4 @@ fns.dot = func.newBinaryFunction({
   }
 });
 
-module.exports = tfunc.fns;
+module.exports = fns;

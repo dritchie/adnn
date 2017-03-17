@@ -1,6 +1,6 @@
 'use strict';
 
-var Tensor = require('../../tensor.js');
+var Tensor = require('../tensor.js');
 var Network = require('../nn/network.js');
 
 

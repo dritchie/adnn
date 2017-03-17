@@ -1,130 +1,17 @@
 'use strict';
 
-var Tensor = require('../../THTensor.js'); // tensor = THTensor
+var THTensor = require('../../THTensor.js'); // tensor = THTensor
 var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('../func.js');
 var derivs = require('./derivatives.js');
-var fns = require('../functions.js');
-var fns = fn.fns;
-
-var Scalar = Number;
-
-
-// Scalar & tensor operators and math functions -------------------------------
-
-function makeFunctions(OutputType) {
-
-    // Define which backwards derivatives we'll use for the given OutputType
-    function backward(derivFns) {
-        return OutputType === Tensor ? derivFns.tensor : derivFns.scalar;
-    }
-
-    var namePrefix = OutputType === Scalar ? 'scalar.' : 'tensor.';
-
-    // Lifted unary operators
-    var unops = {
-        neg: OutputType === Tensor ?
-            function(x) { return x.neg(); } :
-            function(x) { return -x; }
-    };
-    for (var op in unops) {
-        fns[op] = func.newUnaryFunction({
-            OutputType: OutputType,
-            name: namePrefix+op,
-            forward: unops[op],
-            backward: backward(derivs[op])
-        });
-    }
-
-    // Lifted binary operators
-    var binops = {
-        add: OutputType === Tensor ?
-            function(x, y) { return x.add(y); } :
-            function(x, y) { return x + y; },
-        sub: OutputType === Tensor ?
-            function(x, y) { return x.sub(y); } :
-            function(x, y) { return x - y; },
-        mul: OutputType === Tensor ?
-            function(x, y) { return x.mul(y); } :
-            function(x, y) { return x * y; },
-        div: OutputType === Tensor ?
-            function(x, y) { return x.div(y); } :
-            function(x, y) { return x / y; }
-    };
-    for (var op in binops) {
-        fns[op] = func.newBinaryFunction({
-            OutputType: OutputType,
-            name: namePrefix+op,
-            forward: binops[op],
-            backward1: backward(derivs[op])[0],
-            backward2: backward(derivs[op])[1]
-        });
-    }
-
-    // Lifted Math functions
-    var unaryFns = [
-        'floor', 'ceil', 'round', 'sqrt', 'exp', 'log', 'abs', 'sin', 'cos',
-        'tan', 'asin', 'acos', 'atan', 'sinh', 'cosh', 'tanh', 'asinh',
-        'acosh', 'atanh', 'sigmoid'
-    ];
-    var binaryFns = [
-        'pow', 'min', 'max', 'atan2'
-    ];
-    for (var i = 0; i < unaryFns.length; i++) {
-        var fnname = unaryFns[i];
-        var forward = OutputType === Tensor ?
-            new Function('x', 'return x.' + fnname + '();') :
-            new Function('x', 'return Math.' + fnname + '(x);');
-        fns[fnname] = func.newUnaryFunction({
-            OutputType: OutputType,
-            name: namePrefix+fnname,
-            forward: forward,
-            backward: backward(derivs[fnname]),
-        });
-    }
-    for (var i = 0; i < binaryFns.length; i++) {
-        var fnname = binaryFns[i];
-        var forward = OutputType === Tensor ?
-            new Function('x', 'y', 'return x.' + fnname + '(y);') :
-            new Function('x', 'y', 'return Math.' + fnname + '(x, y);');
-        fns[fnname] = func.newBinaryFunction({
-            OutputType: OutputType,
-            name: namePrefix+fnname,
-            forward: forward,
-            backward1: backward(derivs[fnname])[0],
-            backward2: backward(derivs[fnname])[1]
-        });
-    }
-
-    // NaN and infinity checks
-    fns.isNaN = OutputType === Scalar ?
-        func.liftUnaryFunction(isNaN) :
-        func.liftUnaryFunction(function(t) { return t.isNaN(); });
-    fns.isFinite = OutputType === Scalar ?
-        func.liftUnaryFunction(isFinite) :
-        func.liftUnaryFunction(function(t) { return t.isFinite(); });
-
-    return fns;
-}
-
-
-var fns = {
-    scalar: makeFunctions(Scalar),
-    tensor: makeFunctions(Tensor)
-};
-
-// Re-export Math constants etc.
-Object.getOwnPropertyNames(Math).forEach(function(p) {
-  if (!fns.scalar.hasOwnProperty(p)) {
-    fns.scalar[p] = Math[p];
-  }
-});
+var fns = require('../functions.js').fns;
 
 // Tensor reductions  -----------------------------------------------------
 
+var Scalar = Number
 
-fns.tensor.sumreduce = func.newUnaryFunction({
+fns.thtensor.sumreduce = func.newUnaryFunction({
     OutputType: Scalar,
     name: 'sumreduce',
     forward: function(t) {
@@ -138,11 +25,11 @@ fns.tensor.sumreduce = func.newUnaryFunction({
     }
 });
 
-fns.tensor.allreduce = func.liftUnaryFunction(function(t) {
+fns.thtensor.allreduce = func.liftUnaryFunction(function(t) {
     return t.allreduce();
 });
 
-fns.tensor.anyreduce = func.liftUnaryFunction(function(t) {
+fns.thtensor.anyreduce = func.liftUnaryFunction(function(t) {
     return t.anyreduce();
 });
 
@@ -153,9 +40,9 @@ fns.tensor.anyreduce = func.liftUnaryFunction(function(t) {
 
 
 // Select one entry out of a tensor (by linear indexing)
-fns.tensor.get = func.newFunction({
+fns.thtensor.get = func.newFunction({
     OutputType: Scalar,
-    name: 'tensor.get',
+    name: 'thtensor.get',
     forward: function(t, i) {
         return t instanceof Node ? t.x.data[i] : t.data[i];
     },
@@ -170,11 +57,11 @@ fns.tensor.get = func.newFunction({
 });
 
 // Split a tensor into an array of its scalar entries
-fns.tensor.toScalars = function(t) {
+fns.thtensor.toScalars = function(t) {
     var n = t instanceof Node ? t.x.length : t.length;
     var s = new Array(n);
     while (n--) {
-        s[n] = fns.tensor.get(t, n);
+        s[n] = fns.thtensor.get(t, n);
     }
     return s;
 };
@@ -182,13 +69,13 @@ fns.tensor.toScalars = function(t) {
 // Select a subtensor from a larger tensor
 // TODO: Eventually implement this as a view into existing storage,
 //    probably using refClone (+ other new stuff)
-fns.tensor.range = func.newFunction({
-    OutputType: Tensor,
-    name: 'tensor.range',
+fns.thtensor.range = func.newFunction({
+    OutputType: THTensor,
+    name: 'thtensor.range',
     forward: function(t, start, end) {
         t = t instanceof Node ? t.x : t;
         var n = end - start;
-        var tn = new Tensor([n]);
+        var tn = new THTensor([n]);
         while (n--) {
             var i = start + n;
             tn.data[n] = t.data[i];
@@ -211,12 +98,12 @@ fns.tensor.range = func.newFunction({
 
 
 // Split a tensor into multiple smaller tensors
-fns.tensor.split = function(t, lengths) {
+fns.thtensor.split = function(t, lengths) {
     var ts = new Array(lengths.length);
     var start = 0;
     for (var i = 0; i < lengths.length; i++) {
         var l = lengths[i];
-        ts[i] = fns.tensor.range(t, start, start + l);
+        ts[i] = fns.thtensor.range(t, start, start + l);
         start += l;
     }
     return ts;
@@ -224,14 +111,14 @@ fns.tensor.split = function(t, lengths) {
 
 // Concatentate multiple scalars into a tensor
 // Can either take an array of scalars or a variable number of arguments
-fns.tensor.fromScalars = func.newFunction({
-    OutputType: Tensor,
-    name: 'tensor.fromScalars',
+fns.thtensor.fromScalars = func.newFunction({
+    OutputType: THTensor,
+    name: 'thtensor.fromScalars',
     forward: function() {
         var args = arguments.length === 1 && arguments[0] instanceof Array ?
             arguments[0] : arguments;
         var n = args.length;
-        var t = new Tensor([n]);
+        var t = new THTensor([n]);
         while (n--) {
             var arg = args[n];
             t.data[n] = arg instanceof Node ? arg.x : arg;
@@ -255,9 +142,9 @@ fns.tensor.fromScalars = func.newFunction({
 // Concatentate multiple tensors into one big tensor
 // Can either take an array of tensors or a variable number of arguments
 // TODO: Eventually implement this as views into multiple storages?
-fns.tensor.concat = func.newFunction({
-    OutputType: Tensor,
-    name: 'tensor.concat',
+fns.thtensor.concat = func.newFunction({
+    OutputType: THTensor,
+    name: 'thtensor.concat',
     forward: function() {
         var args = arguments.length === 1 && arguments[0] instanceof Array ?
             arguments[0] : arguments;
@@ -268,7 +155,7 @@ fns.tensor.concat = func.newFunction({
             var tn = arg instanceof Node ? arg.x : arg;
             size += tn.length;
         }
-        var t = new Tensor([size]);
+        var t = new THTensor([size]);
         n = args.length;
         var i = 0;
         for (var j = 0; j < n; j++) {
@@ -302,7 +189,7 @@ fns.tensor.concat = func.newFunction({
 // Reshape a tensor
 // Creates a new TensorNode whose x and dx fields are refClones
 //    of the corresponding fields on the input node.
-fns.tensor.reshape = function(t, dims) {
+fns.thtensor.reshape = function(t, dims) {
     if (t instanceof Node) {
         var node = t.refClone();
         node.x.reshape(dims);
@@ -316,9 +203,9 @@ fns.tensor.reshape = function(t, dims) {
 };
 
 // http://stats.stackexchange.com/questions/79454/softmax-layer-in-a-neural-network
-fns.tensor.softmax = func.newUnaryFunction({
-    OutputType: Tensor,
-    name: 'tensor.softmax',
+fns.thtensor.softmax = func.newUnaryFunction({
+    OutputType: THTensor,
+    name: 'thtensor.softmax',
     forward: function(t) {
         return t.softmax();
     },
