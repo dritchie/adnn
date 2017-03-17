@@ -4,8 +4,7 @@ var graph = require('./graph.js');
 var Node = graph.Node;
 var func = require('./func.js');
 var derivs = require('./adjs/derivatives.js');
-var fn = require('./functions.js')
-var fns = fn.fns;
+var fns = require('./functions.js')
 
 var Scalar = Number;
 
@@ -26,7 +25,7 @@ function makeScalarFunctions() {
     };
     for (var op in unops) {
         fns[op] = func.newUnaryFunction({
-            OutputType: OutputType,
+            OutputType: Scalar,
             name: namePrefix+op,
             forward: unops[op],
             backward: backward(derivs[op])
@@ -42,7 +41,7 @@ function makeScalarFunctions() {
     };
     for (var op in binops) {
         fns[op] = func.newBinaryFunction({
-            OutputType: OutputType,
+            OutputType: Scalar,
             name: namePrefix+op,
             forward: binops[op],
             backward1: backward(derivs[op])[0],
@@ -63,7 +62,7 @@ function makeScalarFunctions() {
         var fnname = unaryFns[i];
         var forward = new Function('x', 'return Math.' + fnname + '(x);');
         fns[fnname] = func.newUnaryFunction({
-            OutputType: OutputType,
+            OutputType: Scalar,
             name: namePrefix+fnname,
             forward: forward,
             backward: backward(derivs[fnname]),
@@ -73,7 +72,7 @@ function makeScalarFunctions() {
         var fnname = binaryFns[i];
         var forward = new Function('x', 'y', 'return Math.' + fnname + '(x, y);');
         fns[fnname] = func.newBinaryFunction({
-            OutputType: OutputType,
+            OutputType: Scalar,
             name: namePrefix+fnname,
             forward: forward,
             backward1: backward(derivs[fnname])[0],
@@ -89,7 +88,7 @@ function makeScalarFunctions() {
 }
 
 
-fns[scalar] = makeScalarFunctions();
+fns.scalar = makeScalarFunctions();
 
 // Re-export Math constants etc.
 Object.getOwnPropertyNames(Math).forEach(function(p) {
