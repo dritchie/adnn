@@ -1,8 +1,8 @@
 'use strict';
 
-var Tensor = require('../../tensor.js');
-var ad = require('../../ad/adjs');
-var lift = require('../lifting.js').lift;
+var Tensor = require('../tensor.js');
+var THTensor = require('../THTensor.js');
+var lift = require('../nn/lifting.js').lift;
 
 
 // The 'lifted' module already defines sigmoid and tanh.

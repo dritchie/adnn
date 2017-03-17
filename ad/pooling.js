@@ -1,8 +1,7 @@
 'use strict';
 
 var Tensor = require('../../tensor.js');
-var ad = require('../../ad/adjs');
-var Network = require('../network.js');
+var Network = require('../nn/network.js');
 
 
 // Images are represented as in convolution.js
