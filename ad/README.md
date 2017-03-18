@@ -1,5 +1,5 @@
 # The `ad` module
-The `ad` module implements [reverse-mode automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation). Computations using AD functions implicitly build a graph of all operations. When the computation finishes, the graph can be walked backward to accumulate partial derivatives from the output back to the inputs.
+The `ad` module implements [reverse-mode automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation). Computations using AD functions implicitly build a graph of all operations. When the computation finishes, the graph can be walked backward to accumulate partial derivatives from the output back to the inputs.  AD supports two backend implementations: javascript and torch (in C). 
 
 ### Interacting with AD
 
@@ -29,6 +29,22 @@ ad.derivative(scalarIn);  // 0.1807...
 // It's also possible to check whether a value is a lifted AD Node or not
 ad.isLifted(scalarIn);  // true
 ad.isLifted(1.5);       // false
+```
+
+### Using AD with torch
+
+Usage is the same as above with `tensor` functions replaced with `thtensor`.
+
+```javascript
+var ad = require('adnn/ad');
+
+// Same as above
+ad.thtensor.tanh(new THTensor([3]).fill(1.5));  // [0.9051, 0.9051, 0.9051]
+
+// To compute derivatives, we must first turn input Numbers/Tensors into AD graph nodes
+//    by 'lifting' them
+var scalarIn = ad.lift(1.5);
+var tensorIn = ad.lift(new THTensor([3]).fill(1.5));
 ```
 
 ### Available AD primitive functions
