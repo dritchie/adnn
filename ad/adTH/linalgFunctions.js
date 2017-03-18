@@ -4,7 +4,8 @@ var THTensor = require('../../THTensor.js');
 var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('../func.js');
-var fns = require('../functions.js').fns;
+
+var fns = {thtensor: {}};
 
 fns.thtensor.transpose = func.newUnaryFunction({
   OutputType: THTensor,

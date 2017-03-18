@@ -4,7 +4,9 @@ var graph = require('./graph.js');
 var Node = graph.Node;
 var func = require('./func.js');
 var derivs = require('./adjs/derivatives.js');
-var fns = require('./functions.js').fns;
+//var fns = require('./functions.js').fns;
+
+var fns = {}
 
 var Scalar = Number;
 
@@ -88,7 +90,7 @@ function makeScalarFunctions() {
 }
 
 
-fns.scalar = makeScalarFunctions();
+fns = { scalar: makeScalarFunctions()};
 
 // Re-export Math constants etc.
 Object.getOwnPropertyNames(Math).forEach(function(p) {

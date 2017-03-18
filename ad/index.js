@@ -37,8 +37,14 @@ ad.params = function(dims, name) {
 };
 
 var func = require('./func.js');
-var functions = require('./functions.js');
-ad = utils.mergeObjects(ad, func, functions);
-
+var functions = require('./functions.js').fns;
+var tenFunctions = require('./adjs/tensorFunctions.js');
+var matFunctions = require('./adjs/linalgFunctions.js');
+var thTenFunctions = require('./adTH/tensorFunctions.js');
+var thMatFunctions = require('./adTH/linalgFunctions.js');
+var scalars = require('./scalar.js');
+utils.mergeObjects(functions.tensor, tenFunctions.tensor, matFunctions.tensor);
+utils.mergeObjects(functions.thtensor, tenFunctions.thtensor, matFunctions.thtensor);
+ad = utils.mergeObjects(ad, func, functions, scalars);
 
 module.exports = ad;

@@ -9,6 +9,7 @@ var scal = require('../scalar.js');
 var fns = require('../functions.js').fns;
 // Linear Algebra  -----------------------------------------------------
 
+var fns = {tensor: {}};
 
 fns.tensor.transpose = func.newUnaryFunction({
   OutputType: Tensor,

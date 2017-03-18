@@ -5,7 +5,8 @@ var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('../func.js');
 var derivs = require('./derivatives.js');
-var fns = require('../functions.js').fns;
+
+var fns = {thtensor: {}};
 
 // Tensor reductions  -----------------------------------------------------
 
