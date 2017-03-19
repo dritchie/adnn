@@ -173,8 +173,7 @@ Tensor.prototype.slowCopy = function(other) {
 
 Tensor.prototype.clone = function() {
     var copy = new Tensor(this.dims);
-    //TEMP
-    return copy.slowCopy(this);
+    // return copy.slowCopy(this);
     return copy.copy(this);
 };
 
@@ -221,8 +220,8 @@ Tensor.get_set = function(js_tensor, coords, val_or_tensor) {
   var dfinal = ndims
   var cdim = 0;
 
-  var o_tensor = js_tensor.data
-  var tensor = TH.THFloatTensor_newWithTensor(o_tensor.ref()).deref();
+  var o_tensor = js_tensor.data.ref instanceof Function ? js_tensor.data.ref() : js_tensor.data.ref;
+  var tensor = TH.THFloatTensor_newWithTensor(o_tensor).deref();
   for(var dim = 0; dim < dfinal; dim++) {
     var pix = coords[dim]
     if(!Array.isArray(pix)) {
@@ -335,9 +334,7 @@ Tensor.prototype.size = function(ix) {
 };
 
 Tensor.byte_sizeof = function(sz, ttype) {
-  var bempty = TH.THByteTensor_newWithSize(sz.ref(), ref.NULL).deref();
-  // console.log("empty in habitat: ", bempty)
-  return bempty;
+  return TH.THByteTensor_newWithSize(sz.ref(), ref.NULL).deref();
   //return {empty: bempty};
 }
 
@@ -357,9 +354,11 @@ Tensor.byte_comparison = function(byte_comp_fct) {
     assert.ok(not_in_place, "Cannot compare in-place equality");
     var sz = Tensor.getSize(adata.data.ref());
     var method = "THFloatTensor_" + byte_comp_fct;
-    var tcompare = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();;
-    TH.THFloatTensor_fill(tcompare.ref(), bdata);
-    if (typeof(bdata) != "number") {
+    var tcompare = bdata.data;
+    if (typeof(bdata) == "number") {
+      tcompare = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
+      TH.THFloatTensor_fill(tcompare.ref(), bdata);
+    } else {
       assert.ok(adata.type === bdata.type, "Checking tensor equal must be of same tensor type");
     }
 
@@ -581,7 +580,7 @@ function addBinaryMethod(name, mulval, isbyte) {
       'this.assert_size_equal(c_or_tensor, "C' + name + ' must be equal sizes")',
       'var atensor = Tensor.' + name + '(this, c_or_tensor, true, ' + mulval + ')',
       'var cc = this.refClone()',
-      ' cc.override(atensor, this.dims.slice(0))',//, "'+ isbyte +'")',
+      ' cc.override(atensor, this.dims.slice(0), "'+ isbyte +'")',
       'return cc; }'
   ].join('\n'))(Tensor);
 
@@ -682,20 +681,19 @@ createPrototype('fmod', false);
 createPrototype('pow', false, "cpow", true);
 createPrototype('atan2', false);
 
-//TODO: torch method name
-createPrototype('eq', false, null, null, "Byte");
-createPrototype('ne', false, null, null, "Byte");
-createPrototype('gt', false, null, null, "Byte");
-createPrototype('ge', false, null, null, "Byte");
-createPrototype('lt', false, null, null, "Byte");
-createPrototype('le', false, null, null, "Byte");
-
 Tensor.eq = Tensor.byte_comparison("eqTensor")
 Tensor.ne = Tensor.byte_comparison("neTensor")
 Tensor.gt = Tensor.byte_comparison("gtTensor")
 Tensor.ge = Tensor.byte_comparison("geTensor")
 Tensor.lt = Tensor.byte_comparison("ltTensor")
 Tensor.le = Tensor.byte_comparison("leTensor")
+
+createPrototype('eq', false, null, null, "Byte");
+createPrototype('ne', false, null, null, "Byte");
+createPrototype('gt', false, null, null, "Byte");
+createPrototype('ge', false, null, null, "Byte");
+createPrototype('lt', false, null, null, "Byte");
+createPrototype('le', false, null, null, "Byte");
 
 /*
  * The below functions are not supported by Torch

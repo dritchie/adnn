@@ -14,7 +14,8 @@ var z = new Tensor([2,2]);
 var z_0 = new Tensor([2,2]);
 var x = z.fromArray([[1,2],[3,4]]);
 var x_0 = z_0.fromArray([[3,5],[1,8]]);
-var y = x.ge(3);
+var y = x.gt(x_0);
+// var y = x.gt(3);
 console.log(y.toArray());
 return
 
