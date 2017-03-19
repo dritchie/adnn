@@ -321,7 +321,7 @@ Tensor.prototype.transpose = function() {
 
 Tensor.prototype.diagonal = function() {
   assert.ok(this.rank === 2);
-  assert.ok(this.dims[1] === 1);
+  // assert.ok(this.dims[1] === 1);
   var n = this.dims[0];
   var y = new Tensor([n, n]);
   for (var i = 0; i < n; i++) {
