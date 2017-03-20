@@ -339,11 +339,7 @@ Tensor.byte_comparison = function(byte_comp_fct) {
 
     var bempty = Tensor.byte_sizeof(sz, adata.type);
     TH[method](bempty.ref(), adata.data.ref(), tcompare.ref());
-
-    var bb = adata.refClone();
-    bb.type = "Byte";
-    bb.override(bb, adata.dims.slice(0), bb.type);
-    return bb;
+    return bempty;
   }
 }
 
@@ -413,6 +409,25 @@ function toArrayRec(tensor, coords) {
         }
         return arr;
     }
+}
+
+Tensor.prototype.printByteArray = function () {
+    var arr = [];
+    if (this.rank === 1) {
+      for (var i=0; i < this.dims[0]; ++i) {
+        arr.push(TH.THByteTensor_get1d(this.data.ref(), i));
+      }
+      return arr;
+    }
+    else if (this.rank === 2) {
+      for (var i=0; i < this.dims[0]; ++i) {
+        for (var j=0; j < this.dims[1]; ++j) {
+          arr.push(TH.THByteTensor_get2d(this.data.ref(), i, j));
+        }
+      }
+      return arr;
+    }
+    throw new Error('Tensors must have rank = 1 or 2');
 }
 
 Tensor.prototype.toFlatArray = function () {
