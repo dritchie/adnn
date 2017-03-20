@@ -32,22 +32,9 @@ var f_arr_prod = function(dims) {
     var prod = 1;
     for(var i=0; i < dims.length; i++) {
         prod *= dims[i];
-        // if (i%1000==0){
-        //   global.gc()
-        // }
       }
     return prod;
 }
-
-// Can swap out different backing stores
-// function TypedArrayBackingStore(ArrayType) {
-//     return {
-//         new: function(n) { return new ArrayType(n); },
-//         set: function(tgt, src, offset) {
-//             tgt.set(src, offset);
-//         }
-//     }
-// }
 
 Tensor.prototype.override = function(t_data, dims, ttype) {
   this.dims = dims || Tensor.ls_to_array(TH.THFloatTensor_newSizeOf(t_data.ref()).deref());
@@ -93,19 +80,6 @@ function Tensor(dims) {
   this.type = THType;
   return this;
 }
-
-
-//original tensor
-// function Tensor(dims) {
-//     if(!Array.isArray(dims))
-//     throw new Error("Tensor must have an array provided for construction");
-//     this.dims = dims;
-//     var size = 1;
-//     var n = dims.length;
-//     while (n--) size *= dims[n];
-//     this.length = size;
-//     this.data = BackingStore.new(size);
-// }
 
 Object.defineProperties(Tensor.prototype, {
     rank: { get: function() { return this.dims.length; } },
@@ -338,6 +312,7 @@ Tensor.byte_sizeof = function(sz, ttype) {
   //return {empty: bempty};
 }
 
+// Checks if a byte-tensor has non-zero elements
 Tensor.byte_nonzero = function(ts, ttype) {
   var sz = Tensor.getSize(ts.ref());
   var tempty = TH.THFloatTensor_newWithSize(sz.ref(), ref.NULL).deref();
@@ -484,9 +459,6 @@ Tensor.prototype.toString = function() {
     return this.toArray().toString();
 };
 
-// Tensor.prototype.toFlatArray = function() {
-//     return Array.prototype.slice.call(this.data);
-// }
 Tensor.prototype.fromFlatArray = function(arr) {
     BackingStore.set(this.data, arr, 0);
     return this;
@@ -511,19 +483,6 @@ function addUnaryMethod(name) {
     'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref())',
     'return end_ref; }'
   ].join('\n'))(TH, Tensor);
-    // var fneq = new Function([
-    //     'var n = this.data.length;',
-    //     'while (n--) {',
-    //     '   var x = this.data[n];',
-    //     '   this.data[n] = ' + fncode + ';',
-    //     '}',
-    //     'return this;'
-    // ].join('\n'));
-    // Tensor.prototype[name + 'eq'] = fneq;
-    // Tensor.prototype[name] = function() {
-    //     var nt = this.clone();
-    //     return fneq.call(nt);
-    // };
 }
 
 function addUnaryPrototype(name){
@@ -587,50 +546,6 @@ function addBinaryMethod(name, mulval, isbyte) {
   Tensor.prototype[name + 'eq'] = fn_inplace;
   Tensor.prototype[name] = fn_notinplace
 }
-// function addBinaryMethod(name, fncode) {
-//     var fneqS = new Function('s', [
-//         'var n = this.data.length;',
-//         'var b = s;',
-//         'while (n--) {',
-//         ' --  var a = this.data[n];',
-//         '   this.data[n] = ' + name + ';',
-//         '}',
-//         'return this;'
-//     ].join('\n'));
-//     var fneqT = new Function('t', [
-//         'var n = this.data.length;',
-//         'while (n--) {',
-//         '   var a = this.data[n];',
-//         '   var b = t.data[n];',
-//         '   this.data[n] = ' + fncode + ';',
-//         '}',
-//         'return this;'
-//     ].join('\n'));
-
-//     var fneq = function(x) {
-//         if (x.constructor === Tensor)
-//             return fneqT.call(this, x);
-//         else
-//             return fneqS.call(this, x);
-//     }
-//     Tensor.prototype[name + 'eq'] = fneq;
-//     Tensor.prototype[name] = function(x) {
-//         var nt = this.clone();
-//         return fneq.call(nt, x);
-//     };
-// }
-
-// function addReduction(name, initcode, fncode) {
-//     Tensor.prototype[name+'reduce'] = new Function([
-//         'var accum = ' + initcode + ';',
-//         'var n = this.data.length;',
-//         'while (n--) {',
-//         '   var x = this.data[n];',
-//         '   accum = ' + fncode + ';',
-//         '}',
-//         'return accum;'
-//     ].join('\n'));
-// }
 
 // Adding sub because method name not overloaded in addbinarymethod
 var arith = ['add', 'sub', 'mul', 'div', 'pow'];
