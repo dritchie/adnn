@@ -98,7 +98,7 @@ var parameters4 = {
   p2: [ ad.params([6]), ad.params([14]) ]
 };
 ```
- 
+
 ### Optimizing AD functions
 If you want to optimize an objective that isn't based on training data, then you want `opt.adOptimize`.
 The function to be optimized must return a loss value (a scalar AD node) as well as its free parameters:
@@ -106,13 +106,15 @@ The function to be optimized must return a loss value (a scalar AD node) as well
 ```javascript
 var ad = require('adnn/ad');
 var opt = require('adnn/opt');
+var tensor = require('adnn/tensor');
 
 // Find the minimum of some arbitrary function
 var params = ad.params([10]);
-function foo(input) {
-  var output = ad.tensor.sumreduce(
-    ad.tensor.exp(ad.tensor.sqrt(ad.tensor.add(input, params)))
-  );
+function foo() {
+  var x = ad.lift(new tensor([10]).fromFlatArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+  var diff = ad.tensor.sub(params, x);
+  var sqdiff = ad.tensor.mul(diff, diff);
+  var output = ad.tensor.sumreduce(sqdiff);
   return {
     loss: output,
     parameters: params
