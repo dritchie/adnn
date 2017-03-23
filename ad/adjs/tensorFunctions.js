@@ -4,8 +4,6 @@ var Tensor = require('../../tensor.js');
 var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('../func.js');
-var derivs = require('./derivatives.js');
-var scal = require('../scalar.js');
 
 var fns = {tensor: {}};
 

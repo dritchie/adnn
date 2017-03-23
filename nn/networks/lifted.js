@@ -1,6 +1,6 @@
 'use strict';
 
-var adfunctions = require('../../ad/functions.js');
+var adfunctions = require('../../ad').fns;
 var lifting = require('../lifting.js');
 
 

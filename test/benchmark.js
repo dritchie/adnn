@@ -8,8 +8,8 @@ var z = new Tensor([2,2]);
 var z_0 = new Tensor([2,2]);
 var x = z.fromArray([[1,2],[3,4]]);
 var x_0 = z_0.fromArray([[3,5],[1,1]]);
-//console.log(y.printByteArray())
-return
+var y = x.ge(x_0)
+console.log(y.printByteArray())
 
 function init(N){
   var n = N;
@@ -26,11 +26,12 @@ function matrixOps(m1, m2){
   m1.transpose();
   m1.diagonal();
   m1.dot(m2);
+  console.log("matrix Ops complete")
   return 0;
 }
 
 function mathOps(m1,m2){
-  m1.sum(m2);
+//   m1.sum(m2);
   m1.sub(m2);
   m1.mul(m2);
   m1.div(m2);
@@ -50,6 +51,7 @@ function mathOps(m1,m2){
   m1.exp();
   m1.sqrt();
   m1.round();
+  console.log("mathOps complete")
   return 0;
 }
 // var t_1 = new Tensor([3,3]);
@@ -57,8 +59,10 @@ function mathOps(m1,m2){
 // console.log(x.determinant());
 var N = 1000;
 var mat_1 = new Tensor([N,N]).fillRandom();
-var mat_2 = new oldTensor([N,N]).fillRandom();
+var mat_2 = new Tensor([N,N]).fillRandom();
 mathOps(mat_1, mat_2);
+matrixOps(x, mat_2);
+return
 //console.log(mat.toArray());
 //var ind = new Tensor([N,N]).fill(2.8);
 //ind.fromArray([[0,1],[2,3]]);
@@ -106,11 +110,8 @@ function benchmark(txt, func, endfunc)   {
 }
 
 benchmark(
-   'torch7 sumall',   
+   'torch7 tensorOps',   
    function() {
-      sum = TH.THFloatTensor_sumall(x)
-   },
-   function() {
-      console.log('sum: ' + sum)
+      tensorOps(m1,m2);
    }
 )
