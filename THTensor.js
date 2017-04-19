@@ -77,6 +77,7 @@ function THTensor(dims) {
   var tensor = TH.THFloatTensor_newWithSize(size.ref(), ref.NULL).deref();
   this.data = tensor;
   this.ref = this.data.ref()
+  this.ffi = TH
   this.type = THType;
   return this;
 }
@@ -388,10 +389,10 @@ THTensor.atan2 = function(adata, bdata, not_in_place, mval) {
   if(typeof(bdata) == "number"){
     TH.THFloatTensor_add(end_ref.ref(), adata.data.ref(), bdata);
     bdata = {data: THTensor.create_empty_of_size(adata.data.ref())};
-    TH.THFloatTensor_fill(bdata.data.ref(), bdata)
+    TH.THFloatTensor_fill(bdata.data.ref(), bdata);
   }
 
-  TH.THFloatTensor_atan2(end_ref.ref(), adata.data.ref(), bdata.data.ref())
+  TH.THFloatTensor_atan2(end_ref.ref(), adata.data.ref(), bdata.data.ref());
 
   return end_ref
 }
@@ -531,8 +532,12 @@ function addOperationOrComponentOpMethod(name, comp_method, no_mval) {
 
     'if (typeof(bdata) == "number")',
       'TH.THFloatTensor_' + name + '(end_ref.ref(), adata.data.ref(), mval * bdata)',
-    'else',
+    'else {',
+      'console.log(adata)',
+      'console.log(bdata)',
+      //'bref = typeof bdata.data.ref === "function" ? bdata.data.ref() : bdata.data.ref;',
       'TH.THFloatTensor_' + comp_method + '(end_ref.ref(), adata.data.ref(), ' + (no_mval ? '' : 'mval, ') + 'bdata.data.ref());',
+      '}',
     'return end_ref; }'
   ].join('\n'))(TH, THTensor);
 }

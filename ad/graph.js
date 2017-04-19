@@ -84,13 +84,13 @@ ScalarNode.prototype.zeroDerivativesImpl = function() {
 // Base class for all nodes with tensor output
 function TensorNode(x, parents, inputs, backward, name) {
 	Node.call(this, x, parents, inputs, backward, name || 'tensorNode');
-	this.dx = new THTensor(x.dims);
+	this.dx = new Tensor(x.dims);
 }
 TensorNode.prototype = Object.create(Node.prototype);
 
 function THTensorNode(x, parents, inputs, backward, name) {
-	Node.call(this, x, parents, inputs, backward, name || 'tensorNode');
-	this.dx = new Tensor(x.dims);
+	Node.call(this, x, parents, inputs, backward, name || 'thtensorNode');
+	this.dx = new THTensor(x.dims);
 }
 THTensorNode.prototype = Object.create(Node.prototype);
 

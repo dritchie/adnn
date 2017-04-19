@@ -6,9 +6,9 @@ var func = require('./func.js');
 var derivs = require('./adjs/derivatives.js');
 var thderivs = require('./adTH/derivatives.js');
 
-var fns = {};
 
 function makeTensorFunctions(OutputType) {
+    var fns = {};
 
     // Define which backwards derivatives we'll use for the given OutputType
     function backward(derivFns) {
