@@ -44,7 +44,7 @@ var thTenFunctions = require('./adTH/tensorFunctions.js');
 var thMatFunctions = require('./adTH/linalgFunctions.js');
 var scalars = require('./scalar.js');
 utils.mergeObjects(functions.tensor, tenFunctions.tensor, matFunctions.tensor);
-utils.mergeObjects(functions.thtensor, tenFunctions.thtensor, matFunctions.thtensor);
+utils.mergeObjects(functions.thtensor, thTenFunctions.thtensor, thMatFunctions.thtensor);
 ad = utils.mergeObjects(ad, func, functions, scalars);
 
 module.exports = ad;

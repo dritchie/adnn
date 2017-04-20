@@ -5,6 +5,7 @@ var graph = require('../graph.js');
 var Node = graph.Node;
 var func = require('../func.js');
 var derivs = require('./derivatives.js');
+var _ = require('lodash')
 
 var fns = {thtensor: {}};
 
@@ -45,7 +46,7 @@ fns.thtensor.get = func.newFunction({
     OutputType: Scalar,
     name: 'thtensor.get',
     forward: function(t, i) {
-        return t instanceof Node ? t.x.data[i] : t.data[i];
+        return t instanceof Node ? t.x.get([i]) : t.get([i]);
     },
     backward: function(t, i) {
         if (t instanceof Node) {
@@ -79,7 +80,7 @@ fns.thtensor.range = func.newFunction({
         var tn = new THTensor([n]);
         while (n--) {
             var i = start + n;
-            tn.data[n] = t.data[i];
+            tn.set([n], t.get([i]));
         }
         return tn;
     },
@@ -122,7 +123,8 @@ fns.thtensor.fromScalars = func.newFunction({
         var t = new THTensor([n]);
         while (n--) {
             var arg = args[n];
-            t.data[n] = arg instanceof Node ? arg.x : arg;
+            var val = arg instanceof Node ? arg.x : arg;
+            t.set([n], val);
         }
         return t;
     },
@@ -143,6 +145,7 @@ fns.thtensor.fromScalars = func.newFunction({
 // Concatentate multiple tensors into one big tensor
 // Can either take an array of tensors or a variable number of arguments
 // TODO: Eventually implement this as views into multiple storages?
+// No offset copying, so right now this implementation is working but slow
 fns.thtensor.concat = func.newFunction({
     OutputType: THTensor,
     name: 'thtensor.concat',
@@ -157,14 +160,13 @@ fns.thtensor.concat = func.newFunction({
             size += tn.length;
         }
         var t = new THTensor([size]);
-        n = args.length;
-        var i = 0;
-        for (var j = 0; j < n; j++) {
-            var arg = args[j];
-            var tn = arg instanceof Node ? arg.x : arg;
-            t.copy(tn, i);
-            i += tn.length;
-        }
+        var i = 0
+        _.forEach(args, function(v) {
+            var tn = v instanceof Node ? v.x : v;
+            for (var j = 0; j < tn.length; j++) {
+               t.set([i++], tn.get([j]));
+            }
+        });
         return t;
     },
     backward: function() {

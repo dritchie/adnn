@@ -1,6 +1,6 @@
 var Tensor = require('../THTensor');
 //var Tensor = require('../tensor');
-var ad = require('../ad/adTH');
+var ad = require('../ad');
 var nn = require('../nn');
 var opt = require('../opt');
 
