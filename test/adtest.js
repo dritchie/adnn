@@ -23,7 +23,7 @@ function run (type) {
   var d2 = d_1.clone().fill(2);
   // Raw Numbers/Tensors can be used with AD functions
   ad.scalar.tanh(1.5);  // 0.9051...
-  ad[tensortype].tanh(x);  // [0.9051, 0.9051, 0.9051]
+  ad.tensor.tanh(x);  // [0.9051, 0.9051, 0.9051]
   
   // To compute derivatives, we must first turn input Numbers/Tensors into AD graph nodes
   //    by 'lifting' them
@@ -42,29 +42,28 @@ function run (type) {
   
   ad.isLifted(scalarIn);
   ad.isLifted(1.5);
-//   console.log(ad.tensor) 
   //tensor and linalg ops
-  assert.equal(ad[tensortype].sumreduce(x), 7.5);
-  assert.ok(ad[tensortype].allreduce(x));
-  assert.ok(ad[tensortype].anyreduce(x));
-  assert.equal(ad[tensortype].get(x, 1), 1.5);
-  assert.ok(_.isEqual(ad[tensortype].toScalars(x), [1.5, 1.5, 1.5, 1.5, 1.5]))
-  assert.ok(_.isEqual(ad[tensortype].fromScalars([0, 1, 2, 3]).toArray(), [0, 1, 2, 3]))
-  assert.ok(_.isEqual(ad[tensortype].range(x, 0, 2).toArray(), [1.5, 1.5]))
+  assert.equal(ad.tensor.sumreduce(x), 7.5);
+  assert.ok(ad.tensor.allreduce(x));
+  assert.ok(ad.tensor.anyreduce(x));
+  assert.equal(ad.tensor.get(x, 1), 1.5);
+  assert.ok(_.isEqual(ad.tensor.toScalars(x), [1.5, 1.5, 1.5, 1.5, 1.5]))
+  assert.ok(_.isEqual(ad.tensor.fromScalars([0, 1, 2, 3]).toArray(), [0, 1, 2, 3]))
+  assert.ok(_.isEqual(ad.tensor.range(x, 0, 2).toArray(), [1.5, 1.5]))
   console.log(tensortype + "OPS COMPLETE")
-  ad.tensor.split(x, 2)
+  assert.ok(_.isEqual(ad.tensor.split(x, [2,3])[0].toArray(), [1.5, 1.5]))
 // rounding errors for concat but it works
-//   assert.ok("concat:", _.isEqual(ad[tensortype].concat([x,y,z]).toArray(),
+//   assert.ok("concat:", _.isEqual(ad.tensor.concat([x,y,z]).toArray(),
 //           [1.5, 1.5, 1.5, 1.5, 1.5,
 //           0.2, 0.2, 0.2, 0.2, 0.2,
 //           0.3, 0.3, 0.3, 0.3, 0.3]));
-  assert.ok("transpose:", _.isEqual(ad[tensortype].transpose(d_1).toArray(), mat33T));
-//   console.log(ad[tensortype].diagonal(d2))
+  assert.ok(_.isEqual(ad.tensor.transpose(d_1).toArray(), mat33T));
+//   console.log(ad.tensor.diagonal(d2))
 // rounding errors fpr inverse
-  ad[tensortype].inverse(d_1).toArray()
-  assert.equal(Number(ad[tensortype].determinant(d_1)).toFixed(1), 4)
-  assert.ok(_.isEqual(ad[tensortype].dot(d_1, d2).toArray(), matdot));
-  assert.equal(Number(ad[tensortype].softmax(x).toArray()[0]).toFixed(1), 0.2)
+  ad.tensor.inverse(d_1).toArray()
+  assert.equal(Number(ad.tensor.determinant(d_1)).toFixed(1), 4)
+  assert.ok(_.isEqual(ad.tensor.dot(d_1, d2).toArray(), matdot));
+  assert.equal(Number(ad.tensor.softmax(x).toArray()[0]).toFixed(1), 0.2)
   console.log(tensortype + " LIN ALG OPS COMPLETE")
 }
 
