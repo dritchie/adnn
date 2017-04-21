@@ -32,7 +32,9 @@ function run (type) {
   
   // Feeding these nodes into AD functions results in Node outputs, which can be used to
   //    initialize backpropagation
-  var scalarOut = ad.scalar.tanh(scalarIn);
+  var scalarOut = ad.scalar.tanh(1.5);
+  var tensorOut = ad.tensor.tanh(tensorIn);
+ tensorOut.backprop();
   
   // We can then retrieve the values and derivatives of different nodes
   ad.value(scalarOut);  // 0.9051...
