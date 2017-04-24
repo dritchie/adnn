@@ -23,18 +23,22 @@ function run (type) {
   var d2 = d_1.clone().fill(2);
   // Raw Numbers/Tensors can be used with AD functions
   ad.scalar.tanh(1.5);  // 0.9051...
-  ad.tensor.tanh(x);  // [0.9051, 0.9051, 0.9051]
+  console.log(ad.tensor.add(x, y).toArray());  // [0.9051, 0.9051, 0.9051]
+  console.log(ad.tensor.tanh(x).toArray());  // [0.9051, 0.9051, 0.9051]
+  console.log(tensortype + "MATH OPS COMPLETE")
   
   // To compute derivatives, we must first turn input Numbers/Tensors into AD graph nodes
   //    by 'lifting' them
   var scalarIn = ad.lift(1.5);
   var tensorIn = ad.lift(new Tensor([3]).fill(1.5));
+//   console.log(tensorIn)
   
   // Feeding these nodes into AD functions results in Node outputs, which can be used to
   //    initialize backpropagation
   var scalarOut = ad.scalar.tanh(1.5);
   var tensorOut = ad.tensor.tanh(tensorIn);
- tensorOut.backprop();
+//   console.log(ad.tensor.tanh(tensorOut));
+  tensorOut.backprop();
   
   // We can then retrieve the values and derivatives of different nodes
   ad.value(scalarOut);  // 0.9051...
@@ -50,7 +54,7 @@ function run (type) {
   assert.ok(_.isEqual(ad.tensor.toScalars(x), [1.5, 1.5, 1.5, 1.5, 1.5]))
   assert.ok(_.isEqual(ad.tensor.fromScalars([0, 1, 2, 3]).toArray(), [0, 1, 2, 3]))
   assert.ok(_.isEqual(ad.tensor.range(x, 0, 2).toArray(), [1.5, 1.5]))
-  console.log(tensortype + "OPS COMPLETE")
+  console.log(tensortype + "TENSOR OPS COMPLETE")
   assert.ok(_.isEqual(ad.tensor.split(x, [2,3])[0].toArray(), [1.5, 1.5]))
 // rounding errors for concat but it works
 //   assert.ok("concat:", _.isEqual(ad.tensor.concat([x,y,z]).toArray(),

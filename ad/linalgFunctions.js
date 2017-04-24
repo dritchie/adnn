@@ -44,8 +44,8 @@ fns.tensor.dot = function (a, b) {
     var A = a instanceof Node ? a.x : a;
     var B = b instanceof Node ? b.x : b;
     if (A instanceof Tensor)
-        return jslaFunc.tensor.dot(A, B);
-    return thlaFunc.thtensor.dot(A, B);
+        return jslaFunc.tensor.dot(a, b);
+    return thlaFunc.thtensor.dot(a, b);
 }
 
 

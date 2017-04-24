@@ -129,10 +129,5 @@ var fns = {
 //   }
 // });
 
-module.exports = {
-    fns,
-    makeTensorFunctions: makeTensorFunctions
-};
-
-
+module.exports = fns
 
