@@ -351,25 +351,41 @@ THTensor.prototype.sum = function(ix) {
 }
 THTensor.prototype.sumreduce = THTensor.prototype.sum
 
-THTensor.prototype.min = function() {
+THTensor.prototype.minreduce = function() {
   return TH.THFloatTensor_minall(this.data.ref());
 }
-THTensor.prototype.minreduce = THTensor.prototype.min;
 
-THTensor.prototype.max = function() {
+THTensor.prototype.min = function(other) {
+  var cc = THTensor.create_empty_of_size(this.data.ref());
+  var ccTensor = this.clone();
+  ccTensor.override(cc, this.dims);
+  TH.THFloatTensor_cmin(ccTensor.ref, this.ref, other.ref);
+  return ccTensor;
+}
+THTensor.prototype.cmin = THTensor.prototype.min;
+
+THTensor.prototype.maxreduce = function() {
   return TH.THFloatTensor_maxall(this.data.ref());
 }
-THTensor.prototype.maxreduce = THTensor.prototype.max;
 
-THTensor.prototype.all = function() {
+THTensor.prototype.max = function(other) {
+  var cc = THTensor.create_empty_of_size(this.data.ref());
+  var ccTensor = this.clone();
+  ccTensor.override(cc, this.dims);
+  TH.THFloatTensor_cmax(ccTensor.ref, this.ref, other.ref);
+  return ccTensor;
+}
+THTensor.prototype.cmax = THTensor.prototype.max;
+
+THTensor.prototype.allreduce = function() {
   return THTensor.byte_nonzero(this.data, this.type) == this.length;
 }
-THTensor.prototype.allreduce = THTensor.prototype.all;
+THTensor.prototype.all = THTensor.prototype.allreduce;
 
-THTensor.prototype.any = function() {
+THTensor.prototype.anyreduce = function() {
   return THTensor.byte_nonzero(this.data, this.type) > 0;
 }
-THTensor.prototype.anyreduce = THTensor.prototype.any;
+THTensor.prototype.any = THTensor.prototype.anyreduce;
 
 THTensor.prototype.mod = function() {
   throw new Error("Mod not supported in torch, ergo no support yet.");
@@ -675,9 +691,9 @@ THTensor.prototype.atanh = function() {
 THTensor.prototype.inverteq = function() {
   // '1 / x' 
   var cc = THTensor.create_empty_of_size(this.data.ref());
-  THFloatTensor.fill(cc.ref(), 1);
   var ccTensor = this.refClone();
   ccTensor.override(cc, this.dims);
+  ccTensor.fill(1);
   ccTensor.diveq(this);
   this.copy(ccTensor);
   return this;
@@ -738,7 +754,7 @@ THTensor.prototype.pseudoinvert = function() {
 
 // In-place softmax
 THTensor.prototype.softmaxeq = function() {
-  var max = this.max()
+  var max = this.maxreduce()
   // Don't clone
   var cc = this.addeq(-max).expeq()
   var sum = cc.sum()
@@ -748,7 +764,7 @@ THTensor.prototype.softmaxeq = function() {
 
 THTensor.prototype.softmax = function() {
   // Find max elem
-  var max = this.max()
+  var max = this.maxreduce()
   // clone it, subtract the max, then exponentiate
   var cc = this.clone().addeq(-max).expeq()
   var sum = cc.sum()
