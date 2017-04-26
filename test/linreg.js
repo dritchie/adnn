@@ -1,5 +1,5 @@
-// var Tensor = require('../THTensor');
-var Tensor = require('../tensor');
+var Tensor = require('../THTensor');
+// var Tensor = require('../tensor');
 var ad = require('../ad');
 var nn = require('../nn');
 var opt = require('../opt');
@@ -21,8 +21,8 @@ ad.value(trueFunc.biases).fromArray([5, 4, 3, 2, 1]);
 var data = [];
 var N = 10000;
 for (var i = 0; i < N; i++) {
-	//var x = new Tensor([5]).fillRandom();
-	var x = new Tensor([5]).fill(1);
+	var x = new Tensor([5]).fillRandom();
+// 	var x = new Tensor([5]).fill(1);
 	var y = trueFunc.eval(x);
     data.push({
 		input: x,
@@ -46,5 +46,4 @@ opt.nnTrain(trainFunc, data, opt.regressionLoss, {
 console.timeEnd('training');
 console.log(ad.value(trainFunc.weights).toArray());
 console.log(ad.value(trainFunc.biases).toArray());
-
 

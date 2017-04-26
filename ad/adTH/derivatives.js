@@ -106,24 +106,10 @@ function makeBinaryDerivatives(key, code1, code2) {
                     //'console.log("'+key+'")',
                     // y is a scalar
                     'if (typeof _yx === "number") {',
-//                         'var TH = _x.x.ffi',
-                        'TH.THFloatTensor_' + t1_const_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_const_args.length > 0 ? ", " + t1_const_args.join(",") : "") + ')',
-                    // '    while (n--) {',
-                    // '        var x = _xx.data[n];',
-                    // '        var y = _yx;',
-                    // '        var out = this.x.data[n];',
-                    // '       _x.dx.data[n] += (' + code1 + ') * this.dx.data[n];',
-                    // '    }',
+                    'TH.THFloatTensor_' + t1_const_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_const_args.length > 0 ? ", " + t1_const_args.join(",") : "") + ')',
                     // y is a tensor 
                     '} else {',
-//                     'var TH = _x.x.ffi',
                     'TH.THFloatTensor_' + t1_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_full_args.length > 0 ? ", " + t1_full_args.join(",") : "") + ')',
-                    // '    while (n--) {',
-                    // '        var x = _xx.data[n];',
-                    // '        var y = _yx.data[n];',
-                    // '        var out = this.x.data[n];',
-                    // '       _x.dx.data[n] += (' + code1 + ') * this.dx.data[n];',
-                    // '    }',
                     '}',
                 ].join('\n')),
                 // Second arg is definitely a Node, first may or may not be
@@ -134,18 +120,9 @@ function makeBinaryDerivatives(key, code1, code2) {
                     'var TH = _x.x.ffi',
                     // y is a scalar
                     'if (typeof _yx === "number") {',
-//                         'var TH = _x.x.ffi',
-                        '_y.dx += TH.THFloatTensor_' + t2_acc_fct_name + '(this.dx.data.ref()' + (t2_acc_args.length > 0 ? ", " + t2_acc_args.join(",") : "") + ')',
-                    // '    while (n--) {',
-                    // '        var x = _xx.data[n];',
-                    // '        var y = _yx;',
-                    // '        var out = this.x.data[n];',
-                    // '       _y.dx += (' + code2 + ') * this.dx.data[n];',
-                    // '    }',
-                    // y is a tensor
+                    '_y.dx += TH.THFloatTensor_' + t2_acc_fct_name + '(this.dx.data.ref()' + (t2_acc_args.length > 0 ? ", " + t2_acc_args.join(",") : "") + ')',
                     '} else {',
-//                         'var TH = _x.x.ffi',
-                        'TH.THFloatTensor_' + t2_fct_name + '(_y.dx.data.ref(), this.dx.data.ref()' + (t2_full_args.length > 0 ? ", " + t2_full_args.join(",") : "") + ')',
+                    'TH.THFloatTensor_' + t2_fct_name + '(_y.dx.data.ref(), this.dx.data.ref()' + (t2_full_args.length > 0 ? ", " + t2_full_args.join(",") : "") + ')',
                     '}'
                 ].join('\n'))
             ]
