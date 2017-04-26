@@ -160,15 +160,13 @@ var ifMissing = {
 		throw new Error('impossible for this struct to have missing elements');
 	},
 	zeros: function(struct, coStructs) {
-		if (struct instanceof Tensor) {
-		  return map(struct, function(x) {
-		    return new Tensor(x.dims);	// Initializes to zeros
-		  });
-	    } else {
-	      return map(struct, function(x) {
-		    return new THTensor(x.dims).zero();
-		  });
-	    }
+	    return map(struct, function(x) {
+			if (type(x) === 'thtensor') {
+		    	return new THTensor(x.dims).zero();	// Initializes to zeros
+        	} else {
+            	return new Tensor(x.dims);
+        	}
+        });
 	},
 	copyFromStruct: function(struct, coStructs) {
 		return map(struct, function(x) {
@@ -192,6 +190,7 @@ module.exports = {
 	foreach: foreach,
 	ifMissing: ifMissing
 };
+
 
 
 
