@@ -47,20 +47,6 @@ THTensor.prototype.override = function(t_data, dims, ttype) {
   }
 }
 
-var ArrayBackingStore = {
-    ArrayType: Array,
-    new: function(n) {
-        var a = new Array(n);
-        while (n--) { a[n] = 0; }
-        return a;
-    },
-    set: function(tgt, src, offset) {;
-        for (var i = 0; i < src.length; i++) {
-            tgt[i+offset] = src[i];
-        }
-   o }
-};
-
 // The actual backing store we're using
 // var BackingStore = TypedArrayBackingStore(Float64Array);
 
@@ -793,6 +779,32 @@ THTensor.prototype.diagonal = function() {
   ccTensor.override(etensor, this.dims)
   return ccTensor
 };
+
+//NN functions
+THTensor.prototype.relueq = function() {
+  return this.applyFn(function(val) {
+    return  val < 0 ? 0 : val;
+  });
+}
+
+THTensor.prototype.relu = function() {
+  var cc = this.clone();
+  cc.relueq();
+  return cc;
+}
+
+THTensor.prototype.lrelueq = function() {
+  //leakyness = 100
+  return this.applyFn(function(val) {
+     return  val < val/100 ? 0 : val;
+  });
+}
+
+THTensor.prototype.lrelu = function() {
+  var cc = this.clone();
+  cc.lrelueq();
+  return cc;
+}
 
 // Matrix inverse.
 THTensor.prototype.inverse = function() {

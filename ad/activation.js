@@ -9,17 +9,20 @@ var func = require('./func.js');
 
 
 var relu = lift(func.newUnaryFunction({
-	OutputType: Tensor,
+	OutputType: THTensor,
 	name: 'relu',
-	forward: function(x) {
-		x = ad.value(x);
-		var y = x.clone();
-		var n = x.length;
-		while (n--) {
-			y.data[n] = y.data[n] < 0 ? 0 : y.data[n];
-		}
-		return y;
-	},
+	forward: function(t) {
+        return t.relu();
+    },
+	// function(x) {
+	// 	x = ad.value(x);
+	// 	var y = x.clone();
+	// 	var n = x.length;
+	// 	while (n--) {
+	// 		y.data[n] = y.data[n] < 0 ? 0 : y.data[n];
+	// 	}
+	// 	return y;
+	// },
 	backward: function(x) {
 		var n = x.x.length;
 		while (n--) {
