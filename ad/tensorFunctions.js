@@ -85,7 +85,7 @@ fns.tensor.fromScalars = function(t, isTH) {
 // TODO: Eventually implement this as views into multiple storages?
 // No offset copying, so right now this implementation is working but slow
 fns.tensor.concat = function(t) {
-    var ten = t instanceof Node ? t.x : t;
+    var ten = t[0] instanceof Node ? t[0].x : t[0];
     if (ten instanceof Tensor)
         return jstenFunc.tensor.concat(t);
     return thtenFunc.thtensor.concat(t);
@@ -97,13 +97,13 @@ fns.tensor.concat = function(t) {
 fns.tensor.reshape = function(t, dims) {
     if (t instanceof Node) {
         var node = t.refClone();
-        node.x.reshape(dims);
-        node.dx.reshape(dims);
-        return node;
+        node.x = node.x.reshape(dims);
+        node.dx = node.dx.reshape(dims);
+        return node.x;
     } else {
         var ref = t.refClone();
-        ref.reshape(dims);
-        return ref;
+        var out = ref.reshape(dims);
+        return out;
     }
 };
 
@@ -114,5 +114,19 @@ fns.tensor.softmax = function(t, lengths) {
         return jstenFunc.tensor.softmax(t, lengths);
     return thtenFunc.thtensor.softmax(t, lengths);
 }
+
+fns.tensor.relu = func.newUnaryFunction({
+    OutputType: THTensor,
+    name: 'relu',
+    forward: function(t) {
+        return t.relu();
+    },
+    backward: function(x) {
+        var n = x.x.length;
+        while (n--) {
+            x.dx.data[n] += x.x.data[n] <= 0 ? 0 : this.dx.data[n];
+        }
+    }
+});
 
 module.exports = fns;

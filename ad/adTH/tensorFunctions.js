@@ -20,7 +20,7 @@ fns.thtensor.sumreduce = func.newUnaryFunction({
         return t.sumreduce();
     },
     backward: function(t) {
-        var n = t.dx.data.length;
+        var n = t.dx.length;
         while (n--) {
             t.dx.data[n] += this.dx;
         }
@@ -75,14 +75,7 @@ fns.thtensor.range = func.newFunction({
     OutputType: THTensor,
     name: 'thtensor.range',
     forward: function(t, start, end) {
-        t = t instanceof Node ? t.x : t;
-        var n = end - start;
-        var tn = new THTensor([n]);
-        while (n--) {
-            var i = start + n;
-            tn.set([n], t.get([i]));
-        }
-        return tn;
+        return t.range(start, end);
     },
     backward: function(t, start, end) {
         if (t instanceof Node) {
@@ -150,24 +143,28 @@ fns.thtensor.concat = func.newFunction({
     OutputType: THTensor,
     name: 'thtensor.concat',
     forward: function() {
-        var args = arguments.length === 1 && arguments[0] instanceof Array ?
-            arguments[0] : arguments;
-        var n = args.length;
-        var size = 0;
-        while (n--) {
-            var arg = args[n];
-            var tn = arg instanceof Node ? arg.x : arg;
-            size += tn.length;
-        }
-        var t = new THTensor([size]);
-        var i = 0
-        _.forEach(args, function(v) {
-            var tn = v instanceof Node ? v.x : v;
-            for (var j = 0; j < tn.length; j++) {
-               t.set([i++], tn.get([j]));
-            }
-        });
-        return t;
+        var args = arguments[0]
+        var t = args[0];
+        var out = t.concat([args[1]]);
+        return out;
+        // var args = arguments.length === 1 && arguments[0] instanceof Array ?
+        //     arguments[0] : arguments;
+        // var n = args.length;
+        // var size = 0;
+        // while (n--) {
+        //     var arg = args[n];
+        //     var tn = arg instanceof Node ? arg.x : arg;
+        //     size += tn.length;
+        // }
+        // var t = new THTensor([size]);
+        // var i = 0
+        // _.forEach(args, function(v) {
+        //     var tn = v instanceof Node ? v.x : v;
+        //     for (var j = 0; j < tn.length; j++) {
+        //        t.set([i++], tn.get([j]));
+        //     }
+        // });
+        // return t;
     },
     backward: function() {
         var args = arguments.length === 1 && arguments[0] instanceof Array ?
@@ -225,6 +222,5 @@ fns.thtensor.softmax = func.newUnaryFunction({
         }
     }
 });
-
 
 module.exports = fns;

@@ -99,7 +99,11 @@ TensorNode.prototype.copy = function(other) {
 	this.x = other.x.clone();
 	this.dx = other.dx.clone();
 };
-THTensorNode.prototype.copy = TensorNode.prototype.copy;
+THTensorNode.prototype.copy = function(other) {
+	Node.prototype.copy.call(this, other);
+	this.x = other.x.clone();
+	this.dx = other.dx.clone();
+};
 
 TensorNode.prototype.clone = function() {
 	var node = Object.create(Tensor.prototype);
@@ -118,7 +122,11 @@ TensorNode.prototype.refCopy = function(other) {
 	this.x = other.x.refClone();
 	this.dx = other.dx.refClone();
 };
-THTensorNode.prototype.refCopy = TensorNode.prototype.refCopy;
+THTensorNode.prototype.refCopy = function(other) {
+	Node.prototype.copy.call(this, other);
+	this.x = other.x.refClone();
+	this.dx = other.dx.refClone();
+};
 
 TensorNode.prototype.refClone = function() {
 	var node = Object.create(TensorNode.prototype);
@@ -136,12 +144,18 @@ TensorNode.prototype.backprop = function() {
 	this.computeOutDegree();
 	this.backpropRec();
 };
-THTensorNode.prototype.backprop = TensorNode.prototype.backprop;
+THTensorNode.prototype.backprop = function() {
+	this.dx.fill(1);
+	this.computeOutDegree();
+	this.backpropRec();
+};
 
 TensorNode.prototype.zeroDerivativesImpl = function() {
 	this.dx.zero();
 };
-THTensorNode.prototype.zeroDerivativesImpl = TensorNode.prototype.zeroDerivativesImpl;
+THTensorNode.prototype.zeroDerivativesImpl = function() {
+	this.dx.zero();
+};
 
 
 

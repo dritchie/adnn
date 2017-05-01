@@ -76,9 +76,13 @@ THTensor.prototype.reshape = function(dims) {
   var size = f_arr_prod(dims)
   assert(size === this.length, 'Tensor reshape invalid size');
   this.dims = dims;
-  this.data = this.view(dims);
-  this.ref = this.data.ref();
-  return this
+  var ls = arr_to_ls(dims)
+  var ccTensor = new THTensor(dims);
+  //ccTensor.override(ccTensor, dims);
+  TH.THFloatTensor_reshape(ccTensor.ref, this.data.ref(), ls.ref())
+  // this.data = this.view(dims);
+  // this.ref = this.data.ref();
+  return ccTensor;
 }
 
 THTensor.prototype.view = function(dims) {
@@ -105,11 +109,27 @@ THTensor.prototype.fillRandom = function() {
     return this.applyFn(function(val) {
       return utils.gaussianSample(0, scale);
  });
-    // var n = this.length;
-    // while (n--){
-    //    this.data[n] = utils.gaussianSample(0, scale);
-    // }
-    // return this;
+}
+
+THTensor.prototype.gaussian = function(mu, sigma) {
+    return this.applyFn(function(val) {
+      return utils.gaussianSample(mu, sigma);
+ });
+}
+
+THTensor.prototype.diagCovGaussian = function(mu, sigma) {
+    var cc = THTensor.create_empty_of_size(this.data.ref());
+    var ccTensor = this.clone();
+    ccTensor.override(cc, this.dims);
+    TH.THFloatTensor_randn(ccTensor.ref);
+    ccTensor.addeq(mu).muleq(sigma)
+    return ccTensor;
+}
+
+THTensor.prototype.logGamma = function() {
+    return this.applyFn(function(val) {
+      return utils.logGamma(val);
+ });
 }
 
 THTensor.prototype.copy = function(other, offset) {
@@ -244,6 +264,22 @@ THTensor.get_set = function(js_tensor, coords, val_or_tensor) {
     TH.THLongStorage_copyFloat(tensor.ref(), val_or_tensor.data.ref());
   }
   return tensor;
+}
+
+THTensor.prototype.narrow = function(dim, index, size) {
+  var cc = THTensor.create_empty_of_size(this.data.ref());
+  var ccTensor = this.clone();
+  var dims = this.dims.slice();
+  dims[dim] = size;
+  ccTensor.override(cc, dims);
+  TH.THFloatTensor_narrow(ccTensor.ref, this.data.ref(), dim, index, size);
+  return ccTensor;
+}
+
+THTensor.prototype.range = function(start, end) {
+  //hardcoded dim as 1
+  var dim = 1;
+  return this.narrow(dim, start, end - start);
 }
 
 // These are slow; don't use them inside any hot loops (i.e. they're good for
@@ -485,6 +521,18 @@ THTensor.prototype.applyFn = function (cb) {
   var callback = ffi.Callback('float', ['float'], cb);
   TH.THFloatTensor_fctapply(this.data.ref(), callback);
   return this;
+}
+
+THTensor.prototype.concat = function (args, i) {
+  // concatenating along 1 dimension for 1d Tensors
+  if (i === null)
+    i = 0;
+  var n = args.length;
+  assert.ok(n === 1);
+  var size = this.length + args[0].length;
+  var ccTensor = new THTensor([size])
+  TH.THFloatTensor_cat(ccTensor.data.ref(), this.data.ref(), args[0].data.ref(), i);
+  return ccTensor;
 }
 
 function addUnaryMethod(name) {
@@ -839,16 +887,20 @@ THTensor.prototype.determinant = function() {
 
 THTensor.prototype.dot = function(t) {
   var a = this, b = t;
+//   console.log("Thtensor.dot:  ", b)
+  console.log(this.dims)
+  console.log(t.dims)
   if (a.rank !== 2 || b.rank !== 2)
     throw new Error('Inputs to dot should have rank = 2.');
   if (a.dims[1] !== b.dims[0])
     throw new Error('Dimension mismatch in dot. Inputs have dimension ' + a.dims + ' and ' + b.dims + '.');
-  var t_for_mul = TH.THFloatTensor_new().deref();
-  TH.THFloatTensor_resize2d(t_for_mul.ref(), a.dims[0], b.dims[1]);
+//   var t_for_mul = TH.THFloatTensor_new().deref();
+  var t_for_mul = new THTensor([a.dims[0], b.dims[1]]);
+//   TH.THFloatTensor_resize2d(t_for_mul.ref, a.dims[0], b.dims[1]);
   var beta = 0, alpha = 1;
-  TH.THFloatTensor_addmm(t_for_mul.ref(), beta, t_for_mul.ref(), alpha, a.data.ref(), b.data.ref());
+  TH.THFloatTensor_addmm(t_for_mul.data.ref(), beta, t_for_mul.data.ref(), alpha, a.data.ref(), b.data.ref());
   var mm_tensor = a.refClone();
-  mm_tensor.override(t_for_mul, [a.dims[0], b.dims[1]]);
+  mm_tensor.override(t_for_mul.data, [a.dims[0], b.dims[1]]);
   return mm_tensor;
 };
 
