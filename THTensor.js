@@ -503,9 +503,37 @@ function fromArrayRec(tensor, coords, x) {
 THTensor.prototype.fromArray = function(arr) {
     if (arr.length != this.dims[0])
       throw new Error('Array length must match with tensor length');
+    if (arr.length > 256)
+      return this.fromLargeArray(arr)
     fromArrayRec(this, [], arr);
     return this;
 };
+
+//concatenating these arrays for now
+THTensor.prototype.fromLargeArray = function (arr) {
+  var n = arr.length;
+  var rem = n % 255;
+  var iter = Math.floor(n / 255)
+  var out = []
+  var arrindex = 0
+  for (var j = 0; j < iter; j++) {
+    var t = new THTensor([255])
+    for (var i = 0; i < 255; i++) {
+      t.set([i], arr[arrindex++]);
+    }
+    out.push(t);
+  }
+  var t = new THTensor([rem]);
+  for (var i = 0; i < rem; i++){
+    t.set([i], arr[arrindex++]);
+  }
+  out.push(t);
+  var outten = out[0];
+  for (var x = 1; x < out.length; x++){
+    outten = outten.concat([out[x]]);
+  }
+  return outten;
+}
 
 THTensor.prototype.toString = function() {
     return this.toArray().toString();

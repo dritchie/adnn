@@ -79,6 +79,15 @@ Tensor.prototype.fillRandom = function() {
 	return this;
 }
 
+Tensor.prototype.logGamma = function() {
+  var out = new Tensor(this.dims);
+  var n = this.data.length;
+  while (n--) {
+    out.data[n] = utils.logGamma(this.data[n]);
+  }
+  return out;
+};
+
 Tensor.prototype.copy = function(other, offset) {
 	offset = offset || 0;
 	BackingStore.set(this.data, other.data, offset);

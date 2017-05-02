@@ -1,6 +1,7 @@
 var Tensor = require('../THTensor');
 // var Tensor = require('../tensor');
 var ad = require('../ad');
+// var nn = require('/Users/jpchen/webppl-nn');
 var nn = require('../nn');
 var opt = require('../opt');
 
@@ -19,6 +20,7 @@ ad.value(trueFunc.weights).fromArray(
 );
 ad.value(trueFunc.biases).fromArray([5, 4, 3, 2, 1]);
 var data = [];
+// var N = 10000;
 var N = 10000;
 for (var i = 0; i < N; i++) {
 	var x = new Tensor([5]).fillRandom();
@@ -35,7 +37,7 @@ var trainFunc = nn.linear(5, 5);
 console.time('training');
 console.log(ad.value(trainFunc.weights).toArray());
 opt.nnTrain(trainFunc, data, opt.regressionLoss, {
-	iterations: 10000,
+	iterations: 1000,
 	batchSize: 1,
 	method: opt.sgd({ stepSize: 1, stepSizeDecay: 0.999 }),
 	// method: opt.adagrad({ stepSize: 1 }),

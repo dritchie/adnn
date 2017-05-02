@@ -4,12 +4,26 @@ var oldTensor = require('../tensor');
 // var nn = require('../nn');
 
 var t_0, t_1
+var z = new Tensor([700]);
+a = []
+// var z_0 = new Tensor([3]);
+// var x = z_0.fromArray([1,23,4]);
+// var y = x.set([0], 3); 
+// console.log(x.toArray()); return
+// for (var i =0; i < 700; i++){
+//   a.push(i)
+// }
+// var zz = z.fromLargeArray(a);
+// console.log(zz.dims); return;
 var z = new Tensor([2,2]);
-var z_0 = new Tensor([2,2]);
-var x = z.fromArray([[1,2],[3,4]]);
-var x_0 = z_0.fromArray([[3,5],[1,1]]);
-var y = x.ge(x_0)
-console.log(y.printByteArray())
+var z_0 = new tensor([3,2]);
+var x = z_0.fromarray([[1,2],[3,4], [5,6]]);
+var y = x.reshape([2,3])
+console.log(y.toArray())
+// return;
+// var x_0 = z_0.fromArray([[3,5],[1,1]]);
+// var y = x.ge(x_0)
+// console.log(y.printByteArray())
 
 function init(N){
   var n = N;
@@ -57,12 +71,12 @@ function mathOps(m1,m2){
 // var t_1 = new Tensor([3,3]);
 // var dat = t_1.fromArray([[4.5,1.4,2.1],[-3,2,1],[-2,0.3,9.2]])
 // console.log(x.determinant());
-var N = 1000;
-var mat_1 = new Tensor([N,N]).fillRandom();
-var mat_2 = new Tensor([N,N]).fillRandom();
-mathOps(mat_1, mat_2);
-matrixOps(x, mat_2);
-return
+var N = [50, 100, 200, 400, 600, 1000]
+for (var i = 0; i < N.length; i++) {
+var mat_1 = new oldTensor([128,N[i]]).fillRandom();
+var mat_2 = new oldTensor([N[i],N[i]]).fillRandom();
+// mathOps(mat_1, mat_2);
+// matrixOps(x, mat_2);
 //console.log(mat.toArray());
 //var ind = new Tensor([N,N]).fill(2.8);
 //ind.fromArray([[0,1],[2,3]]);
@@ -73,15 +87,14 @@ return
 // console.log(mat.toFlatArray());
 // console.log(mat.sum());
 //var mat_1 = new Tensor([N,N]).fillRandom();
-var mat_1 = new oldTensor([N,N]).fill(2.2);
+// var mat_1 = new oldTensor([N,N]).fill(2.2);
 console.log('starting dot')
 console.time('tensor');
 //var res = data.min();
 //
 //
 //var res = mat.mul(mat_1);
-var res = mat.dot(mat_1);
-console.log(res.toFlatArray());
+var res = mat_1.dot(mat_2);
 
 // Train
 //var trainFunc = nn.linear(5, 5);
@@ -96,6 +109,8 @@ console.log(res.toFlatArray());
 //	verbose: false
 //});
 console.timeEnd('tensor');
+}
+// console.log(res.toFlatArray());
 return
 
 function benchmark(txt, func, endfunc)   {

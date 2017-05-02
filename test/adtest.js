@@ -66,20 +66,37 @@ function run (type) {
   assert.ok(_.isEqual(roundArr(ad.tensor.min(x, y).toArray(), 1), fillArr(0.2, 5)));
   assert.ok(_.isEqual(roundArr(ad.tensor.atan2(x, y).toArray(), 3), fillArr(1.438, 5)));
   console.log(tensortype + " MATH OPS TESTS PASSED") 
+
+  //TESTING reshjaped dot
+//   var x= new THTensor([1, 4]).fill(1.5);
+//   console.log(ad.tensor.range(x, 0, 2).toArray(), [1.5, 1.5])
+// //   assert.ok(_.isEqual(ad.tensor.range(x, 0, 2).toArray(), [1.5, 1.5]))
+// //   console.log(ad.tensor.dot(x_1,y_1).toArray())
+//   return
+    
+  //=======
+  //---------------
+  var t_in = ad.lift(d_1);
+  console.log(ad.tensor.relu(t_in).x.toArray());
+//   return
   
+  //===========
+ 
   // To compute derivatives, we must first turn input Numbers/Tensors into AD graph nodes
   //    by 'lifting' them
   var scalarIn = ad.lift(1.5);
-  var tensorIn = ad.lift(new THTensor([3]).fill(1.5));
-  var tensor2 = ad.lift(new THTensor([3]).fill(2));
+  var tensorIn = tensortype ==="thtensor" ? ad.lift(new THTensor([3]).fill(1.5)) : ad.lift(new Tensor([3]).fill(1.5));
+  var tensor2 = tensortype ==="thtensor" ? ad.lift(new THTensor([3]).fill(2)) : ad.lift(new Tensor([3]).fill(2));
 //   console.log(tensorIn)
   
   // Feeding these nodes into AD functions results in Node outputs, which can be used to
   //    initialize backpropagation
   var scalarOut = ad.scalar.tanh(1.5);
   var tensorOut = ad.tensor.mul(tensorIn,tensor2);
+  console.log(tensor2.dx.toArray());
   tensorOut.backprop();
-//   console.log(tensorOut.dx.toArray()); return
+  console.log(tensor2.dx.toArray());
+  return
   
   // We can then retrieve the values and derivatives of different nodes
   ad.value(scalarOut);  // 0.9051...

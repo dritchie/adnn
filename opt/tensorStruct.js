@@ -164,6 +164,7 @@ var ifMissing = {
 			if (type(x) === 'thtensor') {
 		    	return new THTensor(x.dims).zero();	// Initializes to zeros
         	} else {
+        		console.log("tensorstruct", x)
             	return new Tensor(x.dims);
         	}
         });

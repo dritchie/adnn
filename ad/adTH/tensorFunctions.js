@@ -114,11 +114,13 @@ fns.thtensor.fromScalars = func.newFunction({
             arguments[0] : arguments;
         var n = args.length;
         var t = new THTensor([n]);
-        while (n--) {
-            var arg = args[n];
-            var val = arg instanceof Node ? arg.x : arg;
-            t.set([n], val);
-        }
+        var val = args instanceof Node ? args.x : args;
+        t.fromArray(val)
+        // while (n--) {
+        //     var arg = args[n];
+        //     var val = arg instanceof Node ? arg.x : arg;
+        //     t.set([n], val);
+        // }
         return t;
     },
     backward: function() {
@@ -144,7 +146,7 @@ fns.thtensor.concat = func.newFunction({
     name: 'thtensor.concat',
     forward: function() {
         var args = arguments[0]
-        var t = args[0];
+        var t = args[0] instanceof Node ? args[0].x : args[0];
         var out = t.concat([args[1]]);
         return out;
         // var args = arguments.length === 1 && arguments[0] instanceof Array ?

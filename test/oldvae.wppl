@@ -51,12 +51,11 @@ var model = function() {
   });
 };
 console.timeEnd('obs');
-
 console.time('opt');
 Optimize({
   model,
   steps: 1000,
   estimator: {ELBO: {samples: 1}},
-  optMethod: {adam: {stepSize: 0.001}}
+  optMethod: {sgd: {stepSize: 0.001}}
 });
 console.timeEnd('opt');
