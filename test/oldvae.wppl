@@ -15,7 +15,7 @@ var xDim = 784;
 // webppl --require webppl-nn  --require webppl-fs test/vae.wppl
 
 var images = map(Vector, JSON.parse(fs.read('../data/mnist_images.json')));
-
+console.log("read input")
 // Recognition network.
 // Maps from an input image to the parameters of the guide
 // distribution.
@@ -51,6 +51,7 @@ var model = function() {
   });
 };
 console.timeEnd('obs');
+console.log("starting opt")
 console.time('opt');
 Optimize({
   model,

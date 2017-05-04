@@ -10,11 +10,11 @@ a = []
 // var x = z_0.fromArray([1,23,4]);
 // var y = x.set([0], 3); 
 // console.log(x.toArray()); return
-// for (var i =0; i < 700; i++){
-//   a.push(i)
-// }
-// var zz = z.fromLargeArray(a);
-// console.log(zz.dims); return;
+for (var i =0; i < 700; i++){
+  a.push(i)
+}
+var zz = z.fromArray(a);
+console.log(zz.toFlatArray()); return;
 var z = new Tensor([2,2]);
 var z_0 = new tensor([3,2]);
 var x = z_0.fromarray([[1,2],[3,4], [5,6]]);

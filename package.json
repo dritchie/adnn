@@ -8,6 +8,7 @@
     "ffi": "^2.2.0",
     "ffi-generate": ">= 0",
     "lodash": "^4.17.4",
+    "mocha": "^3.3.0",
     "ref": ">= 0",
     "ref-array": ">= 0",
     "ref-struct": ">= 0"

@@ -510,6 +510,7 @@ THTensor.prototype.fromArray = function(arr) {
 };
 
 //concatenating these arrays for now
+// this is VERY slow
 THTensor.prototype.fromLargeArray = function (arr) {
   var n = arr.length;
   var rem = n % 255;
