@@ -26,5 +26,8 @@
   "keywords": [
     "automatic differentiation",
     "neural networks"
-  ]
+  ],
+  "scripts" : {
+      "test": "mocha"
+  }
 }

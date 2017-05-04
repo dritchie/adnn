@@ -277,8 +277,8 @@ THTensor.prototype.narrow = function(dim, index, size) {
 }
 
 THTensor.prototype.range = function(start, end) {
-  //hardcoded dim as 1
-  var dim = 1;
+  //hardcoded dim as 0 for 1-d matrices
+  var dim = 0;
   return this.narrow(dim, start, end - start);
 }
 
@@ -917,8 +917,6 @@ THTensor.prototype.determinant = function() {
 THTensor.prototype.dot = function(t) {
   var a = this, b = t;
 //   console.log("Thtensor.dot:  ", b)
-  console.log(this.dims)
-  console.log(t.dims)
   if (a.rank !== 2 || b.rank !== 2)
     throw new Error('Inputs to dot should have rank = 2.');
   if (a.dims[1] !== b.dims[0])
