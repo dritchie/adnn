@@ -10,6 +10,9 @@ var mat33 = [[1, 3, 5],
 var mat33T = [[1, 2, 9],
              [3, 4, 7],
              [5, 6, 3]];
+var mat33D = [[1, 0, 0],
+             [0, 4, 0],
+             [0, 0, 3]];
 var matdot = [[18, 18, 18],
               [24, 24, 24],
               [38, 38, 38]];
@@ -21,7 +24,6 @@ function roundArr (arr, sf) {
   var i = 0;
   while(i < arr.length){ 
     if (arr[i] instanceof Array) {
-        console.log(arr[i])
         for (var j = 0; j < arr[i].length; j++) {
             arr[i][j] = parseFloat(arr[i][j].toFixed(sf));
         }
@@ -96,13 +98,13 @@ function run (type) {
                             0.2, 0.2, 0.2, 0.2, 0.2]) });
 //                             0.3, 0.3, 0.3, 0.3, 0.3]) });
             it('transpose', function () { assert.deepEqual(ad.tensor.transpose(d_1).toArray(), mat33T) });
-            //   console.log(ad.tensor.diagonal(d2))
+            it('diagonal', function () { assert.deepEqual(ad.tensor.diagonal(d_1).toArray(), mat33D) });
             it('inverse', function () { assert.deepEqual(roundArr(ad.tensor.inverse(d_1).toArray(), 2), inv) });
             it('determinant', function () { assert.equal(Number(ad.tensor.determinant(d_1)).toFixed(1), 4) });
             it('dot', function () { assert.deepEqual(ad.tensor.dot(d_1, d2).toArray(), matdot) });
             it('softmax', function () { assert.equal(Number(ad.tensor.softmax(x).toArray()[0]).toFixed(1), 0.2) });
         });
-        });
+    });
 }
 
 run ("Torch");

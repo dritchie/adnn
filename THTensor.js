@@ -850,11 +850,12 @@ THTensor.prototype.diagonal = function() {
   assert.ok(this.rank === 2);
   //assert.ok(this.dims[1] === 1);
   
-  var etensor = THTensor.create_empty_of_size(this.data.ref())
-  TH.THFloatTensor_diag(etensor.ref(),this.data.ref(),0)
-  var ccTensor = this.refClone()
-  ccTensor.override(etensor, this.dims)
-  return ccTensor
+  var etensor = new THTensor([this.dims[0]]);
+  var otensor = new THTensor(this.dims);
+  TH.THFloatTensor_diag(etensor.data.ref(),this.data.ref(), 0);
+  // reshape
+  TH.THFloatTensor_diag(otensor.data.ref(),etensor.data.ref(), 0);
+  return otensor;
 };
 
 //NN functions
