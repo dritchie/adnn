@@ -320,7 +320,7 @@ Tensor.prototype.diagonal = function() {
   var n = this.dims[0];
   var y = new Tensor([n, n]);
   for (var i = 0; i < n; i++) {
-    y.data[i * (n + 1)] = this.data[i];
+    y.data[i * (n + 1)] = this.data[i * (n + 1)];
   }
   return y;
 };
