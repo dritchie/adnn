@@ -1,6 +1,6 @@
 {
   "name": "adnn",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Javascript neural networks on top of general scalar/tensor reverse-mode automatic differentiation.",
   "author": "dritchie",
   "license": "MIT",
