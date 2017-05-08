@@ -139,8 +139,3 @@ d.max = makeBinaryDerivatives();
 
 
 module.exports = d;
-
-
-
-
-
