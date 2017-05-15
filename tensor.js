@@ -328,6 +328,7 @@ Tensor.prototype.transpose = function() {
   return y;
 };
 
+//Return a nxn matrix with the same diagonal, and zeros everywhere else
 Tensor.prototype.diag = function() {
   assert.ok(this.rank === 2);
   var n = this.dims[0];
@@ -338,9 +339,9 @@ Tensor.prototype.diag = function() {
   return y;
 };
 
+// Returns an nxn matrix with the diagonal as the nx1vector elements
+// and zeros everywhere else
 Tensor.prototype.diagonal = function() {
-  assert.ok(this.rank === 2);
-  assert.ok(this.dims[1] === 1);
   var n = this.dims[0];
   var y = new Tensor([n, n]);
   for (var i = 0; i < n; i++) {

@@ -861,6 +861,18 @@ THTensor.prototype.diag = function() {
   return otensor;
 };
 
+THTensor.prototype.diagonal = function() {
+  var ndims = [this.dims[0], this.dims[0]];
+  var ccTensor = new THTensor(ndims);
+  var currTensor = this.clone();
+  for (var i = 0; i < this.dims[0] - 1; i++) {
+    ccTensor = new THTensor([this.dims[0], i+2]);
+    TH.THFloatTensor_cat(ccTensor.data.ref(), currTensor.data.ref(), this.data.ref(), 1);
+    currTensor = ccTensor.clone();
+  }
+  return ccTensor.diag();
+};
+
 //NN functions
 THTensor.prototype.relueq = function() {
   return this.applyFn(function(val) {

@@ -4,6 +4,8 @@ var THTensor = require('../THTensor.js');
 var Tensor = require('../tensor.js');
 var _ = require('lodash');
 
+var vec = [1, 4, 3];
+
 var mat33 = [[1, 3, 5],
              [2, 4, 6],
              [9, 7, 3]];
@@ -49,6 +51,7 @@ function run (type) {
     var y = x.clone().fill(0.2);
     var z = y.clone().fill(0.3);
     var d_1 = tensortype === "tensor" ? new Tensor([3,3]).fromArray(mat33) : new THTensor([3,3]).fromArray(mat33);
+    var v = tensortype === "tensor" ? new Tensor([3]).fromArray(vec) : new THTensor([3]).fromArray(vec);
     var d2 = d_1.clone().fill(2);
     describe(type, function () {
         describe("Math Ops", function () {
@@ -99,7 +102,7 @@ function run (type) {
 //                             0.3, 0.3, 0.3, 0.3, 0.3]) });
             it('transpose', function () { assert.deepEqual(ad.tensor.transpose(d_1).toArray(), mat33T) });
             // this takes a rank 1 vector and returns an nxn matrix with the diagonals as the vectors elements
-//             it('diagonal', function () { assert.deepEqual(ad.tensor.diagonal(d_1).toArray(), mat33D) });
+            it('diagonal', function () { assert.deepEqual(ad.tensor.diagonal(v).toArray(), mat33D) });
 //          diagonal entries of matrix, returned as an nxn matrix
             it('diag', function () { assert.deepEqual(ad.tensor.diag(d_1).toArray(), mat33D) });
             it('inverse', function () { assert.deepEqual(roundArr(ad.tensor.inverse(d_1).toArray(), 2), inv) });

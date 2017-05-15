@@ -6,10 +6,9 @@ var oldTensor = require('../tensor');
 var t_0, t_1
 var z = new Tensor([700]);
 a = []
-// var z_0 = new Tensor([3]);
-// var x = z_0.fromArray([1,23,4]);
-// var y = x.set([0], 3); 
-// console.log(x.toArray()); return
+var z_0 = new Tensor([4]);
+var y = z_0.fromArray([1,2,3,4]);
+console.log(y.diagonal()); return
 for (var i =0; i < 700; i++){
   a.push(i)
 }
