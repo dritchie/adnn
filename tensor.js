@@ -328,13 +328,23 @@ Tensor.prototype.transpose = function() {
   return y;
 };
 
-Tensor.prototype.diagonal = function() {
+Tensor.prototype.diag = function() {
   assert.ok(this.rank === 2);
-  // assert.ok(this.dims[1] === 1);
   var n = this.dims[0];
   var y = new Tensor([n, n]);
   for (var i = 0; i < n; i++) {
     y.data[i * (n + 1)] = this.data[i * (n+1)];
+  }
+  return y;
+};
+
+Tensor.prototype.diagonal = function() {
+  assert.ok(this.rank === 2);
+  assert.ok(this.dims[1] === 1);
+  var n = this.dims[0];
+  var y = new Tensor([n, n]);
+  for (var i = 0; i < n; i++) {
+    y.data[i * (n + 1)] = this.data[i];
   }
   return y;
 };

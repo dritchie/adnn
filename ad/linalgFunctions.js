@@ -19,6 +19,13 @@ fns.tensor.transpose = function (t) {
     return thlaFunc.thtensor.transpose(t);
 }
 
+fns.tensor.diag = function (t) {
+    var ten = t instanceof Node ? t.x : t;
+    if (ten instanceof Tensor)
+        return jslaFunc.tensor.diag(t);
+    return thlaFunc.thtensor.diag(t);
+}
+
 fns.tensor.diagonal = function (t) {
     var ten = t instanceof Node ? t.x : t;
     if (ten instanceof Tensor)

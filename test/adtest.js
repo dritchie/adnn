@@ -98,7 +98,10 @@ function run (type) {
                             0.2, 0.2, 0.2, 0.2, 0.2]) });
 //                             0.3, 0.3, 0.3, 0.3, 0.3]) });
             it('transpose', function () { assert.deepEqual(ad.tensor.transpose(d_1).toArray(), mat33T) });
-            it('diagonal', function () { assert.deepEqual(ad.tensor.diagonal(d_1).toArray(), mat33D) });
+            // this takes a rank 1 vector and returns an nxn matrix with the diagonals as the vectors elements
+//             it('diagonal', function () { assert.deepEqual(ad.tensor.diagonal(d_1).toArray(), mat33D) });
+//          diagonal entries of matrix, returned as an nxn matrix
+            it('diag', function () { assert.deepEqual(ad.tensor.diag(d_1).toArray(), mat33D) });
             it('inverse', function () { assert.deepEqual(roundArr(ad.tensor.inverse(d_1).toArray(), 2), inv) });
             it('determinant', function () { assert.equal(Number(ad.tensor.determinant(d_1)).toFixed(1), 4) });
             it('dot', function () { assert.deepEqual(ad.tensor.dot(d_1, d2).toArray(), matdot) });

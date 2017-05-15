@@ -90,7 +90,7 @@ TensorNode.prototype = Object.create(Node.prototype);
 
 function THTensorNode(x, parents, inputs, backward, name) {
 	Node.call(this, x, parents, inputs, backward, name || 'thtensorNode');
-	this.dx = new THTensor(x.dims);
+	this.dx = new THTensor(x.dims).zero();
 }
 THTensorNode.prototype = Object.create(Node.prototype);
 

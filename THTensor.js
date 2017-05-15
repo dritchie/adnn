@@ -487,7 +487,11 @@ THTensor.prototype.toFlatArray = function () {
 }
 
 THTensor.prototype.toArray = function() {
-    return toArrayRec(this, []);
+    var out = toArrayRec(this, []);
+    // for (var i=0; i < out.length; i++){
+    //   out[i] = parseFloat(out[i]);
+    // }
+    return out;
 };
 
 function fromArrayRec(tensor, coords, x) {
@@ -846,9 +850,8 @@ THTensor.prototype.transpose = function(ix, ix2) {
 }
 THTensor.prototype.T = THTensor.prototype.transpose
 
-THTensor.prototype.diagonal = function() {
+THTensor.prototype.diag = function() {
   assert.ok(this.rank === 2);
-  //assert.ok(this.dims[1] === 1);
   
   var etensor = new THTensor([this.dims[0]]);
   var otensor = new THTensor(this.dims);

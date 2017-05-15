@@ -26,6 +26,20 @@ fns.tensor.transpose = func.newUnaryFunction({
   }
 });
 
+fns.tensor.diag = func.newUnaryFunction({
+  OutputType: Tensor,
+  name: 'diagonal',
+  forward: function(a) {
+    return a.diag();
+  },
+  backward: function(a) {
+    var n = a.dx.dims[0];
+    for (var i = 0; i < n; i++) {
+      a.dx.data[i] += this.dx.data[i * (n + 1)];
+    }
+  }
+});
+
 fns.tensor.diagonal = func.newUnaryFunction({
   OutputType: Tensor,
   name: 'diagonal',
