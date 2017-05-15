@@ -58,7 +58,7 @@ adnn comes with a large number of built-in AD primitives:
 - **Linear Algebra**
   - Requires inputs to be rank 2 tensors (i.e. matrices are NxN, vectors are Nx1).
   - **`ad.tensor.transpose(x)`**: Returns the transpose of the matrix `x`.
-  - **`ad.tensor.diagonal(x)`**: Extracts the diagonal components of the matrix `x` as a vector. 
+  - **`ad.tensor.diagonal(x)`**: Returns a diagonal matrix whose diagonal entries are the entries of the vector `x`. 
   - **`ad.tensor.inverse(x)`**: Returns the inverse of the matrix `x`.
   - **`ad.tensor.determinant(x)`**: Returns the determinant of the matrix `x`.
   - **`ad.tensor.dot(x, y)`**: Returns the inner product of the matrices `x` and `y`.
