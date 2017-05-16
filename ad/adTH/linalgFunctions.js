@@ -59,7 +59,7 @@ fns.thtensor.inverse = func.newUnaryFunction({
     return A.inverse();
   },
   backward: function(A) {
-    var xT = this.x.T();
+    var xT = this.x.transpose();
     A.dx = A.dx.add(xT.dot(this.dx).dot(xT).neg());
   }
 });
@@ -71,10 +71,9 @@ fns.thtensor.determinant = func.newUnaryFunction({
     return A.determinant();
   },
   backward: function(A) {
-    // A is square matrix.
-    // Assume A is invertable.
+    // Jacobi's formula
     var n = A.x.dims[0];
-    var invA = A.x.inv();
+    var invA = A.x.inverse();
     for (var i = 0; i < n; i++) {
       for (var j = 0; j < n; j++) {
         A.dx.data[i * n + j] += this.x * this.dx * invA.data[j * n + i];

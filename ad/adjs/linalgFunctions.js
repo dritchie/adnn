@@ -35,7 +35,7 @@ fns.tensor.diag = func.newUnaryFunction({
   backward: function(a) {
     var n = a.dx.dims[0];
     for (var i = 0; i < n; i++) {
-      a.dx.data[i] += this.dx.data[i * (n + 1)];
+      a.dx.data[i * (n + 1)] += this.dx.data[i * (n + 1)];
     }
   }
 });
@@ -92,8 +92,8 @@ fns.tensor.dot = func.newBinaryFunction({
     return a.dot(b);
   },
   backward1: function(A, B) {
-    var Ap = ad.value(A);
-    var Bp = ad.value(B);
+    var Ap = A instanceof Node ? A.x : A;
+    var Bp = B instanceof Node ? B.x : B;
 
     var Ah = Ap.dims[0];
     var Aw = Ap.dims[1];
@@ -111,8 +111,8 @@ fns.tensor.dot = func.newBinaryFunction({
     }
   },
   backward2: function(A, B) {
-    var Ap = ad.value(A);
-    var Bp = ad.value(B);
+    var Ap = A instanceof Node ? A.x : A;
+    var Bp = B instanceof Node ? B.x : B;
 
     var Ah = Ap.dims[0];
     var Aw = Ap.dims[1];

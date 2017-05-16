@@ -20,10 +20,9 @@ fns.thtensor.sumreduce = func.newUnaryFunction({
         return t.sumreduce();
     },
     backward: function(t) {
-        var n = t.dx.length;
-        while (n--) {
-            t.dx.data[n] += this.dx;
-        }
+        return t.applyFn(function(val) {
+            return val + this.dx;
+        });
     }
 });
 
@@ -149,24 +148,6 @@ fns.thtensor.concat = func.newFunction({
         var t = args[0] instanceof Node ? args[0].x : args[0];
         var out = t.concat([args[1]]);
         return out;
-        // var args = arguments.length === 1 && arguments[0] instanceof Array ?
-        //     arguments[0] : arguments;
-        // var n = args.length;
-        // var size = 0;
-        // while (n--) {
-        //     var arg = args[n];
-        //     var tn = arg instanceof Node ? arg.x : arg;
-        //     size += tn.length;
-        // }
-        // var t = new THTensor([size]);
-        // var i = 0
-        // _.forEach(args, function(v) {
-        //     var tn = v instanceof Node ? v.x : v;
-        //     for (var j = 0; j < tn.length; j++) {
-        //        t.set([i++], tn.get([j]));
-        //     }
-        // });
-        // return t;
     },
     backward: function() {
         var args = arguments.length === 1 && arguments[0] instanceof Array ?

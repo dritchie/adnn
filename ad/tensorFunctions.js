@@ -85,7 +85,7 @@ fns.tensor.fromScalars = function(t, isTH) {
 // TODO: Eventually implement this as views into multiple storages?
 // No offset copying, so right now this implementation is working but slow
 fns.tensor.concat = function(t) {
-    var ten = t[0] instanceof Node ? t[0].x : t[0];
+    var ten = t instanceof Node ? t.x : t;
     if (ten instanceof Tensor)
         return jstenFunc.tensor.concat(t);
     return thtenFunc.thtensor.concat(t);
