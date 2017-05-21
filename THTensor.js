@@ -545,8 +545,8 @@ THTensor.prototype.toString = function() {
 };
 
 THTensor.prototype.fromFlatArray = function(arr) {
-    BackingStore.set(this.data, arr, 0);
-    return this;
+    //Not impolemented
+    return;
 }
 
 THTensor.prototype.applyFn = function (cb) {
@@ -850,6 +850,7 @@ THTensor.prototype.transpose = function(ix, ix2) {
 }
 THTensor.prototype.T = THTensor.prototype.transpose
 
+//Return a nxn matrix with the same diagonal, and zeros everywhere else
 THTensor.prototype.diag = function() {
   assert.ok(this.rank === 2);
   
@@ -861,6 +862,8 @@ THTensor.prototype.diag = function() {
   return otensor;
 };
 
+// Returns an nxn matrix with the diagonal as the nx1vector elements
+// and zeros everywhere else
 THTensor.prototype.diagonal = function() {
   var ndims = [this.dims[0], this.dims[0]];
   var ccTensor = new THTensor(ndims);

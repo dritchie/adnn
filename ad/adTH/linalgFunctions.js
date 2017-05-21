@@ -33,7 +33,7 @@ fns.thtensor.diag = func.newUnaryFunction({
   backward: function(a) {
     var n = a.dx.dims[0];
     for (var i = 0; i < n; i++) {
-      a.dx.data[i] += this.dx.data[i * (n + 1)];
+      a.dx.set([i, i], a.dx.get([i, i]) + this.dx.get([i, i]));
     }
   }
 });
@@ -47,7 +47,7 @@ fns.thtensor.diagonal = func.newUnaryFunction({
   backward: function(a) {
     var n = a.dx.dims[0];
     for (var i = 0; i < n; i++) {
-      a.dx.data[i] += this.dx.data[i * (n + 1)];
+      a.dx.set([i], a.dx.get([i]) + this.dx.get([i, i]));
     }
   }
 });
@@ -76,7 +76,7 @@ fns.thtensor.determinant = func.newUnaryFunction({
     var invA = A.x.inverse();
     for (var i = 0; i < n; i++) {
       for (var j = 0; j < n; j++) {
-        A.dx.data[i * n + j] += this.x * this.dx * invA.data[j * n + i];
+        A.dx.set([i, j], this.x * this.dx * invA.get([j, i]));
       }
     }
   }

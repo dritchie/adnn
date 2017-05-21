@@ -20,9 +20,10 @@ fns.thtensor.sumreduce = func.newUnaryFunction({
         return t.sumreduce();
     },
     backward: function(t) {
-        return t.applyFn(function(val) {
+        var ten = t instanceof Node ? t.x : t;
+        return ten.applyFn(function(val) {
             return val + this.dx;
-        });
+        }.bind(this));
     }
 });
 
@@ -45,11 +46,15 @@ fns.thtensor.get = func.newFunction({
     OutputType: Scalar,
     name: 'thtensor.get',
     forward: function(t, i) {
-        return t instanceof Node ? t.x.get([i]) : t.get([i]);
+        if (!(i instanceof Array))
+            i = [i];
+        return t instanceof Node ? t.x.get(i) : t.get(i);
     },
     backward: function(t, i) {
         if (t instanceof Node) {
-            t.dx.data[i] += this.dx;
+            if (!(i instanceof Array))
+                i = [i];
+            t.dx.set(i, this.dx);
         }
     },
     getParents: function(t, i) {
@@ -70,10 +75,12 @@ fns.thtensor.toScalars = function(t) {
 // Select a subtensor from a larger tensor
 // TODO: Eventually implement this as a view into existing storage,
 //    probably using refClone (+ other new stuff)
+// supports vectors i.e. rank=1 tensors
 fns.thtensor.range = func.newFunction({
     OutputType: THTensor,
     name: 'thtensor.range',
     forward: function(t, start, end) {
+        t = t instanceof Node ? t.x : t;
         return t.range(start, end);
     },
     backward: function(t, start, end) {
@@ -81,7 +88,7 @@ fns.thtensor.range = func.newFunction({
             var n = end - start;
             while (n--) {
                 var i = start + n;
-                t.dx.data[i] += this.dx.data[n];
+                t.dx.data.set([i], this.dx.data.get([n]));
             }
         }
     },
@@ -144,7 +151,9 @@ fns.thtensor.concat = func.newFunction({
     OutputType: THTensor,
     name: 'thtensor.concat',
     forward: function() {
-        var args = arguments[0]
+        var args = arguments.length === 1 && arguments[0] instanceof Array ?
+            arguments[0] : arguments;
+        console.log(args[1])
         var t = args[0] instanceof Node ? args[0].x : args[0];
         var out = t.concat([args[1]]);
         return out;
