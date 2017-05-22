@@ -62,6 +62,7 @@ adnn comes with a large number of built-in AD primitives:
   - **`ad.tensor.inverse(x)`**: Returns the inverse of the matrix `x`.
   - **`ad.tensor.determinant(x)`**: Returns the determinant of the matrix `x`.
   - **`ad.tensor.dot(x, y)`**: Returns the inner product of the matrices `x` and `y`.
+  - **`ad.tensor.cholesky(x)`**: Returns the [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition) of the matrix `x`.
 - **Miscellaneous**
   - **`ad.tensor.softmax(x)`**: Compute the [Softmax](https://en.wikipedia.org/wiki/Softmax_function) function for a tensor `x`.
 
