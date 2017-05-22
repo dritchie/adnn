@@ -274,6 +274,36 @@ fns.tensor.dot = func.newBinaryFunction({
   }
 });
 
+// Smith, Stephen P. "Differentiation of the Cholesky algorithm."
+// Journal of Computational and Graphical Statistics 4.2 (1995):
+// 134-147.
+fns.tensor.cholesky = func.newUnaryFunction({
+	OutputType: Tensor,
+	name: 'cholesky',
+	forward: function(x) {
+		return x.cholesky();
+	},
+	backward: function(x) {
+		var i, j, k;
+		var L = this;
+		var dL = this.dx.tril();
+		var n = L.x.dims[0];
+		for (k = n - 1; k >= 0; k--) {
+			for (j = k + 1; j < n; j++) {
+				for (i = j; i < n; i++) {
+					dL.data[i * n + k] -= dL.data[i * n + j] * L.x.data[j * n + k];
+					dL.data[j * n + k] -= dL.data[i * n + j] * L.x.data[i * n + k];
+				}
+			}
+			for (j = k + 1; j < n; j++) {
+				dL.data[j * n + k] /= L.x.data[k * n + k];
+				dL.data[k * n + k] -= dL.data[j * n + k] * L.x.data[j * n + k];
+			}
+			dL.data[k * n + k] /= 2 * L.x.data[k * n + k];
+		}
+		x.dx.addeq(dL);
+	}
+});
 
 // Tensor reductions  -----------------------------------------------------
 

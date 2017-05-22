@@ -510,6 +510,22 @@ Tensor.prototype.cholesky = function() {
   return L;
 };
 
+// Return a copy of a matrix with the elements above the main diagonal
+// zeroed.
+Tensor.prototype.tril = function() {
+	var a = this;
+	assert.ok((a.rank === 2) && (a.dims[0] === a.dims[1]),
+		  'tril is only defined for square matrices.');
+
+	var n = a.dims[0];
+	var ret = new Tensor([n, n]);
+	for (var i = 0; i < n; i++) {
+		for (var j = 0; j <= i; j++) {
+			ret.data[i * n + j] = a.data[i * n + j];
+		}
+	}
+	return ret;
+};
 
 module.exports = Tensor;
 
