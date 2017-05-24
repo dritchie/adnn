@@ -20,7 +20,7 @@ fns.thtensor.sumreduce = func.newUnaryFunction({
         return t.sumreduce();
     },
     backward: function(t) {
-        var ten = t instanceof Node ? t.x : t;
+        var ten = t instanceof Node ? t.dx : t;
         return ten.applyFn(function(val) {
             return val + this.dx;
         }.bind(this));
@@ -54,7 +54,7 @@ fns.thtensor.get = func.newFunction({
         if (t instanceof Node) {
             if (!(i instanceof Array))
                 i = [i];
-            t.dx.set(i, this.dx);
+            t.dx.set(i, t.dx.get(i) + this.dx);
         }
     },
     getParents: function(t, i) {
@@ -73,9 +73,9 @@ fns.thtensor.toScalars = function(t) {
 };
 
 // Select a subtensor from a larger tensor
+// supports vectors i.e. rank=1 tensors
 // TODO: Eventually implement this as a view into existing storage,
 //    probably using refClone (+ other new stuff)
-// supports vectors i.e. rank=1 tensors
 fns.thtensor.range = func.newFunction({
     OutputType: THTensor,
     name: 'thtensor.range',
@@ -88,7 +88,7 @@ fns.thtensor.range = func.newFunction({
             var n = end - start;
             while (n--) {
                 var i = start + n;
-                t.dx.data.set([i], this.dx.data.get([n]));
+                t.dx.set([i], t.dx.get([i]) + this.dx.get([n]));
             }
         }
     },
@@ -136,7 +136,7 @@ fns.thtensor.fromScalars = func.newFunction({
         while (n--) {
             var arg = args[n];
             if (arg instanceof Node) {
-                arg.dx += this.dx.data[n];
+                arg.dx += this.dx.get([n]);
             }
         }
     },
@@ -153,9 +153,9 @@ fns.thtensor.concat = func.newFunction({
     forward: function() {
         var args = arguments.length === 1 && arguments[0] instanceof Array ?
             arguments[0] : arguments;
-        console.log(args[1])
         var t = args[0] instanceof Node ? args[0].x : args[0];
-        var out = t.concat([args[1]]);
+        var t2 = args[1] instanceof Node ? args[1].x : args[1];
+        var out = t.concat([t2]);
         return out;
     },
     backward: function() {
@@ -169,7 +169,7 @@ fns.thtensor.concat = func.newFunction({
                 var tn = arg;
                 var len = tn.dx.length;
                 while (len--) {
-                    tn.dx.data[len] += this.dx.data[i + len];
+                    tn.dx.set([len], tn.dx.get([len]) + this.dx.get([i + len]));
                 }
                 i += tn.dx.length;
             } else i += arg.length;
@@ -204,13 +204,18 @@ fns.thtensor.softmax = func.newUnaryFunction({
     backward: function(t) {
         // For each input entry, accumulate partial derivatives
         //    for each output entry
-        var n = t.dx.data.length;
-        var s = 0;
-        for (var i = 0; i < n; i++) {
-            s += this.x.data[i] * this.dx.data[i];
+       var ten = t instanceof Node ? t.x : t;
+       var s = 0;
+       for (var i = 0; i < ten.dims[0]; i++) {
+           for (var j = 9; j < ten.dims[1]; j++) {
+              s += this.x.get([i, j]) * this.dx.get([i, j]);
+           }
         }
-        for (var j = 0; j < n; j++) {
-            t.dx.data[j] += this.x.data[j] * (this.dx.data[j] - s);
+        for (var i = 0; i < ten.dims[0]; i++) {
+           for (var j = 0; j < ten.dims[1]; j++) {
+              t.dx.set([i, j], t.dx.get([i, j]) + this.x.get([i, j]) * 
+                (this.dx.get([i, j]) - s));
+           }
         }
     }
 });

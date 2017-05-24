@@ -86,7 +86,8 @@ fns.tensor.fromScalars = function(t, isTH) {
 // No offset copying, so right now this implementation is working but slow
 fns.tensor.concat = function(t) {
     var ten = t instanceof Node ? t.x : t instanceof Array ? t[0] : t;
-    if (ten instanceof Tensor || ten[0] instanceof Tensor)
+    var tenx = ten instanceof Node ? ten.x : ten;
+    if (ten instanceof Tensor || tenx instanceof Tensor)
         return jstenFunc.tensor.concat(t);
     return thtenFunc.thtensor.concat(t);
 }

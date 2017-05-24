@@ -18,7 +18,7 @@ fns.thtensor.transpose = func.newUnaryFunction({
     var w = this.x.dims[1];
     for (var i = 0; i < h; i++) {
       for (var j = 0; j < w; j++) {
-        a.dx.data[j * h + i] += this.dx.data[i * w + j];
+        a.dx.set([j, i], a.dx.get([j, i]) + this.dx.get([i,j]));
       }
     }
   }
@@ -89,8 +89,8 @@ fns.thtensor.dot = func.newBinaryFunction({
     return a.dot(b);
   },
   backward1: function(A, B) {
-    var Ap = ad.value(A);
-    var Bp = ad.value(B);
+    var Ap = A instanceof Node ? A.x : A;
+    var Bp = B instanceof Node ? B.x : B;
 
     var Ah = Ap.dims[0];
     var Aw = Ap.dims[1];
@@ -101,15 +101,15 @@ fns.thtensor.dot = func.newBinaryFunction({
       for (var m = 0; m < Aw; m++) {
         var z = 0;
         for (var j = 0; j < wout; j++) {
-          z += this.dx.data[l * wout + j] * Bp.data[m * Bw + j];
+          z += this.dx.get([l, j]) * Bp.get([m, j]);
         }
-        A.dx.data[l * Aw + m] += z;
+        A.dx.set([l, m], A.dx.get([l, m]) + z);
       }
     }
   },
   backward2: function(A, B) {
-    var Ap = ad.value(A);
-    var Bp = ad.value(B);
+    var Ap = A instanceof Node ? A.x : A;
+    var Bp = B instanceof Node ? B.x : B;
 
     var Ah = Ap.dims[0];
     var Aw = Ap.dims[1];
@@ -121,9 +121,9 @@ fns.thtensor.dot = func.newBinaryFunction({
       for (var m = 0; m < Bw; m++) {
         var z = 0;
         for (var i = 0; i < Ah; i++) {
-          z += this.dx.data[i * wout + m] * Ap.data[i * Aw + l];
+          z += this.dx.get([i, m]) * Ap.get([i, l]);
         }
-        B.dx.data[l * Bw + m] += z;
+        B.dx.set([l, m], B.dx.get([l, m]) + z);
       }
     }
 

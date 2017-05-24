@@ -66,7 +66,6 @@ fns.tensor.range = func.newFunction({
 	OutputType: Tensor,
 	name: 'tensor.range',
 	forward: function(t, start, end) {
-		console.log(start, end)
 		t = t instanceof Node ? t.x : t;
 		var n = end - start;
 		var tn = new Tensor([n]);

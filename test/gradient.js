@@ -22,9 +22,11 @@ function partial_deriv(x, fn, scal, type, verbose) {
             for (var j = 0; j < _x.dims[1]; j++) {
                 var epsT = new THTensor(_x.dims).zero();
                 epsT.set([i,j], eps);
+//                 console.log(T.add(_x,epsT).toArray())
                 var y1 = scal ? f_1(_x, fn) : f(_x, fn);
                 var y2 = scal ? f_1(T.add(_x, epsT), fn)
                     : f(T.add(_x, epsT), fn);
+                console.log(y1, y2)
                 if (verbose) {
                     console.log('finite diffs: ', (y2-y1) / eps);
                     console.log('ad: ', T.get(ad.derivative(x), [i, j]));
@@ -128,11 +130,12 @@ var f_2 = function(x, y, fn) {
 }
 
 var bp = function(_x, op, type, scal) {
-  var x = ad.lift(_x);
+  var x = op === 'concat' ? _x.map(function(v) {return ad.lift(v);}) 
+      : ad.lift(_x);
   var xnode = scal ? xnode = f_1(x, function(n) {return T[op](n); })
       : xnode = f(x, function(n) {return T[op](n); });
   xnode.backprop();
-  return partial_deriv(x, function(n) {return T[op](n);}, scal, type);
+  return partial_deriv(x, function(n) {return T[op](n);}, scal, type, true);
 }
 
 var bin_bp = function(_x, _y, op, type) {
@@ -199,19 +202,20 @@ function run (type) {
         });
         describe("Tensor Ops", function () {
             it('sumreduce', function () { assert.equal(bp(x, 'sumreduce', type, true), 0); }); 
-            //need to write tensor ops to pass proper arguments to get and range below
+            //need to write tensor ops to pass proper arguments to get and range below since they take scalar args
 //             it('get', function () { assert.equal(bp(x, 'get', type, true), 0); }); 
-//             it('range', function () { assert.equal(bp(x, 'range', type), 0); }); 
-//             it('concat', function () { assert.equal(bp([x1d, x1d], 'concat', type), 0); }); 
-//             it('softmax', function () { assert.equal(bp(x, 'softmax', type), 0); }); 
+//             it('range', function () { assert.equal(bp(x1d, 'range', type), 0); }); 
+//          // tested in tensorgrad
+//             it('concat', function () { assert.equal(bpt([x1d, x1d], 'concat', type), 0); }); 
+            it('softmax', function () { assert.equal(bp(x, 'softmax', type), 0); }); 
         });
         describe("Linear Alg Ops", function () {
-//             it('transpose', function () { assert.equal(bp(x, 'transpose', type), 0); }); 
+            it('transpose', function () { assert.equal(bp(x, 'transpose', type), 0); }); 
             it('diagonal', function () { assert.equal(bp(x1d, 'diagonal', type), 0); }); 
 //             it('diag', function () { assert.equal(bp(x, 'diag', type), 0); }); 
             it('inverse', function () { assert.equal(bp(x, 'inverse', type), 0); }); 
             it('determinant', function () { assert.equal(bp(x, 'determinant', type, true).toFixed(3), 0); }); 
-//             it('dot', function () { assert.equal(bin_bp(x, y, 'dot', type), 0); }); 
+            it('dot', function () { assert.equal(bin_bp(x, y, 'dot', type), 0); }); 
         });
     });
 }

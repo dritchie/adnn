@@ -7,6 +7,8 @@ var T = ad.tensor;
 
 var vec = [1, 4, 3];
 
+var vec4 = [[1], [4], [3], [2]];
+
 var mat33 = [[1, 3, 5],
              [2, 4, 6],
              [9, 7, 3]];
@@ -53,6 +55,7 @@ function run (type) {
     var z = y.clone().fill(0.3);
     var d_1 = tensortype === "tensor" ? new Tensor([3,3]).fromArray(mat33) : new THTensor([3,3]).fromArray(mat33);
     var v = tensortype === "tensor" ? new Tensor([3]).fromArray(vec) : new THTensor([3]).fromArray(vec);
+    var s = tensortype === "tensor" ? new Tensor([4, 1]).fromArray(vec4) : new THTensor([4, 1]).fromArray(vec4);
     var d2 = d_1.clone().fill(2);
     describe(type, function () {
         describe("Math Ops", function () {
@@ -90,6 +93,7 @@ function run (type) {
             it('allreduce', function () { assert.ok(T.allreduce(x)) });
             it('anyreduce', function () { assert.ok(T.anyreduce(x)) });
             it('get', function () { assert.equal(T.get(x, 1), 1.5) });
+            it('reshape', function () { assert.deepEqual(T.reshape(s, [2,2]).toArray(), [[1, 4], [3, 2]]) });
             it('toScalars', function () { assert.deepEqual(T.toScalars(x), [1.5, 1.5, 1.5, 1.5, 1.5]) });
             it('fromScalars', function () { assert.deepEqual(T.fromScalars([0, 1, 2, 3]).toArray(), [0, 1, 2, 3]) });
             it('range', function () { assert.deepEqual(T.range(x, 0, 2).toArray(), [1.5, 1.5]) });
