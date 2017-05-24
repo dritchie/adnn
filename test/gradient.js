@@ -13,20 +13,22 @@ var eps = 1e-8;
 //Finite differences
 // Returns true if the finite difference between computed
 // and actual is 0, up to 4 sig figs
-function partial_deriv(x, fn, scal, type, verbose) {
-    _x = x.x;
+function partial_deriv(x, fn, scal, type, tol, verbose) {
+    var sf = 4;
+    var _x = x.x;
     var n = _x.length;
     result =  [];
+    this.tol = tol ? tol : 0.1
     if (type === "Torch") {
+        sf = 1;
+        _x = new Tensor(x.x.dims).fromArray(x.x.toArray());
         for (var i = 0; i < _x.dims[0]; i++) {
             for (var j = 0; j < _x.dims[1]; j++) {
-                var epsT = new THTensor(_x.dims).zero();
+                var epsT = new Tensor(_x.dims).zero();
                 epsT.set([i,j], eps);
-//                 console.log(T.add(_x,epsT).toArray())
                 var y1 = scal ? f_1(_x, fn) : f(_x, fn);
                 var y2 = scal ? f_1(T.add(_x, epsT), fn)
                     : f(T.add(_x, epsT), fn);
-                console.log(y1, y2)
                 if (verbose) {
                     console.log('finite diffs: ', (y2-y1) / eps);
                     console.log('ad: ', T.get(ad.derivative(x), [i, j]));
@@ -48,20 +50,25 @@ function partial_deriv(x, fn, scal, type, verbose) {
             result.push((y2-y1) / eps -  T.get(ad.derivative(x), i)) ;
         }
     }
-    return _.reduce(roundArr(result, 4), function(sum, n) {
-        return sum + n;
-    }, 0);
+    return _.every(roundArr(result, sf), function(n) {
+        return n >= -this.tol && n <= this.tol;
+    }.bind(this));
 }
 
-function bin_partial_deriv(x, y, fn, type, verbose) {
-    _x = x.x;
-    _y = y.x;
+function bin_partial_deriv(x, y, fn, type, tol, verbose) {
+    var _x = x.x;
+    var _y = y.x;
+    var sf = 4;
     var n = _x.length;
+    this.tol = tol ? tol : 0.1
     result =  [];
     if (type === "Torch") {
+        _x = new Tensor(x.x.dims).fromArray(x.x.toArray());
+        _y = new Tensor(y.x.dims).fromArray(y.x.toArray());
+        sf = 1;
         for (var i = 0; i < _x.dims[0]; i++) {
             for (var j = 0; j < _x.dims[1]; j++) {
-                var epsT = new THTensor(_x.dims).zero();
+                var epsT = new Tensor(_x.dims).zero();
                 epsT.set([i,j], eps);
                 var y1 = f_2(_x, _y, fn);
                 var y2 = f_2(T.add(_x, epsT), _y, fn);
@@ -74,15 +81,15 @@ function bin_partial_deriv(x, y, fn, type, verbose) {
         }
         for (var i = 0; i < _x.dims[0]; i++) {
             for (var j = 0; j < _x.dims[1]; j++) {
-                var epsT = new THTensor(_x.dims).zero();
+                var epsT = new Tensor(_x.dims).zero();
                 epsT.set([i,j], eps);
                 var y1 = f_2(_x, _y, fn);
                 var y2 = f_2(_x, T.add(_y, epsT), fn);
                 if (verbose) {
                     console.log('_x finite diffs: ', (y2-y1) / eps);
-                    console.log('ad: ', T.get(ad.derivative(x), [i,j]));
+                    console.log('ad: ', T.get(ad.derivative(y), [i,j]));
                 }
-                result.push((y2-y1) / eps -  T.get(ad.derivative(x), [i, j])) ;
+                result.push((y2-y1) / eps -  T.get(ad.derivative(y), [i, j])) ;
             }
         }
     } else {
@@ -109,9 +116,9 @@ function bin_partial_deriv(x, y, fn, type, verbose) {
             result.push((y2-y1) / eps -  T.get(ad.derivative(y), i)) ;
         }
     }
-    return _.reduce(roundArr(result, 4), function(sum, n) {
-        return sum + n;
-    }, 0);
+    return _.every(roundArr(result, sf), function(n) {
+        return n >= -this.tol && n <= this.tol;
+    }.bind(this));
 }
 
 var f = function(x, fn) {
@@ -129,21 +136,20 @@ var f_2 = function(x, y, fn) {
   return out;
 }
 
-var bp = function(_x, op, type, scal) {
-  var x = op === 'concat' ? _x.map(function(v) {return ad.lift(v);}) 
-      : ad.lift(_x);
+var bp = function(_x, op, type, scal, tol) {
+  var x = ad.lift(_x);
   var xnode = scal ? xnode = f_1(x, function(n) {return T[op](n); })
       : xnode = f(x, function(n) {return T[op](n); });
   xnode.backprop();
-  return partial_deriv(x, function(n) {return T[op](n);}, scal, type, true);
+  return partial_deriv(x, function(n) {return T[op](n);}, scal, type, tol);
 }
 
-var bin_bp = function(_x, _y, op, type) {
+var bin_bp = function(_x, _y, op, type, tol) {
   var x = ad.lift(_x);
   var y = ad.lift(_y);
   var onode = f_2(x, y, function(n, m) {return T[op](n, m); });
   onode.backprop();
-  return bin_partial_deriv(x, y, function(n, m) {return T[op](n, m)}, type);
+  return bin_partial_deriv(x, y, function(n, m) {return T[op](n, m)}, type, tol);
 }
 
 function roundArr (arr, sf) {
@@ -178,50 +184,50 @@ function run (type) {
         describe("Math Ops", function () {
             describe("Unary", function () {
                 //Unary operators
-                it('tanh', function () { assert.equal(bp(x, 'tanh', type), 0); }); 
-                it('neg', function () { assert.equal(bp(x, 'neg', type), 0); }); 
-                it('sqrt', function () { assert.equal(bp(x, 'sqrt', type), 0); }); 
-                it('exp', function () { assert.equal(bp(x, 'exp', type).toFixed(2), 0); }); 
-                it('log', function () { assert.equal(bp(x, 'log', type), 0); }); 
+                it('tanh', function () { assert(bp(x, 'tanh', type)); }); 
+                it('neg', function () { assert(bp(x, 'neg', type)); }); 
+                it('sqrt', function () { assert(bp(x, 'sqrt', type)); }); 
+                it('exp', function () { assert(bp(x, 'exp', type)); }); 
+                it('log', function () { assert(bp(x, 'log', type)); }); 
                 //no abs derivative for TH yet
-//                 it('abs', function () { assert.equal(bp(x, 'abs', type), 0); }); 
-                it('sin', function () { assert.equal(bp(x, 'sin', type), 0); }); 
-                it('cos', function () { assert.equal(bp(x, 'cos', type), 0); }); 
-                it('tan', function () { assert.equal(bp(x, 'tan', type), 0); }); 
-                it('sigmoid', function () { assert.equal(bp(x, 'sigmoid', type), 0); }); 
+//                 it('abs', function () { assert(bp(x, 'abs', type)); }); 
+                it('sin', function () { assert(bp(x, 'sin', type)); }); 
+                it('cos', function () { assert(bp(x, 'cos', type)); }); 
+                it('tan', function () { assert(bp(x, 'tan', type)); }); 
+                it('sigmoid', function () { assert(bp(x, 'sigmoid', type)); }); 
             });
             describe ("Binary", function () {
                 //Binary operators
-                it('add', function () { assert.equal(bin_bp(x, y, 'add', type), 0); }); 
-                it('sub', function () { assert.equal(bin_bp(x, y, 'sub', type), 0); }); 
-//                 it('mul', function () { assert.equal(bin_bp(x, y, 'mul', type), 0); }); 
-//                 it('div', function () { assert.equal(bin_bp(x, y, 'div', type), 0); }); 
-//                 it('pow', function () { assert.equal(bin_bp(x, y, 'pow', type), 0); }); 
-//                 it('atan2', function () { assert.equal(bin_bp(x, y, 'atan2', type), 0); }); 
+                it('add', function () { assert(bin_bp(x, y, 'add', type)); }); 
+                it('sub', function () { assert(bin_bp(x, y, 'sub', type)); }); 
+                it('mul', function () { assert(bin_bp(x, y, 'mul', type)); }); 
+                it('div', function () { assert(bin_bp(x, y, 'div', type)); }); 
+                it('pow', function () { assert(bin_bp(x, y, 'pow', type)); }); 
+                it('atan2', function () { assert(bin_bp(x, y, 'atan2', type)); }); 
             });
         });
         describe("Tensor Ops", function () {
-            it('sumreduce', function () { assert.equal(bp(x, 'sumreduce', type, true), 0); }); 
+            it('sumreduce', function () { assert(bp(x, 'sumreduce', type, true)); }); 
             //need to write tensor ops to pass proper arguments to get and range below since they take scalar args
-//             it('get', function () { assert.equal(bp(x, 'get', type, true), 0); }); 
-//             it('range', function () { assert.equal(bp(x1d, 'range', type), 0); }); 
+//             it('get', function () { assert(bp(x, 'get', type, true)); }); 
+//             it('range', function () { assert(bp(x1d, 'range', type)); }); 
 //          // tested in tensorgrad
-//             it('concat', function () { assert.equal(bpt([x1d, x1d], 'concat', type), 0); }); 
-            it('softmax', function () { assert.equal(bp(x, 'softmax', type), 0); }); 
+//             it('concat', function () { assert(bpt([x1d, x1d], 'concat', type)); }); 
+            it('softmax', function () { assert(bp(x, 'softmax', type, false, 0.9)); }); 
         });
         describe("Linear Alg Ops", function () {
-            it('transpose', function () { assert.equal(bp(x, 'transpose', type), 0); }); 
-            it('diagonal', function () { assert.equal(bp(x1d, 'diagonal', type), 0); }); 
-//             it('diag', function () { assert.equal(bp(x, 'diag', type), 0); }); 
-            it('inverse', function () { assert.equal(bp(x, 'inverse', type), 0); }); 
-            it('determinant', function () { assert.equal(bp(x, 'determinant', type, true).toFixed(3), 0); }); 
-            it('dot', function () { assert.equal(bin_bp(x, y, 'dot', type), 0); }); 
+            it('transpose', function () { assert(bp(x, 'transpose', type)); }); 
+            it('diagonal', function () { assert(bp(x1d, 'diagonal', type)); }); 
+            it('diag', function () { assert(bp(x, 'diag', type)); }); 
+            it('inverse', function () { assert(bp(x, 'inverse', type)); }); 
+            it('determinant', function () { assert(bp(x, 'determinant', type, true)); }); 
+            it('dot', function () { assert(bin_bp(x, y, 'dot', type)); }); 
         });
     });
 }
 
 run ("Torch");
-// run ("JS");
+run ("JS");
 return
 
 var t_in = ad.lift(d_1);

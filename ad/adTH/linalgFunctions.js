@@ -26,7 +26,7 @@ fns.thtensor.transpose = func.newUnaryFunction({
 
 fns.thtensor.diag = func.newUnaryFunction({
   OutputType: THTensor,
-  name: 'diagonal',
+  name: 'diag',
   forward: function(a) {
     return a.diag();
   },

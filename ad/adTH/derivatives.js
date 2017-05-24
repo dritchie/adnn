@@ -42,15 +42,15 @@ function makeBinaryDerivatives(key, code1, code2) {
     } else  {
 
         var make_arg_array = function(cc, y_is_full) {
-            var fct_args = []
+            var fct_args = [];
             if(cc.indexOf("x") != -1)
-                fct_args.push('_x.x.data.ref()')
+                fct_args.push('_xx.data.ref()');
             if(cc.indexOf("out") != -1)
-                fct_args.push('this.x.data.ref()')
+                fct_args.push('this.x.data.ref()');
             
             // if constant exists, it's always the last reference sent in
             if(cc.indexOf("y") != -1)
-                fct_args.push(y_is_full ? '_y.x.data' : '_yx')
+                fct_args.push(y_is_full ? '_yx.data.ref()' : '_yx');
             return fct_args
         }
 
@@ -110,7 +110,7 @@ function makeBinaryDerivatives(key, code1, code2) {
                     // y is a tensor 
                     '} else {',
                     'TH.THFloatTensor_' + t1_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_full_args.length > 0 ? ", " + t1_full_args.join(",") : "") + ')',
-                    '}',
+                     '}',
                 ].join('\n')),
                 // Second arg is definitely a Node, first may or may not be
                 new Function('_x', '_y', [
@@ -119,7 +119,7 @@ function makeBinaryDerivatives(key, code1, code2) {
                     'var n = _xx.length;',
                     'var TH = _xx.ffi',
                     // y is a scalar
-                    'if (typeof _yx === "number") {',
+                    'if (typeof _xx === "number") {',
                     '_y.dx += TH.THFloatTensor_' + t2_acc_fct_name + '(this.dx.data.ref()' + (t2_acc_args.length > 0 ? ", " + t2_acc_args.join(",") : "") + ')',
                     '} else {',
                     'TH.THFloatTensor_' + t2_fct_name + '(_y.dx.data.ref(), this.dx.data.ref()' + (t2_full_args.length > 0 ? ", " + t2_full_args.join(",") : "") + ')',
