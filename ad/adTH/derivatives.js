@@ -103,7 +103,7 @@ function makeBinaryDerivatives(key, code1, code2) {
                     'var _yx = _y.x || _y;',
                     'var n = _xx.length;',
                     'var TH = _xx.ffi',
-                    //'console.log("'+key+'")',
+
                     // y is a scalar
                     'if (typeof _yx === "number") {',
                     'TH.THFloatTensor_' + t1_const_fct_name + '(_x.dx.data.ref(), this.dx.data.ref()' + (t1_const_args.length > 0 ? ", " + t1_const_args.join(",") : "") + ')',

@@ -162,6 +162,7 @@ var ifMissing = {
 	zeros: function(struct, coStructs) {
 	    return map(struct, function(x) {
 			if (type(x) === 'thtensor') {
+				console.log('thtensorstruct', x.toArray())
 		    	return new THTensor(x.dims).zero();	// Initializes to zeros
         	} else {
         		console.log("tensorstruct", x)

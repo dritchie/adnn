@@ -1,20 +1,21 @@
 'use strict';
 
-var Tensor = require('../../THTensor.js');
+var Tensor = require('../../tensor.js');
+var THTensor = require('../../THTensor.js');
 var ad = require('../../ad');
 var Network = require('../network.js');
 var assert = require('assert');
 
 
 // Fully connected network
-function LinearNetwork(nIn, nOut, optname) {
+function LinearNetwork(nIn, nOut, optname, isJS) {
 	Network.call(this);
 	this.name = optname || 'linear';
 	this.inSize = nIn;
 	this.outSize = nOut;
 
-	this.weights = ad.params([nOut, nIn], this.name+'_weights');
-	this.biases = ad.params([nOut], this.name+'_biases');
+	this.weights = ad.params([nOut, nIn], this.name+'_weights', isJS);
+	this.biases = ad.params([nOut], this.name+'_biases', isJS);
 	this.paramGetters = [
 		function() { return this.weights; }.bind(this),
 		function() { return this.biases; }.bind(this)
@@ -45,7 +46,7 @@ Network.deserializers.linear = function(json) {
 
 
 var mvmuladd = ad.newFunction({
-	OutputType: Tensor,
+	OutputType: THTensor,
 	name: 'mvmuladd',
 	forward: function(A, x, b) {
 		A = ad.value(A);
@@ -59,9 +60,10 @@ var mvmuladd = ad.newFunction({
 		}
 		var y = b.clone();
 		for (var r = 0; r < h; r++) {
-			var off = r*w;
+			// var off = r*w;
 			for (var c = 0; c < w; c++) {
-				y.data[r] += A.data[off + c] * x.data[c];
+				y.set([r], y.get([r]) + A.get([r, c]) * x.get([c]));
+				// y.data[r] += A.data[off + c] * x.data[c];
 			}
 		}
 		return y;
@@ -76,17 +78,21 @@ var mvmuladd = ad.newFunction({
 		var w = xp.length;
 		var h = bp.length;
 		for (var r = 0; r < h; r++) {
-			var off = r*w;
-			var thisdx = this.dx.data[r];
+			// var off = r*w;
+			// var thisdx = this.dx.data[r];
+			var thisdx = this.dx.get([r]);
 			if (bIs) {
-				b.dx.data[r] += thisdx;
+				b.dx.set([r], b.dx.get([r]), thisdx);
+				// b.dx.data[r] += thisdx;
 			}
 			for (var c = 0; c < w; c++) {
 				if (xIs) {
-					x.dx.data[c] += Ap.data[off + c] * thisdx;
+					x.dx.set([c], x.dx.get([c]) + Ap.get([r, c]) * thisdx);
+					// x.dx.data[c] += Ap.data[off + c] * thisdx;
 				}
 				if (aIs) {
-					A.dx.data[off + c] += xp.data[c] * thisdx;
+					A.dx.set([r, c], A.dx.get([r, c]) + xp.get([c]) * thisdx);
+					// A.dx.data[off + c] += xp.data[c] * thisdx;
 				}
 			}
 		}
@@ -112,14 +118,14 @@ function linear(nIn, nOut, optname) {
 
 // Fully connected network between the layers (i.e. channels) of an image at 
 //    each pixel
-function LayerwiseLinearNetwork(nIn, nOut, optname) {
+function LayerwiseLinearNetwork(nIn, nOut, optname, isJS) {
 	Network.call(this);
 	this.name = optname || 'layerwiseLinear';
 	this.inSize = nIn;
 	this.outSize = nOut;
 
-	this.weights = ad.params([nOut, nIn], this.name+'_weights');
-	this.biases = ad.params([nOut], this.name+'_biases');
+	this.weights = ad.params([nOut, nIn], this.name+'_weights', isJS);
+	this.biases = ad.params([nOut], this.name+'_biases', isJS);
 	this.paramGetters = [
 		function() { return this.weights; }.bind(this),
 		function() { return this.biases; }.bind(this)

@@ -163,6 +163,7 @@ THTensor.prototype.refCopy = function(other) {
     this.data = other.data;
     this.ref = this.data.ref();
     this.type = other.type;
+    this.ffi = other.ffi;
     return this;
 }
 
@@ -556,15 +557,17 @@ THTensor.prototype.applyFn = function (cb) {
   return this;
 }
 
+//concatenates one tensor to another tensor
 THTensor.prototype.concat = function (args, i) {
   // concatenating along 1 dimension for 1d Tensors
   if (i === null)
     i = 0;
-  var n = args.length;
-  assert.ok(n === 1);
-  var size = this.length + args[0].length;
+  if (args instanceof Array)
+    assert.ok(args.length === 1);
+  args = args instanceof Array ? args[0] : args;
+  var size = this.length + args.length;
   var ccTensor = new THTensor([size])
-  TH.THFloatTensor_cat(ccTensor.data.ref(), this.data.ref(), args[0].data.ref(), i);
+  TH.THFloatTensor_cat(ccTensor.data.ref(), this.data.ref(), args.data.ref(), i);
   return ccTensor;
 }
 

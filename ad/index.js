@@ -32,8 +32,11 @@ var ad = {
 
 // Create randomly-initialized params
 // TODO: Use orthogonal initialization?
-ad.params = function(dims, name) {
-    return ad.lift(new Tensor(dims).fillRandom(), name); 
+ad.params = function(dims, name, isJS) {
+    if (isJS)
+    	return ad.lift(new Tensor(dims).fillRandom(), name); 
+    // default to TH
+    return ad.lift(new THTensor(dims).fillRandom(), name); 
 };
 
 var func = require('./func.js');
