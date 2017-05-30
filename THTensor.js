@@ -208,8 +208,8 @@ THTensor.get_set = function(js_tensor, coords, val_or_tensor) {
       pix = Math.floor(pix);
       if (pix < 0)
         pix = tensor.size[cdim] + pix + 1;
-      if(!((pix >= 0) && (pix < tensor.size[cdim])))
-        throw new Error("Index out of bounds.");
+      // if(!((pix >= 0) && (pix < tensor.size[cdim])))
+      //   throw new Error("Index out of bounds.");
       if(ndims == 1){
         // Setting element
         if (val_or_tensor != undefined){
@@ -508,8 +508,8 @@ function fromArrayRec(tensor, coords, x) {
 THTensor.prototype.fromArray = function(arr) {
     if (arr.length != this.dims[0])
       throw new Error('Array length must match with tensor length');
-    if (arr.length > 256)
-      return this.fromLargeArray(arr)
+    // if (arr.length > 256)
+    //   return this.fromLargeArray(arr)
     fromArrayRec(this, [], arr);
     return this;
 };

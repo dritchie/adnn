@@ -4,16 +4,17 @@ var oldTensor = require('../tensor');
 // var nn = require('../nn');
 
 var t_0, t_1
-var z = new Tensor([700]);
+var z = new Tensor([1000]);
 a = []
 var z_0 = new Tensor([4]);
 var y = z_0.fromArray([1,2,3,4]);
 // console.log(y.diagonal()); return
-for (var i =0; i < 700; i++){
+for (var i =0; i < 1000; i++){
   a.push(i)
 }
 var zz = z.fromArray(a);
-console.log(zz.concat(zz).toFlatArray()); return
+console.log(zz.get([990])); 
+console.log(zz.concat(zz).toArray()); return
 var z = new Tensor([2,2]);
 var z_0 = new tensor([3,2]);
 var x = z_0.fromarray([[1,2],[3,4], [5,6]]);

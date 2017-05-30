@@ -123,10 +123,17 @@ fns.tensor.relu = func.newUnaryFunction({
         return t.relu();
     },
     backward: function(x) {
-        var n = x.x.length;
-        while (n--) {
-            x.dx.data[n] += x.x.data[n] <= 0 ? 0 : this.dx.data[n];
+        var _x = x.x;
+        var h = _x.dims[0];
+        var w = _x.dims[1];
+        for (var i = 0; i < h; i++) {
+            for (var j = 0; j < w; j++) {
+                x.dx.set([i, j], x.dx.get([i, j]) + _x.get([i, j])  <= 0 ? 0 : this.dx.get([i, j]));
+            }
         }
+        // while (n--) {
+        //     x.dx.data[n] += x.x.data[n] <= 0 ? 0 : this.dx.data[n];
+        // }
     }
 });
 

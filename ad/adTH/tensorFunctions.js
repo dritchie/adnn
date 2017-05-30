@@ -64,12 +64,13 @@ fns.thtensor.get = func.newFunction({
 
 // Split a tensor into an array of its scalar entries
 fns.thtensor.toScalars = function(t) {
-    var n = t instanceof Node ? t.x.length : t.length;
-    var s = new Array(n);
-    while (n--) {
-        s[n] = fns.thtensor.get(t, n);
-    }
-    return s;
+    // var n = t instanceof Node ? t.x.length : t.length;
+    // var s = new Array(n);
+    // while (n--) {
+    //     s[n] = fns.thtensor.get(t, n);
+    // }
+    var ten = t instanceof Node ? t.x : t;
+    return ten.toFlatArray();
 };
 
 // Select a subtensor from a larger tensor
@@ -207,7 +208,7 @@ fns.thtensor.softmax = func.newUnaryFunction({
        var ten = t instanceof Node ? t.x : t;
        var s = 0;
        for (var i = 0; i < ten.dims[0]; i++) {
-           for (var j = 9; j < ten.dims[1]; j++) {
+           for (var j = 0; j < ten.dims[1]; j++) {
               s += this.x.get([i, j]) * this.dx.get([i, j]);
            }
         }
