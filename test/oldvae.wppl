@@ -30,8 +30,8 @@ var encode = function(x) {
   return {mu, sigma};
 };
 
-// Generative network.
-// Maps from the latent space to pixels.
+//Generative network.
+//Maps from the latent space to pixels.
 var decode = stack([
   sigmoid,
   affine(xDim, 'dec1', modelParam),
@@ -41,6 +41,7 @@ var decode = stack([
 
 var zPrior = TensorGaussian({mu: 0, sigma: 1, dims: [zDim, 1]});
 
+console.log('starting obs')
 console.time('obs');
 var model = function() {
   mapData({data: images, batchSize: 100}, function(image) {

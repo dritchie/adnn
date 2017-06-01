@@ -533,6 +533,23 @@ Tensor.prototype.cholesky = function() {
   return L;
 };
 
+Tensor.prototype.relu = function() {
+  var out = new Tensor(this.dims);
+  for (var i = 0; i < this.length; i++) {
+    out.data[i] = this.data[i] < 0 ? 0 : this.data[i];
+  }
+  return out;
+};
+
+Tensor.prototype.lrelu = function() {
+  leakyness = 100;
+  var out = new Tensor(this.dims);
+  for (var i = 0; i < this.length; i++) {
+    out.data[i] = this.data[i] < 0 ? this.data[i] / leakyness : this.data[i];
+  }
+  return out;
+}
+
 
 module.exports = Tensor;
 

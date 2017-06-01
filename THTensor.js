@@ -957,11 +957,11 @@ THTensor.prototype.cholesky = function() {
   assert.ok((this.rank === 2) && (this.dims[0] === this.dims[1]),
             'cholesky is only defined for square matrices.');
 
-  var cc = THTensor.create_empty_of_size(this.data.ref())
-  TH.THFloatTensor_potrf(this.data.ref(), cc.ref(), 'U');
-  var ccTensor = this.refClone()
-  ccTensor.override(cc, this.dims.slice(0))
-  return ccTensor
+  var cc = THTensor.create_empty_of_size(this.data.ref());
+  TH.THFloatTensor_potrf(cc.ref(), this.data.ref(), 'L');
+  var ccTensor = this.refClone();
+  ccTensor.override(cc, this.dims.slice(0));
+  return ccTensor;
 };
 
 
