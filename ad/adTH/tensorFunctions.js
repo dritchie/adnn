@@ -46,9 +46,10 @@ fns.thtensor.get = func.newFunction({
     OutputType: Scalar,
     name: 'thtensor.get',
     forward: function(t, i) {
+        var ten = t instanceof Node ? t.x : t;
         if (!(i instanceof Array))
-            i = [i];
-        return t instanceof Node ? t.x.get(i) : t.get(i);
+            i = ten.rank <= 1 ? [i] : [i, 0];
+        return ten.get(i);
     },
     backward: function(t, i) {
         if (t instanceof Node) {
@@ -122,12 +123,7 @@ fns.thtensor.fromScalars = func.newFunction({
         var n = args.length;
         var t = new THTensor([n]);
         var val = args instanceof Node ? args.x : args;
-        t.fromArray(val)
-        // while (n--) {
-        //     var arg = args[n];
-        //     var val = arg instanceof Node ? arg.x : arg;
-        //     t.set([n], val);
-        // }
+        t.fromArray(val);
         return t;
     },
     backward: function() {
@@ -180,6 +176,8 @@ fns.thtensor.concat = func.newFunction({
 });
 
 // Reshape a tensor
+// This is slower than in JS since torch actually reshapes the tensor
+// as opposed to just setting the dims array in JS
 // Creates a new TensorNode whose x and dx fields are refClones
 //    of the corresponding fields on the input node.
 fns.thtensor.reshape = function(t, dims) {
@@ -207,13 +205,13 @@ fns.thtensor.softmax = func.newUnaryFunction({
         //    for each output entry
        var ten = t instanceof Node ? t.x : t;
        var s = 0;
-       for (var i = 0; i < ten.dims[0]; i++) {
-           for (var j = 0; j < ten.dims[1]; j++) {
+       for (var i = 0; i < t.dx.dims[0]; i++) {
+           for (var j = 0; j < t.dx.dims[1]; j++) {
               s += this.x.get([i, j]) * this.dx.get([i, j]);
            }
         }
-        for (var i = 0; i < ten.dims[0]; i++) {
-           for (var j = 0; j < ten.dims[1]; j++) {
+        for (var i = 0; i < t.dx.dims[0]; i++) {
+           for (var j = 0; j < t.dx.dims[1]; j++) {
               t.dx.set([i, j], t.dx.get([i, j]) + this.x.get([i, j]) * 
                 (this.dx.get([i, j]) - s));
            }

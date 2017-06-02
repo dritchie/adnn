@@ -1,9 +1,11 @@
 var Tensor = require('../THTensor');
 var oldTensor = require('../tensor');
-// var ad = require('../ad/adjs');
+var ad = require('../ad');
 // var nn = require('../nn');
 
 var t_0, t_1
+var t_0 = new Tensor([4]).fillRandom();
+console.log(t_0.reshape([4,1]).toArray()); return
 var t_0 = new Tensor([3, 3]).fromArray([[4, 12, -16], [12, 37, -43], [-16, -43, 98]])
 console.log(t_0.toArray())
 console.log(t_0.cholesky().toArray()); return

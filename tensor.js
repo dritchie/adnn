@@ -148,6 +148,9 @@ function toArrayRec(tensor, coords) {
 Tensor.prototype.toArray = function() {
 	return toArrayRec(this, []);
 };
+Tensor.prototype.toFlatArray = function() {
+  return this.data;
+};
 function fromArrayRec(tensor, coords, x) {
 	if (!(x instanceof Array)) {
 		tensor.set(coords, x);

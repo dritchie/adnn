@@ -190,7 +190,7 @@ function run (type) {
                 it('exp', function () { assert(bp(x, 'exp', type)); }); 
                 it('log', function () { assert(bp(x, 'log', type)); }); 
                 //no abs derivative for TH yet
-//                 it('abs', function () { assert(bp(x, 'abs', type)); }); 
+                it('abs', function () { assert(bp(x, 'abs', type)); }); 
                 it('sin', function () { assert(bp(x, 'sin', type)); }); 
                 it('cos', function () { assert(bp(x, 'cos', type)); }); 
                 it('tan', function () { assert(bp(x, 'tan', type)); }); 

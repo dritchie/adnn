@@ -484,7 +484,17 @@ THTensor.prototype.toFlatArray = function () {
       }
       return arr;
     }
-    throw new Error('Tensors must have rank = 1 or 2');
+    else if (this.rank === 3) {
+      for (var i=0; i < this.dims[0]; ++i) {
+        for (var j=0; j < this.dims[1]; ++j) {
+          for (var k=0; k < this.dims[2]; ++k) {
+            arr.push(TH.THFloatTensor_get3d(this.data.ref(), i, j, k));
+          }
+        }
+      }
+      return arr;
+    }
+    throw new Error('Tensors must have rank <=3 ');
 }
 
 THTensor.prototype.toArray = function() {
@@ -853,7 +863,7 @@ THTensor.prototype.transpose = function(ix, ix2) {
     TH.THFloatTensor_transpose(ccTensor.data.ref(), this.data.ref(), ix, ix2)
   return ccTensor
 }
-THTensor.prototype.T = THTensor.prototype.transpose
+THTensor.prototype.T = THTensor.prototype.transpose;
 
 //Return a nxn matrix with the same diagonal, and zeros everywhere else
 THTensor.prototype.diag = function() {
