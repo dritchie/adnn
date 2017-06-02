@@ -844,11 +844,13 @@ THTensor.prototype.softmax = function() {
 };
 
 THTensor.prototype.transpose = function(ix, ix2) {
-  var ccTensor = this.clone()
+  var h = this.dims[0];
+  var w = this.dims[1];
+  var ccTensor = h === w ? this.clone() : new THTensor([w, h]);
   if(ix == undefined)
-    TH.THFloatTensor_transpose(ccTensor.data.ref(), ref.NULL, 0, 1)
+    TH.THFloatTensor_transpose(ccTensor.data.ref(), this.data.ref(), 0, 1)
   else
-    TH.THFloatTensor_transpose(ccTensor.data.ref(), ref.NULL, ix, ix2)
+    TH.THFloatTensor_transpose(ccTensor.data.ref(), this.data.ref(), ix, ix2)
   return ccTensor
 }
 THTensor.prototype.T = THTensor.prototype.transpose

@@ -118,5 +118,5 @@ function run (type) {
     });
 }
 
-run ("Torch");
+// run ("Torch");
 run ("JS");
