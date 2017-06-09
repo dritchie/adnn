@@ -203,19 +203,21 @@ fns.thtensor.softmax = func.newUnaryFunction({
     backward: function(t) {
         // For each input entry, accumulate partial derivatives
         //    for each output entry
-       var ten = t instanceof Node ? t.x : t;
-       var s = 0;
-       for (var i = 0; i < t.dx.dims[0]; i++) {
-           for (var j = 0; j < t.dx.dims[1]; j++) {
-              s += this.x.get([i, j]) * this.dx.get([i, j]);
-           }
-        }
-        for (var i = 0; i < t.dx.dims[0]; i++) {
-           for (var j = 0; j < t.dx.dims[1]; j++) {
-              t.dx.set([i, j], t.dx.get([i, j]) + this.x.get([i, j]) * 
-                (this.dx.get([i, j]) - s));
-           }
-        }
+       var s = this.x.mul(this.dx).sumreduce();
+       t.dx = t.dx.add(this.x.mul(this.dx.sub(s)));
+
+       // var s = 0;
+       // for (var i = 0; i < t.dx.dims[0]; i++) {
+       //     for (var j = 0; j < t.dx.dims[1]; j++) {
+       //        s += this.x.get([i, j]) * this.dx.get([i, j]);
+       //     }
+       //  }
+       //  for (var i = 0; i < t.dx.dims[0]; i++) {
+       //     for (var j = 0; j < t.dx.dims[1]; j++) {
+       //        t.dx.set([i, j], t.dx.get([i, j]) + this.x.get([i, j]) * 
+       //          (this.dx.get([i, j]) - s));
+       //     }
+       //  }
     }
 });
 

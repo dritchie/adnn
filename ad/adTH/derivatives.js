@@ -1,6 +1,3 @@
-var ffith = require('/Users/jpchen/jstorch/torch.js/TH.js')
-var TH = ffith.TH
-
 'use strict';
 
 var nop = function() {};
@@ -119,7 +116,7 @@ function makeBinaryDerivatives(key, code1, code2) {
                     'var n = _xx.length;',
                     'var TH = _xx.ffi',
                     // y is a scalar
-                    'if (typeof _xx === "number") {',
+                    'if (typeof _yx === "number") {',
                     '_y.dx += TH.THFloatTensor_' + t2_acc_fct_name + '(this.dx.data.ref()' + (t2_acc_args.length > 0 ? ", " + t2_acc_args.join(",") : "") + ')',
                     '} else {',
                     'TH.THFloatTensor_' + t2_fct_name + '(_y.dx.data.ref(), this.dx.data.ref()' + (t2_full_args.length > 0 ? ", " + t2_full_args.join(",") : "") + ')',

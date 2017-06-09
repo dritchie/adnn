@@ -92,40 +92,42 @@ fns.thtensor.dot = func.newBinaryFunction({
     var Ap = A instanceof Node ? A.x : A;
     var Bp = B instanceof Node ? B.x : B;
 
-    var Ah = Ap.dims[0];
-    var Aw = Ap.dims[1];
-    var Bw = Bp.dims[1];
-    var wout = Bw;
+    A.dx = A.dx.add((this.dx.dot(Bp.T())));
+    // var Ah = Ap.dims[0];
+    // var Aw = Ap.dims[1];
+    // var Bw = Bp.dims[1];
+    // var wout = Bw;
 
-    for (var l = 0; l < Ah; l++) {
-      for (var m = 0; m < Aw; m++) {
-        var z = 0;
-        for (var j = 0; j < wout; j++) {
-          z += this.dx.get([l, j]) * Bp.get([m, j]);
-        }
-        A.dx.set([l, m], A.dx.get([l, m]) + z);
-      }
-    }
+    // for (var l = 0; l < Ah; l++) {
+    //   for (var m = 0; m < Aw; m++) {
+    //     var z = 0;
+    //     for (var j = 0; j < wout; j++) {
+    //       z += this.dx.get([l, j]) * Bp.get([m, j]);
+    //     }
+    //     A.dx.set([l, m], A.dx.get([l, m]) + z);
+    //   }
+    // }
   },
   backward2: function(A, B) {
     var Ap = A instanceof Node ? A.x : A;
     var Bp = B instanceof Node ? B.x : B;
 
-    var Ah = Ap.dims[0];
-    var Aw = Ap.dims[1];
-    var Bh = Bp.dims[0];
-    var Bw = Bp.dims[1];
-    var wout = Bw;
+    B.dx = B.dx.add((A.T().dot(this.dx)));
+    // var Ah = Ap.dims[0];
+    // var Aw = Ap.dims[1];
+    // var Bh = Bp.dims[0];
+    // var Bw = Bp.dims[1];
+    // var wout = Bw;
 
-    for (var l = 0; l < Bh; l++) {
-      for (var m = 0; m < Bw; m++) {
-        var z = 0;
-        for (var i = 0; i < Ah; i++) {
-          z += this.dx.get([i, m]) * Ap.get([i, l]);
-        }
-        B.dx.set([l, m], B.dx.get([l, m]) + z);
-      }
-    }
+    // for (var l = 0; l < Bh; l++) {
+    //   for (var m = 0; m < Bw; m++) {
+    //     var z = 0;
+    //     for (var i = 0; i < Ah; i++) {
+    //       z += this.dx.get([i, m]) * Ap.get([i, l]);
+    //     }
+    //     B.dx.set([l, m], B.dx.get([l, m]) + z);
+    //   }
+    // }
 
   }
 });
