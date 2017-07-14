@@ -23,10 +23,10 @@ var trainingData = nn.loadData(data)
 
 console.log('nnTrain')
 opt.nnTrain(net, trainingData, opt.classificationLoss, {
-  batchSize: 1,
-  iterations: 1000,
+  batchSize: 2,
+  iterations: 500,
   method: opt.sgd({ stepSize: 1, stepSizeDecay: 0.999 }),
-//  verbose: true
+  verbose: true
 })
 
 console.log('predict')

@@ -29,10 +29,10 @@ var trainingData = nn.loadData(data)
 
 console.log('nnTrain')
 opt.nnTrain(net, trainingData, opt.classificationLoss, {
-  batchSize: 2, // batch 超過 3 就無法成功， why ?
+  batchSize: 1, // batch 超過 3 就無法成功， why ?
   iterations: 1000,
   method: opt.sgd({ stepSize: 1, stepSizeDecay: 0.999 }),
-//  verbose: true
+  verbose: true
 })
 
 console.log('predict')
