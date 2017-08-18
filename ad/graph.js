@@ -25,26 +25,38 @@ Node.prototype.clone = function() {
 	return node;
 };
 Node.prototype.computeOutDegree = function() {
-	this.outDegree++;
-	if (this.outDegree === 1) {
-		var n = this.parents.length;
-		while (n--) this.parents[n].computeOutDegree();
+	var stack = [this];
+	while (stack.length > 0) {
+		var node = stack.pop();
+		node.outDegree++;
+		if (node.outDegree === 1) {
+			var n = node.parents.length;
+			while (n--) stack.push(node.parents[n]);
+		}
 	}
 };
 Node.prototype.backpropRec = function() {
-	this.outDegree--;
-	if (this.outDegree === 0) {
-		this.backward();
-		var n = this.parents.length;
-		while (n--) this.parents[n].backpropRec();
+	var stack = [this];
+	while (stack.length > 0) {
+		var node = stack.pop();
+		node.outDegree--;
+		if (node.outDegree === 0) {
+			node.backward();
+			var n = node.parents.length;
+			while (n--) stack.push(node.parents[n]);
+		}
 	}
 };
 Node.prototype.zeroDerivativesRec = function() {
-	this.outDegree--;
-	if (this.outDegree === 0) {
-		this.zeroDerivativesImpl();
-		var n = this.parents.length;
-		while (n--) this.parents[n].zeroDerivativesRec();
+	var stack = [this];
+	while (stack.length > 0) {
+		var node = stack.pop();
+		node.outDegree--;
+		if (node.outDegree === 0) {
+			node.zeroDerivativesImpl();
+			var n = node.parents.length;
+			while (n--) stack.push(node.parents[n]);
+		}
 	}
 };
 Node.prototype.zeroDerivatives = function() {
