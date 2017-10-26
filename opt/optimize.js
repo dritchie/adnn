@@ -72,8 +72,9 @@ function adTrain(fn, trainingData, lossFn, options) {
 	});
 
 	var batchSize = options.batchSize;
+	var shuffle = options.shuffle;
 
-	var idx;
+	var idx = -1;
 	var singleFn = makeOptimizable(function() {
 		var trainingDatum = trainingData[idx];
 		var rets = fn(trainingDatum.input);
@@ -87,7 +88,9 @@ function adTrain(fn, trainingData, lossFn, options) {
 		var gradients;
 		var parameters;
 		for (var i = 0; i < batchSize; i++) {
-			idx = Math.floor(Math.random() * trainingData.length);
+			idx = shuffle === false ?
+				(idx + 1) % trainingData.length : 
+				Math.floor(Math.random() * trainingData.length);
 			var rets = singleFn();
 			if (gradients === undefined) {
 				gradients = rets.gradients;
