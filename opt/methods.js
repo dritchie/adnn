@@ -34,7 +34,7 @@ function sgd(options) {
 				p.addeq(v);
 			}
 		);
-		stepSize *= decay;
+		if (!stepSizeIsFunction) stepSize *= decay;
 	};
 }
 
