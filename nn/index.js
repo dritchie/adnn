@@ -20,7 +20,8 @@ var pooling = require('./networks/pooling.js');
 var activation = require('./networks/activation.js');
 var perceptron = require('./networks/perceptron.js');
 var misc = require('./networks/misc.js');
+var data = require('./data.js');
 
 module.exports = utils.mergeObjects(module.exports,
-	lifting, composition, lifted, linear, convolution, pooling, activation, perceptron, misc
+	lifting, composition, lifted, linear, convolution, pooling, activation, perceptron, misc, data
 );

@@ -25,7 +25,7 @@ function optimize(fn, options) {
 		assert(rets.gradients !== undefined);
 		assert(rets.parameters !== undefined);
 		// TODO: assert that there exists a parameter for each gradient?
-		method(rets.gradients, rets.parameters, i);
+		var mrets = method(rets.gradients, rets.parameters, i);
 		if (verbose) {
 			console.log('[optimize] done iteration ' + (i+1) + '/' + iters);
 		}
@@ -79,6 +79,7 @@ function adTrain(fn, trainingData, lossFn, options) {
 		var trainingDatum = trainingData[idx];
 		var rets = fn(trainingDatum.input);
 		var loss = lossFn(rets.output, trainingDatum.output);
+		if (options.verbose) console.log('  loss=%d', loss.x);
 		return {
 			parameters: rets.parameters,
 			loss: loss
